@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Waifu New Tab",
+  "version": "1.0.0",
+  "description": "Custom Terminal-style New Tab Page",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "favicon.svg",
+    "48": "favicon.svg",
+    "128": "favicon.svg"
+  },
+  "permissions": ["topSites"]
+}
