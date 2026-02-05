@@ -45,7 +45,8 @@ const DEFAULT_SETTINGS: Settings = {
   showGreeting: true,
   showClock: true,
   showWeather: false,
-  theme: 'dark',
+  showStatusBar: true,
+  theme: 'carbon',
   clockFormat: '24h',
   asciiArt: `⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡏⠉⠉⠙⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠉⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠛⠛⠛⠉⠙⣿⣿⣿⣿

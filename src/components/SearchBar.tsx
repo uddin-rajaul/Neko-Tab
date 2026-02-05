@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search, Command } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 interface SearchBarProps {
   onSearch: (query: string, engine: string) => void
@@ -22,7 +22,13 @@ export function SearchBar({ onSearch }: SearchBarProps) {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'i') {
+      // Handle both Ctrl+I and Cmd+K (or Ctrl+K)
+      if ((e.ctrlKey && e.key === 'i') || ((e.metaKey || e.ctrlKey) && e.key === 'k')) {
+        e.preventDefault()
+        inputRef.current?.focus()
+      }
+      // Also focus on '/' key press
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
         e.preventDefault()
         inputRef.current?.focus()
       }
@@ -49,13 +55,12 @@ export function SearchBar({ onSearch }: SearchBarProps) {
           ref={inputRef}
           type="text"
           className="search-input"
-          placeholder="Press 'Ctrl + i' to search"
+          placeholder="Press '/' to search..."
           value={query}
           onChange={e => setQuery(e.target.value)}
         />
         <div className="search-shortcut">
-          <Command size={14} />
-          <span>I</span>
+          <span>CMD + K</span>
         </div>
       </form>
     </div>

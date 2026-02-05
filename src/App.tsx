@@ -54,23 +54,26 @@ function App() {
         onAddCategory={addCategory}
       />
       
-      <div className="main-container">
-        <div className="left-column">
+      {/* Center Section - Clock and Search */}
+      <div className="center-section">
+        {settings.showClock && (
+          <Clock 
+            userName={settings.userName} 
+            showGreeting={settings.showGreeting}
+            format={settings.clockFormat}
+          />
+        )}
+        
+        <SearchBar onSearch={handleSearch} />
+      </div>
+
+      {/* Content Section - ASCII Art and Quick Links side by side */}
+      <div className="content-section">
+        <div className="ascii-column">
           <PixelArt asciiArt={settings.asciiArt} />
         </div>
         
-        <div className="right-column">
-          <div className="top-row">
-            <SearchBar onSearch={handleSearch} />
-            {settings.showClock && (
-              <Clock 
-                userName={settings.userName} 
-                showGreeting={settings.showGreeting}
-                format={settings.clockFormat}
-              />
-            )}
-          </div>
-          
+        <div className="links-column">
           <Bookmarks
             categories={categories}
             onAddCategory={addCategory}
@@ -82,7 +85,8 @@ function App() {
           />
         </div>
       </div>
-      <ActivityWidget />
+      
+      {settings.showStatusBar && <ActivityWidget />}
       <FocusMode />
     </div>
   )
