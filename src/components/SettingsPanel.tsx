@@ -266,6 +266,30 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                       />
                     </label>
                   </div>
+                  
+                  <label className='section-label' style={{ marginTop: '12px' }}>CLOCK FORMAT</label>
+                  <div className='clock-format-selector'>
+                    <label className={`format-option ${localSettings.clockFormat === '12h' ? 'active' : ''}`}>
+                      <input
+                        type='radio'
+                        name='clockFormat'
+                        value='12h'
+                        checked={localSettings.clockFormat === '12h'}
+                        onChange={() => handleChange('clockFormat', '12h')}
+                      />
+                      <span>12 Hour</span>
+                    </label>
+                    <label className={`format-option ${localSettings.clockFormat === '24h' ? 'active' : ''}`}>
+                      <input
+                        type='radio'
+                        name='clockFormat'
+                        value='24h'
+                        checked={localSettings.clockFormat === '24h'}
+                        onChange={() => handleChange('clockFormat', '24h')}
+                      />
+                      <span>24 Hour</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 

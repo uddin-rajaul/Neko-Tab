@@ -1916,6 +1916,259 @@ input[type="checkbox"]:checked::after {
   to { opacity: 1; }
 }
 
+/* Focus Mode Block Section */
+.focus-block-section {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.focus-block-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-block-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.focus-block-toggle .blocked-count {
+  background: var(--accent, #3dd2cc);
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+.focus-block-list {
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  animation: fadeIn 0.2s ease;
+}
+
+.focus-block-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.focus-sites-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.focus-site-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-site-checkbox:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.focus-site-checkbox.checked {
+  background: rgba(61, 210, 204, 0.1);
+  border-color: rgba(61, 210, 204, 0.3);
+}
+
+.focus-site-checkbox input {
+  display: none;
+}
+
+.focus-site-checkbox .site-name {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.focus-site-checkbox.checked .site-name {
+  color: #3dd2cc;
+}
+
+.focus-site-checkbox::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.focus-site-checkbox.checked::before {
+  background: #3dd2cc;
+  border-color: #3dd2cc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Custom Sites Section */
+.custom-sites-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.custom-sites-label {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.custom-site-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.custom-site-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.custom-site-input:focus {
+  border-color: rgba(61, 210, 204, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.custom-site-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-site-add-btn {
+  padding: 10px 14px;
+  background: rgba(61, 210, 204, 0.2);
+  border: 1px solid rgba(61, 210, 204, 0.3);
+  border-radius: 6px;
+  color: #3dd2cc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-site-add-btn:hover:not(:disabled) {
+  background: rgba(61, 210, 204, 0.3);
+}
+
+.custom-site-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.custom-sites-list {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.custom-site-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(61, 210, 204, 0.1);
+  border: 1px solid rgba(61, 210, 204, 0.2);
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.custom-site-domain {
+  color: #3dd2cc;
+}
+
+.custom-site-remove-btn {
+  padding: 2px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.custom-site-remove-btn:hover {
+  color: #ff6b6b;
+}
+
+/* Clock Format Selector in Settings */
+.clock-format-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.format-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.format-option:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.format-option.active {
+  background: rgba(61, 210, 204, 0.1);
+  border-color: rgba(61, 210, 204, 0.3);
+  color: #3dd2cc;
+}
+
+.format-option input {
+  display: none;
+}
+
 /* Light Mode Overrides */
 .app.light .settings-toggle,
 .app.light .focus-toggle-btn {

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Waifu New Tab",
+  "name": "Neko Tab",
   "version": "1.0.0",
   "description": "Custom Terminal-style New Tab Page",
   "chrome_url_overrides": {
@@ -11,5 +11,21 @@
     "48": "favicon.svg",
     "128": "favicon.svg"
   },
-  "permissions": ["topSites"]
+  "permissions": [
+    "topSites",
+    "storage",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

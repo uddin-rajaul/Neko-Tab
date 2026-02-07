@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Mode Active</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      color: #e0e0e0;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      color: #3dd2cc;
+      text-shadow: 0 0 20px rgba(61, 210, 204, 0.3);
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #a0a0a0;
+      margin-bottom: 24px;
+    }
+
+    .message {
+      background: rgba(61, 210, 204, 0.1);
+      border: 1px solid rgba(61, 210, 204, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+
+    .message p {
+      margin: 0;
+      color: #3dd2cc;
+      font-size: 0.9rem;
+    }
+
+    .tips {
+      margin-top: 32px;
+      text-align: left;
+    }
+
+    .tips h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .tips ul {
+      list-style: none;
+    }
+
+    .tips li {
+      padding: 8px 0;
+      color: #666;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tips li:last-child {
+      border-bottom: none;
+    }
+
+    .tips li::before {
+      content: '→ ';
+      color: #3dd2cc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🎯</div>
+    <h1>Focus Mode Active</h1>
+    <p>This site is blocked during your focus session to help you stay productive.</p>
+    
+    <div class="message">
+      <p>Stay focused! You're doing great. 💪</p>
+    </div>
+
+    <div class="tips">
+      <h3>Quick Tips</h3>
+      <ul>
+        <li>Take a deep breath and refocus on your task</li>
+        <li>Remember why you started this focus session</li>
+        <li>Small progress is still progress</li>
+        <li>The timer will end soon - stay strong!</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

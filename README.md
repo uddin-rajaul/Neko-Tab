@@ -1,83 +1,98 @@
-# Terminal Startpage
+# Neko-Tab
 
-A minimalist, terminal-style new tab page for your browser. Built with React, TypeScript, and Vite. Designed to help you stay focused and organized.
+A minimalist, highly customizable terminal-style new tab page for your browser. Built with React, TypeScript, and Vite. Designed for aesthetics, focus, and productivity.
 
 ![Preview](screenshots/image.png)
 
-## Features
+## ✨ Features
 
-### Customization & Aesthetics
+### 🎨 Extensive Theming
 
-- **Terminal Aesthetic**: Clean, distraction-free interface with both Dark and Light themes.
-- **ASCII Art**:
-  - Default retro-style art.
-  - Upload images to convert them to ASCII automatically.
-  - Custom text support.
+Choose from over 20+ professionally crafted themes:
 
-### Productivity Tools
+- **Color Themes**: Carbon, Paper, Nord, Solarized, Matrix, Dracula, Monokai, Gruvbox, Tokyo Night, Catppuccin, One Dark, Rosé Pine, Everforest.
+- **Animated Themes**: Cyberpunk (neon glow), Aurora (shifting gradients), Synthwave, Vaporwave.
+- **Special Effects**: Retro CRT (scanlines), Sunset, Ocean, Midnight.
 
-- **Focus Mode**: A built-in Pomodoro-style timer (`Ctrl + F`) to block distractions, with **Session End Notifications**.
-- **Activity Widget**: Tracks your daily session time and **Focus streaks** (consecutive days of completed focus sessions).
-- **Smart Search**:
-  - Quick access with `Ctrl + I`.
-  - Minimalist search bar.
+### 🖥️ Modern Terminal UI
 
-### Bookmarks & Navigation
+- **Centered Command Center**: Prominent clock and search bar for quick access.
+- **Side-by-Side Layout**: ASCII art display matched with your organized bookmarks.
+- **Smart Status Bar**: Real-time monitoring of:
+  - Memory Usage (Heap size)
+  - Network Connectivity Status
+- **ASCII Art**: Customizable retro visuals.
 
-- **Quick Links**: Automatically displays your most frequently visited sites (requires permission).
-- **Categorized Bookmarks**:
-  - Organize links into clean columns.
-  - Limit of 4 links per category to prevent clutter.
-  - Easy "Edit Mode" to manage links and categories.
+### 🚀 Productivity Tools
 
-## Installation
+- **Focus Mode**: Built-in Pomodoro-style timer (25 minutes) with:
+  - Timer persistence across new tabs — resume where you left off
+  - **Website blocking** — block distracting sites while the timer runs
+  - Preset sites: Facebook, Instagram, TikTok, Twitter/X, LinkedIn, Reddit, YouTube, Netflix, Twitch
+  - **Custom site blocking** — add any domain you want to block
+  - Sites automatically unblock when timer is paused, reset, or completed
+  - Desktop notifications when session completes
+- **Quick Links**:
+  - Fully customizable bookmark categories.
+  - "Edit Mode" for easy management of links.
+- **Keyboard Shortcuts**:
+  - `CMD + K` / `CTRL + K` to focus search.
+  - `CTRL + F` to toggle Focus Mode.
+  - `ESC` to exit Focus Mode.
+
+## 🛠️ Installation & Development
 
 ### Prerequisites
 
-- Node.js installed on your machine.
+- Node.js (v18 or higher recommended)
+- npm or yarn
 
 ### Steps
 
-1.  **Clone the repository**
+1. **Clone the repository**
 
-    ```bash
-    git clone https://github.com/yourusername/terminal-startpage.git
-    cd terminal-startpage
-    ```
+   ```bash
+   git clone <repository-url>
+   cd Neko-Tab
+   ```
 
-2.  **Install dependencies**
+2. **Install dependencies**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
-3.  **Build the project**
+3. **Run Development Server**
 
-    ```bash
-    npm run build
-    ```
+   ```bash
+   npm run dev
+   ```
 
-4.  **Load into Browser (Chrome/Brave/Edge)**
-    - Open your browser's Extensions page (`chrome://extensions`).
-    - Enable **Developer mode** (toggle in the top right).
-    - Click **Load unpacked**.
-    - Select the `dist` folder generated in the project directory.
+4. **Build for Production**
 
-## Usage Shortcuts
+   ```bash
+   npm run build
+   ```
 
-| Action                | Shortcut              |
-| --------------------- | --------------------- |
-| **Focus Search**      | `Ctrl + I`            |
-| **Toggle Focus Mode** | `Ctrl + F`            |
-| **Edit Bookmarks**    | Click the Pencil icon |
-| **Settings**          | Click the Gear icon   |
+## 📝 Configuration
 
-## Technologies Used
+Click the **Settings (Gear)** icon in the top-left or use the integrated settings panel to:
 
-- [React 19](https://react.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- [Lucide React](https://lucide.dev/) (Icons)
+- Change Themes (Live Preview available).
+- Update User Name.
+- Toggle Status Bar.
+- **Clock Format**: Switch between 12-hour and 24-hour display.
+- Manage Greetings visibility.
+- Upload custom images for ASCII conversion.
+
+## 🔒 Permissions
+
+The extension requires the following permissions:
+
+- `topSites` — Display frequently visited sites
+- `storage` — Persist settings and focus mode state
+- `declarativeNetRequest` — Block distracting websites during focus sessions
+- `host_permissions: <all_urls>` — Required for website blocking to work on any site
 
 ## License
 
