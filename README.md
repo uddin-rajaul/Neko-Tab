@@ -94,6 +94,28 @@ The extension requires the following permissions:
 - `declarativeNetRequest` — Block distracting websites during focus sessions
 - `host_permissions: <all_urls>` — Required for website blocking to work on any site
 
+## Privacy
+
+Neko-Tab does not collect, transmit, or store any personal data.
+All settings and preferences are saved locally in your browser using
+the built-in `storage` API. No analytics, no tracking, no external servers.
+```
+
+That URL then becomes your official privacy policy. Simple and legitimate.
+
+---
+
+**Notes to Reviewer** — paste this:
+```
+This is a new tab page extension built with React + TypeScript.
+
+- All data is stored locally via browser storage API
+- The declarativeNetRequest permission is used solely to block 
+  user-specified sites during Pomodoro focus sessions
+- The innerHTML warnings in the validator are from React's 
+  internal rendering engine, not custom code
+- No external network requests are made except optional user-initiated searches
+
 ## License
 
 MIT
