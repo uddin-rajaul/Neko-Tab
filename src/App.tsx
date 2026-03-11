@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useBookmarks, useSettings } from './hooks/useLocalStorage'
+import { useBookmarks, useSettings, useLocalStorage } from './hooks/useLocalStorage'
 import { Bookmarks } from './components/Bookmarks'
 import { SearchBar } from './components/SearchBar'
 import { Clock } from './components/Clock'
@@ -7,9 +7,40 @@ import { PixelArt } from './components/PixelArt'
 import { SettingsPanel } from './components/SettingsPanel'
 import { ActivityWidget } from './components/ActivityWidget'
 import { FocusMode } from './components/FocusMode'
+import { DailyGoal } from './components/DailyGoal'
+import { Scratchpad } from './components/Scratchpad'
+import { CommandPalette } from './components/CommandPalette'
+import { ShortcutHelp } from './components/ShortcutHelp'
+
+function CustomBackground() {
+  const [settings] = useSettings()
+  const [bgImage] = useLocalStorage<string>('neko-bg-image', '')
+
+  if (!bgImage) return null
+
+  return (
+    <>
+      {/* The actual image layer */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: -2,
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: settings.bgBlur > 0 ? `blur(${settings.bgBlur * 2}px)` : undefined,
+        transform: settings.bgBlur > 0 ? 'scale(1.08)' : undefined,
+      }} />
+      {/* Dim overlay on top of image */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: -1,
+        background: `rgba(0,0,0,${(settings.bgDim ?? 40) / 100})`,
+      }} />
+    </>
+  )
+}
 
 function App() {
   const [settings, setSettings] = useSettings()
+  const [bgImage] = useLocalStorage<string>('neko-bg-image', '')
   const {
     categories,
     addCategory,
@@ -20,75 +51,80 @@ function App() {
     editBookmark,
   } = useBookmarks()
 
-  const handleSearch = () => {
-  }
+  const handleSearch = () => {}
 
   const appRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Attempt to steal focus from the address bar
     const stealFocus = () => {
       window.focus()
       if (document.activeElement === document.body) {
         appRef.current?.focus()
       }
     }
-
-    // Try immediately and after a short delay
     stealFocus()
     const timer = setTimeout(stealFocus, 50)
-    
     return () => clearTimeout(timer)
   }, [])
 
   return (
-    <div 
-      ref={appRef} 
-      className={`app ${settings.theme}`} 
-      tabIndex={-1} 
-      style={{ outline: 'none' }}
-    >
-      <SettingsPanel 
-        settings={settings} 
-        onSettingsChange={setSettings} 
-        onAddCategory={addCategory}
-      />
-      
-      {/* Center Section - Clock and Search */}
-      <div className="center-section">
-        {settings.showClock && (
-          <Clock 
-            userName={settings.userName} 
-            showGreeting={settings.showGreeting}
-            format={settings.clockFormat}
-          />
-        )}
-        
-        <SearchBar onSearch={handleSearch} />
-      </div>
+    <>
+      {/* Background rendered outside .app so it's never clipped by the theme bg-color */}
+      <CustomBackground />
 
-      {/* Content Section - ASCII Art and Quick Links side by side */}
-      <div className="content-section">
-        <div className="ascii-column">
-          <PixelArt asciiArt={settings.asciiArt} />
+      <div
+        ref={appRef}
+        className={`app ${settings.theme}${bgImage ? ' has-bg' : ''}`}
+        tabIndex={-1}
+        style={{
+          outline: 'none',
+          ...(bgImage ? { backgroundColor: 'transparent', background: 'none' } : {}),
+        }}
+      >
+        <SettingsPanel
+          settings={settings}
+          onSettingsChange={setSettings}
+          onAddCategory={addCategory}
+        />
+        <Scratchpad />
+        <CommandPalette />
+        <ShortcutHelp />
+
+        {/* Center Section */}
+        <div className="center-section">
+          {settings.showClock && (
+            <Clock
+              userName={settings.userName}
+              showGreeting={settings.showGreeting}
+              format={settings.clockFormat}
+            />
+          )}
+          {settings.showDailyGoal && <DailyGoal />}
+          <SearchBar onSearch={handleSearch} />
         </div>
-        
-        <div className="links-column">
-          <Bookmarks
-            categories={categories}
-            onAddCategory={addCategory}
-            onDeleteCategory={deleteCategory}
-            onRenameCategory={renameCategory}
-            onAddBookmark={addBookmark}
-            onDeleteBookmark={deleteBookmark}
-            onEditBookmark={editBookmark}
-          />
+
+        {/* Content Section */}
+        <div className="content-section">
+          <div className="ascii-column">
+            <PixelArt asciiArt={settings.asciiArt} />
+          </div>
+          <div className="links-column">
+            <Bookmarks
+              categories={categories}
+              onAddCategory={addCategory}
+              onDeleteCategory={deleteCategory}
+              onRenameCategory={renameCategory}
+              onAddBookmark={addBookmark}
+              onDeleteBookmark={deleteBookmark}
+              onEditBookmark={editBookmark}
+            />
+          </div>
         </div>
+
+        {settings.showStatusBar && <ActivityWidget />}
+        <FocusMode />
       </div>
-      
-      {settings.showStatusBar && <ActivityWidget />}
-      <FocusMode />
-    </div>
+    </>
   )
 }
 

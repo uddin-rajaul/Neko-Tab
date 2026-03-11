@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal } from 'lucide-react'
-import type { Settings as SettingsType, ThemeInfo } from '../types'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2 } from 'lucide-react'
+import type { Settings as SettingsType, ThemeInfo, UrlAlias } from '../types'
 import { convertImageToAscii } from '../utils/imageToAscii'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 
 const THEMES: ThemeInfo[] = [
   // Simple Color Themes
@@ -36,7 +37,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii';
+type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -45,6 +46,10 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [newCategoryName, setNewCategoryName] = useState('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isInverted, setIsInverted] = useState(false)
+  const [bgImage, setBgImage] = useLocalStorage<string>('neko-bg-image', '')
+  const [aliases, setAliases] = useLocalStorage<UrlAlias[]>('neko-aliases', [])
+  const [aliasKey, setAliasKey] = useState('')
+  const [aliasUrl, setAliasUrl] = useState('')
 
   // Sync local settings when panel opens or settings change externally
   useEffect(() => {
@@ -64,8 +69,14 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     }
   }, [isInverted, uploadedFile])
 
+  // Background settings write-through immediately so preview is live
+  const BG_LIVE_KEYS = new Set<keyof SettingsType>(['bgDim', 'bgBlur'])
+
   const handleChange = <K extends keyof SettingsType>(key: K, value: SettingsType[K]) => {
     setLocalSettings(prev => ({ ...prev, [key]: value }))
+    if (BG_LIVE_KEYS.has(key)) {
+      onSettingsChange({ ...localSettings, [key]: value })
+    }
   }
 
   const handleSave = () => {
@@ -137,6 +148,18 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 >
                   <Terminal size={16} /> ASCII Art
                 </button>
+                <button 
+                  className={`saas-nav-item ${activeTab === 'widgets' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('widgets')}
+                >
+                  <LayoutGrid size={16} /> Widgets
+                </button>
+                <button
+                  className={`saas-nav-item ${activeTab === 'aliases' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('aliases')}
+                >
+                  <Hash size={16} /> Aliases
+                </button>
               </nav>
             </div>
 
@@ -147,6 +170,8 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'appearance' && 'Theme & Appearance'}
                   {activeTab === 'preferences' && 'System Preferences'}
                   {activeTab === 'ascii' && 'Custom ASCII Art'}
+                  {activeTab === 'widgets' && 'Widgets & Background'}
+                  {activeTab === 'aliases' && 'URL Aliases'}
                 </h3>
                 <button className='saas-close-btn' onClick={() => setIsOpen(false)}>
                   <X size={18} />
@@ -350,9 +375,118 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Action Footer */}
+                {/* WIDGETS TAB */}
+                {activeTab === 'widgets' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <label className='saas-label'>Custom Background</label>
+                      <label className='saas-upload-area'>
+                        <Upload size={24} className="saas-upload-icon" />
+                        <span className="saas-upload-text">
+                          {bgImage ? 'Click to change background' : 'Click to upload background image'}
+                        </span>
+                        <input
+                          type='file' accept='image/*' className='saas-hidden-file'
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = ev => setBgImage(ev.target?.result as string ?? '')
+                            reader.readAsDataURL(file)
+                          }}
+                        />
+                      </label>
+                      {bgImage && (
+                        <button className='saas-btn-secondary' style={{ marginTop: 8, fontSize: 12 }} onClick={() => setBgImage('')}>
+                          Remove background
+                        </button>
+                      )}
+                      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div>
+                          <label className='saas-label' style={{ marginBottom: 6 }}>Dim overlay — {localSettings.bgDim ?? 40}%</label>
+                          <input type='range' min={0} max={90} step={5}
+                            value={localSettings.bgDim ?? 40}
+                            onChange={e => handleChange('bgDim', Number(e.target.value))}
+                            className='saas-range' />
+                        </div>
+                        <div>
+                          <label className='saas-label' style={{ marginBottom: 6 }}>Background blur — {localSettings.bgBlur ?? 0}px</label>
+                          <input type='range' min={0} max={10} step={1}
+                            value={localSettings.bgBlur ?? 0}
+                            onChange={e => handleChange('bgBlur', Number(e.target.value))}
+                            className='saas-range' />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Daily Goal</label>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Show daily goal', localSettings.showDailyGoal ?? true, val => handleChange('showDailyGoal', val))}
+                      </div>
+                      <p className='saas-hint'>A single focus line below the clock. Resets at midnight.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>GitHub Streak</label>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Show in status bar', localSettings.showGitHubStreak ?? false, val => handleChange('showGitHubStreak', val))}
+                      </div>
+                      <input type='text'
+                        value={localSettings.githubUsername ?? ''}
+                        onChange={e => handleChange('githubUsername', e.target.value)}
+                        placeholder='GitHub username' className='saas-input' style={{ marginTop: 12 }} />
+                      <p className='saas-hint'>Uses the public contributions API. No auth needed.</p>
+                    </div>
+                  </div>
+                )}
+                {/* ALIASES TAB */}
+                {activeTab === 'aliases' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <label className='saas-label'>Add Alias</label>
+                      <div className='saas-flex-row' style={{ gap: 8 }}>
+                        <input type='text' className='saas-input alias-key-input'
+                          value={aliasKey} onChange={e => setAliasKey(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                          placeholder='key  e.g. gh' maxLength={20} />
+                        <input type='text' className='saas-input'
+                          value={aliasUrl} onChange={e => setAliasUrl(e.target.value)}
+                          placeholder='url  e.g. https://github.com/raj'
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && aliasKey && aliasUrl) {
+                              setAliases(prev => [...prev.filter(a => a.key !== aliasKey), { key: aliasKey, url: aliasUrl }])
+                              setAliasKey(''); setAliasUrl('')
+                            }
+                          }} />
+                        <button className='saas-btn-icon' onClick={() => {
+                          if (!aliasKey || !aliasUrl) return
+                          setAliases(prev => [...prev.filter(a => a.key !== aliasKey), { key: aliasKey, url: aliasUrl }])
+                          setAliasKey(''); setAliasUrl('')
+                        }}><Plus size={18} /></button>
+                      </div>
+                      <p className='saas-hint'>Type the key in the search bar (Ctrl+K) to jump instantly. Also works as a shell alias in the search bar.</p>
+                    </div>
+                    {aliases.length > 0 && (
+                      <div className='saas-card'>
+                        <label className='saas-label'>Saved Aliases</label>
+                        <div className='alias-list'>
+                          {aliases.map(a => (
+                            <div key={a.key} className='alias-row'>
+                              <span className='alias-key'>{a.key}</span>
+                              <span className='alias-arrow'>→</span>
+                              <span className='alias-url'>{a.url}</span>
+                              <button className='alias-delete' onClick={() => setAliases(prev => prev.filter(x => x.key !== a.key))}>
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className='saas-footer'>
                 <button className='saas-btn-secondary' onClick={() => setIsOpen(false)}>
                   Cancel
