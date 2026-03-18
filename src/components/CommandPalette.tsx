@@ -46,6 +46,12 @@ export function CommandPalette() {
   const [aliases] = useLocalStorage<UrlAlias[]>('neko-aliases', [])
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Mirror theme class onto the portaled panel so CSS vars resolve correctly
+  const appEl = document.querySelector<HTMLElement>('.app')
+  const themeClass = appEl
+    ? Array.from(appEl.classList).filter(c => c !== 'app' && c !== 'has-bg').join(' ')
+    : ''
+
   // Open/close
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -149,7 +155,7 @@ export function CommandPalette() {
       {/* Palette overlay — portaled to body so it escapes any layout constraints */}
       {isOpen && createPortal(
         <div className="cp-overlay" onClick={() => setIsOpen(false)}>
-          <div className="cp-panel" onClick={e => e.stopPropagation()}>
+          <div className={`cp-panel app ${themeClass}`} onClick={e => e.stopPropagation()}>
             <div className="cp-input-row">
               <Search size={14} className="cp-search-icon" />
               <input

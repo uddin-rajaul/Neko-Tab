@@ -3151,6 +3151,14 @@ input[type="checkbox"]:checked::after {
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0,0,0,0.35);
   animation: slideIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Reset .app layout overrides */
+  min-height: unset !important;
+  display: block !important;
+  flex-direction: unset !important;
+  align-items: unset !important;
+  justify-content: unset !important;
+  padding: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .cp-input-row {
