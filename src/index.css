@@ -3485,17 +3485,17 @@ input[type="checkbox"]:checked::after {
   width: 100%;
   max-width: 520px;
   padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   border: 1px solid var(--border, #353A3E);
   border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s;
   user-select: none;
+  white-space: nowrap;
 }
 
 .cp-trigger:hover {
   border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .cp-trigger-icon {
@@ -3510,6 +3510,9 @@ input[type="checkbox"]:checked::after {
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-secondary);
   opacity: 0.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .cp-trigger-hint {
@@ -3589,8 +3592,7 @@ input[type="checkbox"]:checked::after {
 
 /* glass mode — trigger bar */
 .has-bg .cp-trigger {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
+  background: transparent;
   border-color: rgba(255,255,255,0.12);
 }
 
