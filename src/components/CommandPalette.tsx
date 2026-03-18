@@ -47,10 +47,12 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Mirror theme class onto the portaled panel so CSS vars resolve correctly
-  const appEl = document.querySelector<HTMLElement>('.app')
-  const themeClass = appEl
-    ? Array.from(appEl.classList).filter(c => c !== 'app' && c !== 'has-bg').join(' ')
-    : ''
+  const themeClass = useMemo(() => {
+    const appEl = document.querySelector<HTMLElement>('.app')
+    return appEl
+      ? Array.from(appEl.classList).filter(c => c !== 'app' && c !== 'has-bg').join(' ')
+      : 'carbon'
+  }, [isOpen])
 
   // Open/close
   useEffect(() => {
