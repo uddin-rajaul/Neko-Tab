@@ -80,6 +80,13 @@ Press `?` anywhere to show the full shortcut cheatsheet.
 
 ## Installation
 
+### Pre-built package
+
+1. Enable Developer mode in Chrome's extensions page.
+2. Download the [latest release](https://github.com/uddin-rajaul/Neko-Tab/releases/latest).
+2. Drag-and-drop the zip file in the Chrome's extensions page.
+
+
 ### Development
 
 ```bash
