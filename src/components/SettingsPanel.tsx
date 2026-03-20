@@ -294,41 +294,43 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     <div className='saas-section-group'>
                       <label className='saas-section-label'>FONT FAMILY</label>
                       <div className='saas-theme-grid'>
-                        {FONTS.map(font => {
-                          const isFontActive = localSettings.font === font.family;
+                        {(() => {
                           const currentTheme = THEMES.find(t => t.id === localSettings.theme) || THEMES[0];
-                          
-                          return (
-                            <div 
-                              key={font.id}
-                              className={`saas-theme-card ${isFontActive ? 'active' : ''}`}
-                              onClick={() => handleChange('font', font.family)}
-                            >
+                          return FONTS.map(font => {
+                            const isFontActive = localSettings.font === font.family;
+                            
+                            return (
                               <div 
-                                className='theme-preview'
-                                style={{ 
-                                  backgroundColor: currentTheme.bgColor,
-                                  borderColor: isFontActive ? currentTheme.accentColor : 'rgba(255,255,255,0.05)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontFamily: `'${font.family}', monospace`,
-                                  fontSize: '20px',
-                                  color: currentTheme.textColor,
-                                  overflow: 'hidden'
-                                }}
+                                key={font.id}
+                                className={`saas-theme-card ${isFontActive ? 'active' : ''}`}
+                                onClick={() => handleChange('font', font.family)}
                               >
-                                <div style={{ opacity: 0.9 }}>Abc</div>
-                                {isFontActive && (
-                                  <div className='theme-check' style={{ backgroundColor: currentTheme.accentColor }}>
-                                    <Check size={12} strokeWidth={3} />
-                                  </div>
-                                )}
+                                <div 
+                                  className='theme-preview'
+                                  style={{ 
+                                    backgroundColor: currentTheme.bgColor,
+                                    borderColor: isFontActive ? currentTheme.accentColor : 'rgba(255,255,255,0.05)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontFamily: `'${font.family}', monospace`,
+                                    fontSize: '20px',
+                                    color: currentTheme.textColor,
+                                    overflow: 'hidden'
+                                  }}
+                                >
+                                  <div style={{ opacity: 0.9 }}>Abc</div>
+                                  {isFontActive && (
+                                    <div className='theme-check' style={{ backgroundColor: currentTheme.accentColor }}>
+                                      <Check size={12} strokeWidth={3} />
+                                    </div>
+                                  )}
+                                </div>
+                                <span className='theme-name'>{font.name}</span>
                               </div>
-                              <span className='theme-name'>{font.name}</span>
-                            </div>
-                          );
-                        })}
+                            );
+                          });
+                        })()}
                       </div>
                     </div>
                   </div>

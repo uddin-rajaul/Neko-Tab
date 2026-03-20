@@ -1,4 +1,4 @@
-import { useEffect, useRef, CSSProperties } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { useBookmarks, useSettings, useLocalStorage } from './hooks/useLocalStorage'
 import { Bookmarks } from './components/Bookmarks'
 import { Clock } from './components/Clock'
