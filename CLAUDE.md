@@ -1,6 +1,33 @@
 ## Core Principles
 When working with this codebase, prioritize readability over cleverness. Ask clarifying questions before making architectural changes.
 
+## Branch & PR Workflow
+
+**Always work in a feature branch. Never commit directly to `main`.**
+
+```bash
+git checkout main && git pull origin main
+git checkout -b <type>/<short-description>
+# do the work
+git push origin <branch-name>
+# open PR on GitHub — review and merge is up to Raj
+```
+
+Branch naming:
+- `feat/` — new feature
+- `fix/` — bug fix
+- `chore/` — cleanup, refactoring, non-functional changes
+- `docs/` — documentation only
+
+**CLAUDE.md is the only file that can be updated directly on `main`.**
+
+PR descriptions should clearly state:
+- What changed and why
+- Any side effects or things to watch out for
+- If it closes an issue, mention it (`Closes #N`)
+
+---
+
 ## 1. Think Before Coding
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
@@ -28,11 +55,11 @@ When editing existing code:
 - Don't "improve" adjacent code, comments, or formatting
 - Don't refactor things that aren't broken
 - Match existing style, even if you'd do it differently
-- If you notice unrelated dead code, mention it - don't delete it
+- If you notice unrelated dead code, mention it — don't delete it without asking
 
 When your changes create orphans:
 - Remove imports/variables/functions that YOUR changes made unused
-- Don't remove pre-existing dead code unless asked
+- Don't remove pre-existing dead code unless explicitly asked
 
 The test: Every changed line should trace directly to the user's request.
 
@@ -51,22 +78,15 @@ For multi-step tasks, state a brief plan:
 3. [Step] → verify: [check]
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
 ## Workflow Patterns
 
-### Research → Plan → Code → Commit
+### Research → Plan → Code → Commit → PR
 1. **Research**: Read relevant files, understand context
-2. **Plan**: State approach, get confirmation before coding
-3. **Code**: Implement with tests
-4. **Commit**: Clear commit messages describing the change
-
-### Test-Driven Development
-1. Write tests that demonstrate the desired behavior
-2. Confirm tests fail
-3. Implement solution
-4. Confirm tests pass
-5. Refactor if needed
+2. **Plan**: State approach before coding
+3. **Code**: Implement on a feature branch
+4. **Build**: Run `./node_modules/.bin/vite build` to verify no errors
+5. **Commit**: Clear commit messages describing the change
+6. **PR**: Push branch and open a PR — Raj reviews and merges
 
 ## Code Standards
 
@@ -76,11 +96,37 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Keep functions small and focused on single responsibility
 - Prefer composition over inheritance
 - Follow existing patterns in the codebase
+- Always run a build before pushing — zero TypeScript errors required
 
-## Success Indicators
+## Project Structure
 
-These guidelines are working if:
-- Fewer unnecessary changes in diffs
-- Fewer rewrites due to overcomplication  
-- Clarifying questions come before implementation rather than after mistakes
-- Code reviews focus on logic rather than style or unnecessary changes
+```
+src/
+  components/   # React components, one per file
+  hooks/        # useLocalStorage, useSettings, useBookmarks, useTime
+  utils/        # imageToAscii
+  types.ts      # Shared TypeScript interfaces
+  index.css     # All styles (theme vars, components, layout)
+  App.tsx       # Root layout
+public/
+  manifest.json # Chrome Extension MV3
+  background.js # Service worker
+screenshots/    # Only image.png and terminal.png are used in README
+```
+
+## localStorage Keys
+
+| Key | Contents |
+|---|---|
+| `startpage-settings` | Main Settings object |
+| `neko-bookmarks` | BookmarkCategory[] |
+| `neko-bg-image` | base64 background image |
+| `neko-scratchpad` | notes text |
+| `neko-checklist` | CheckItem[] |
+| `neko-journal` | Record<YYYY-MM-DD, string> |
+| `neko-daily-goal` | { text, date } |
+| `neko-aliases` | UrlAlias[] |
+| `neko-recent` | RecentItem[] (last 10 launches) |
+| `neko-timer-start` | timestamp or null |
+| `neko-font` | selected font family string |
+| `neko-gh-streak-{user}` | cached GitHub streak data |
