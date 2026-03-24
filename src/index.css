@@ -775,15 +775,15 @@ input, button, textarea, select {
 /* Categories Grid - horizontal layout */
 .categories-grid {
   display: flex;
-  gap: 32px;
-  flex-wrap: nowrap;
+  gap: 24px 32px;
+  flex-wrap: wrap;
   justify-content: flex-start;
-  overflow-x: auto;
+  align-items: flex-start;
 }
 
 .category-column {
-  min-width: 100px;
-  flex-shrink: 0;
+  min-width: 110px;
+  flex: 0 0 auto;
 }
 
 .add-category-column {
@@ -1667,14 +1667,13 @@ input[type="checkbox"]:checked::after {
   }
 
   .categories-grid {
-    gap: var(--spacing-lg);
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    gap: 20px 24px;
+    flex-wrap: wrap;
   }
 
   .category-column {
     min-width: 100px;
-    flex-shrink: 0;
+    flex: 0 0 auto;
   }
   
   .clock-container {
@@ -1689,13 +1688,8 @@ input[type="checkbox"]:checked::after {
   }
 
   .category-column {
-    min-width: 100px;
-    flex-shrink: 0;
-  }
-
-  .add-category-column {
-    min-width: 100%;
-    justify-content: flex-start;
+    min-width: 90px;
+    flex: 0 0 auto;
   }
 }
 
