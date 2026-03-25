@@ -3,7 +3,7 @@
 A minimalist, terminal-style new tab page for your browser. Built with React, TypeScript, and Vite.
 Designed around keyboard-first navigation, a command palette, and a clean aesthetic with zero clutter.
 
-![Preview](screenshots/image.png)
+![Demo](screenshots/demo.gif)
 
 ---
 
@@ -57,14 +57,22 @@ Persists across tab reloads — closing a tab mid-session doesn't lose your time
 
 A single focus line between the clock and command palette. Click to edit, resets at midnight.
 
+### Bookmarks
+
+A two-column quick-links panel below the command palette. Fully editable without leaving the tab:
+
+- Add/delete/rename categories
+- Add, edit, and delete individual links per category
+- All data stored locally — no sync, no account
+
 ### Focus Mode
 
-Pomodoro-style 25-minute timer with website blocking:
+`Ctrl+F` or the crosshair icon (top-right) to open. Pomodoro-style 25-minute timer with website blocking:
 
-- Preset distractions: Facebook, Instagram, TikTok, Twitter/X, Reddit, YouTube, Netflix, Twitch
+- Preset distractions: Facebook, Instagram, TikTok, Twitter, X.com, LinkedIn, Reddit, YouTube, Netflix, Twitch
 - Add custom domains to block
 - Sites unblock automatically when timer ends or is reset
-- Desktop notification on completion
+- Desktop notification + sound on completion
 
 ### Status Bar
 
@@ -82,10 +90,14 @@ Press `?` anywhere to show the full shortcut cheatsheet.
 | `Ctrl+K` or `/` | Open command palette |
 | `Ctrl+\`` | Toggle scratchpad |
 | `Ctrl+Shift+T` | Start / stop work timer |
+| `Ctrl+F` | Open / close Focus Mode |
 | `?` | Show shortcut help |
 | `Escape` | Close any open panel |
 | `↑ / ↓` | Navigate palette results |
 | `Enter` | Open selected result |
+| `Enter / Escape` | Confirm / cancel daily goal edit |
+| `Enter` | New checklist item (scratchpad) |
+| `Backspace` | Delete empty checklist item |
 
 ---
 
@@ -120,7 +132,7 @@ Then in Chrome/Edge: **Extensions → Load unpacked → select the `dist/` folde
 
 ## Settings
 
-Open the gear icon (top-left) to access:
+Open the gear icon (top-right) to access:
 
 - **Appearance** — theme picker with live preview, font chooser
 - **Preferences** — name, clock format, display toggles
