@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2 } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias } from '../types'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -52,7 +52,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases';
+type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'backup';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -175,6 +175,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 >
                   <Hash size={16} /> Aliases
                 </button>
+                <button
+                  className={`saas-nav-item ${activeTab === 'backup' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('backup')}
+                >
+                  <Download size={16} /> Export/Import
+                </button>
               </nav>
             </div>
 
@@ -187,6 +193,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'ascii' && 'Custom ASCII Art'}
                   {activeTab === 'widgets' && 'Widgets & Background'}
                   {activeTab === 'aliases' && 'URL Aliases'}
+                  {activeTab === 'backup' && 'Backup & Restore'}
                 </h3>
                 <button className='saas-close-btn' onClick={() => setIsOpen(false)}>
                   <X size={18} />
@@ -542,6 +549,54 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+                {/* BACKUP TAB */}
+                {activeTab === 'backup' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <label className='saas-label'>Export Settings</label>
+                      <p className='saas-hint' style={{ marginBottom: 12 }}>
+                        Download all your settings, bookmarks, and local data as a JSON file.
+                      </p>
+                      <button className='saas-btn-primary' onClick={() => import('../utils/backup').then(m => m.exportSettings())} style={{ width: '100%' }}>
+                        <Download size={16} /> Export to JSON
+                      </button>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Import Settings</label>
+                      <p className='saas-hint' style={{ marginBottom: 12 }}>
+                        Upload a previously exported JSON file to restore your settings. 
+                        <span style={{ color: '#ff4444', display: 'block', marginTop: 4 }}>
+                          Warning: This will overwrite all your current data!
+                        </span>
+                      </p>
+                      <label className='saas-upload-area'>
+                        <Upload size={24} className="saas-upload-icon" />
+                        <span className="saas-upload-text">Click to upload backup file</span>
+                        <input 
+                          type='file' 
+                          accept='.json' 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (!file) return
+                            const reader = new FileReader()
+                            reader.onload = async (ev) => {
+                              const content = ev.target?.result as string
+                              const { importSettings } = await import('../utils/backup')
+                              if (importSettings(content)) {
+                                // Success - page will reload
+                              } else {
+                                alert('Failed to import settings. Please make sure the file is a valid Neko-Tab backup.')
+                              }
+                            }
+                            reader.readAsText(file)
+                          }}
+                          className='saas-hidden-file'
+                        />
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
