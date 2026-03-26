@@ -80,6 +80,18 @@ const DEFAULT_SETTINGS: Settings = {
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {
   const [value, setValue] = useState<T>(() => {
     try {
+      // Use pre-warmed state for settings if available
+      if (key === 'startpage-settings' && typeof window !== 'undefined' && (window as any).__NEKO_SETTINGS__) {
+        const preWarmed = (window as any).__NEKO_SETTINGS__;
+        if (
+          typeof preWarmed === 'object' && preWarmed !== null && !Array.isArray(preWarmed) &&
+          typeof defaultValue === 'object' && defaultValue !== null && !Array.isArray(defaultValue)
+        ) {
+          return { ...defaultValue, ...preWarmed }
+        }
+        return preWarmed;
+      }
+
       const stored = localStorage.getItem(key)
       if (!stored) return defaultValue
       

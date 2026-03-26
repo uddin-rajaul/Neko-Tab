@@ -3,10 +3,20 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-// Apply theme as early as possible from the JS bundle to prevent flash
+// Type for our pre-warmed state
+declare global {
+  interface Window {
+    __NEKO_SETTINGS__?: any;
+  }
+}
+
+// Apply theme and capture settings as early as possible
 (function() {
   try {
-    const settings = JSON.parse(localStorage.getItem('startpage-settings') || '{}');
+    const stored = localStorage.getItem('startpage-settings');
+    const settings = stored ? JSON.parse(stored) : {};
+    window.__NEKO_SETTINGS__ = settings;
+    
     const theme = settings.theme || 'carbon';
     const themes: Record<string, string> = {
       'carbon': '#222526', 'paper': '#F5F5F5', 'nord': '#2E3440',
@@ -17,11 +27,19 @@ import './index.css'
       'synthwave': '#1a1a2e', 'vaporwave': '#1a0a2e', 'retro-terminal': '#0a0a0a',
       'sunset': '#1a1423', 'ocean': '#0c1821', 'midnight': '#020617'
     };
+    
     const bgColor = themes[theme] || '#222526';
     document.documentElement.style.backgroundColor = bgColor;
+    
     if (theme === 'paper' || theme === 'light') {
       document.documentElement.style.colorScheme = 'light';
     }
+
+    // Apply font variable immediately to prevent FOUT
+    const font = settings.font || 'JetBrains Mono';
+    const fontValue = font.includes(' ') ? `'${font}'` : font;
+    document.documentElement.style.setProperty('--font-mono', fontValue);
+    
   } catch (e) {
     console.error('Failed to apply early theme', e);
   }
