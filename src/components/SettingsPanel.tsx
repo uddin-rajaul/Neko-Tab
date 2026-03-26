@@ -138,6 +138,9 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
       {isOpen && (
         <div className='settings-overlay' onClick={() => setIsOpen(false)}>
           <div className='saas-modal' onClick={e => e.stopPropagation()}>
+            <button className='saas-close-btn top-right' onClick={() => setIsOpen(false)}>
+              <X size={18} />
+            </button>
             {/* Sidebar Navigation */}
             <div className='saas-sidebar'>
               <div className='saas-sidebar-header'>
@@ -188,9 +191,6 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'widgets' && 'Widgets & Background'}
                   {activeTab === 'aliases' && 'URL Aliases'}
                 </h3>
-                <button className='saas-close-btn' onClick={() => setIsOpen(false)}>
-                  <X size={18} />
-                </button>
               </div>
 
               <div className='saas-content-scroll' key={activeTab}>

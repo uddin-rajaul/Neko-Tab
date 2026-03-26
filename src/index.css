@@ -2367,12 +2367,19 @@ input[type="checkbox"]:checked::after {
   border: none;
   color: #888;
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+.saas-close-btn.top-right {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
 }
 
 .saas-close-btn:hover {
@@ -2705,6 +2712,7 @@ input[type="checkbox"]:checked::after {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 8px;
+    padding-right: 40px; /* Space for the close button */
   }
   .saas-nav-item {
     width: auto;
