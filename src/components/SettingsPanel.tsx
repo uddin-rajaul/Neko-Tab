@@ -193,7 +193,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 </button>
               </div>
 
-              <div className='saas-content-scroll'>
+              <div className='saas-content-scroll' key={activeTab}>
                 {/* APPEARANCE TAB */}
                 {activeTab === 'appearance' && (
                   <div className='saas-section'>
