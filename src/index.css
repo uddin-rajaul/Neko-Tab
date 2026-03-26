@@ -2703,11 +2703,13 @@ input[type="checkbox"]:checked::after {
   }
   .saas-nav {
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .saas-nav-item {
-    white-space: nowrap;
     width: auto;
+    padding: 8px 12px;
+    white-space: nowrap;
   }
   .saas-sidebar-header {
     display: none;
