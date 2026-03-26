@@ -1626,62 +1626,51 @@ input[type="checkbox"]:checked::after {
   }
 
   .content-section {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-lg);
-    align-items: center;
+    align-items: flex-start;
     margin-top: var(--spacing-lg);
+    overflow: hidden;
+    width: 100%;
   }
 
   .ascii-column {
-    width: 100%;
-    overflow-x: auto;
+    flex-shrink: 0;
+    max-width: 40%;
+    overflow: hidden;
   }
 
   .links-column {
-    width: 100%;
+    flex: 1;
     min-width: 0;
-  }
-  
-  .left-column {
-    width: 100%;
-    max-width: 400px;
-    align-items: center;
-  }
-  
-  .right-column {
-    width: 100%;
-    max-width: 600px;
-  }
-  
-  .top-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-container {
-    min-width: 100%;
-  }
-  
-  .bookmarks-container {
-    width: 100%;
+    overflow-x: auto;
   }
 
   .categories-grid {
     gap: 20px 24px;
-    flex-wrap: wrap;
-  }
-
-  .category-column {
-    min-width: 100px;
-    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
   }
   
+  .category-column {
+    min-width: 120px;
+    flex: 0 0 auto;
+  }
+
+  .search-container {
+    min-width: 100%;
+  }
+
+  .bookmarks-container {
+    width: 100%;
+  }
+
   .clock-container {
     text-align: center;
   }
-}
+  }
 
-@media (max-width: 600px) {
+  @media (max-width: 600px) {
   .app {
     padding: var(--spacing-md);
     padding-bottom: 80px;
@@ -1691,27 +1680,27 @@ input[type="checkbox"]:checked::after {
     min-width: 90px;
     flex: 0 0 auto;
   }
-}
+  }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
   width: 8px;
-}
+  }
 
-::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track {
   background: var(--onyx);
-}
+  }
 
-::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
   background: var(--graphite);
-}
+  }
 
-::-webkit-scrollbar-thumb:hover {
+  ::-webkit-scrollbar-thumb:hover {
   background: var(--ash);
-}
+  }
 
-/* Activity Widget / Status Bar */
-.activity-widget-container {
+  /* Activity Widget / Status Bar */
+  .activity-widget-container {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -1721,9 +1710,9 @@ input[type="checkbox"]:checked::after {
   background: var(--bg-secondary, rgba(0,0,0,0.3));
   border-top: 1px solid var(--border, rgba(255,255,255,0.1));
   padding: 8px 32px;
-}
+  }
 
-.activity-summary {
+  .activity-summary {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -1737,8 +1726,8 @@ input[type="checkbox"]:checked::after {
   opacity: 0.7;
   transition: opacity 0.2s ease;
   min-width: auto;
-}
-
+  flex-wrap: wrap;
+  }
 .activity-summary:hover {
   background: transparent;
   opacity: 1;
@@ -2284,6 +2273,7 @@ input[type="checkbox"]:checked::after {
   overflow: hidden;
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  min-height: 0;
 }
 
 .saas-sidebar {
@@ -2294,6 +2284,7 @@ input[type="checkbox"]:checked::after {
   flex-direction: column;
   padding: 24px 16px;
   flex-shrink: 0;
+  min-height: 0;
 }
 
 .saas-sidebar-header {
@@ -2306,12 +2297,15 @@ input[type="checkbox"]:checked::after {
   padding: 0 8px 24px 8px;
   margin-bottom: 8px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
 }
 
 .saas-nav {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .saas-nav-item {
@@ -2329,6 +2323,7 @@ input[type="checkbox"]:checked::after {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .saas-nav-item:hover {
@@ -2348,6 +2343,7 @@ input[type="checkbox"]:checked::after {
   flex-direction: column;
   background: #1A1D20;
   min-width: 0;
+  min-height: 0;
 }
 
 .saas-main-header {
@@ -2371,12 +2367,19 @@ input[type="checkbox"]:checked::after {
   border: none;
   color: #888;
   cursor: pointer;
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+}
+
+.saas-close-btn.top-right {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1001;
 }
 
 .saas-close-btn:hover {
@@ -2707,11 +2710,14 @@ input[type="checkbox"]:checked::after {
   }
   .saas-nav {
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-right: 40px; /* Space for the close button */
   }
   .saas-nav-item {
-    white-space: nowrap;
     width: auto;
+    padding: 8px 12px;
+    white-space: nowrap;
   }
   .saas-sidebar-header {
     display: none;
