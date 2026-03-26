@@ -1,49 +1,74 @@
-import { useEffect, useRef, type CSSProperties, Suspense, lazy } from 'react'
-import { useBookmarks, useSettings, useLocalStorage } from './hooks/useLocalStorage'
-import { Bookmarks } from './components/Bookmarks'
-import { Clock } from './components/Clock'
-import { PixelArt } from './components/PixelArt'
-import { ActivityWidget } from './components/ActivityWidget'
-import { DailyGoal } from './components/DailyGoal'
-import { CommandPalette } from './components/CommandPalette'
+import { useEffect, useRef, type CSSProperties, Suspense, lazy } from "react";
+import {
+  useBookmarks,
+  useSettings,
+  useLocalStorage,
+} from "./hooks/useLocalStorage";
+import { Bookmarks } from "./components/Bookmarks";
+import { Clock } from "./components/Clock";
+import { PixelArt } from "./components/PixelArt";
+import { ActivityWidget } from "./components/ActivityWidget";
+import { DailyGoal } from "./components/DailyGoal";
+import { CommandPalette } from "./components/CommandPalette";
 
 // Lazy load overlay components to improve initial mount time
-const SettingsPanel = lazy(() => import('./components/SettingsPanel').then(m => ({ default: m.SettingsPanel })))
-const FocusMode = lazy(() => import('./components/FocusMode').then(m => ({ default: m.FocusMode })))
-const Scratchpad = lazy(() => import('./components/Scratchpad').then(m => ({ default: m.Scratchpad })))
-const ShortcutHelp = lazy(() => import('./components/ShortcutHelp').then(m => ({ default: m.ShortcutHelp })))
+const SettingsPanel = lazy(() =>
+  import("./components/SettingsPanel").then((m) => ({
+    default: m.SettingsPanel,
+  })),
+);
+const FocusMode = lazy(() =>
+  import("./components/FocusMode").then((m) => ({ default: m.FocusMode })),
+);
+const Scratchpad = lazy(() =>
+  import("./components/Scratchpad").then((m) => ({ default: m.Scratchpad })),
+);
+const ShortcutHelp = lazy(() =>
+  import("./components/ShortcutHelp").then((m) => ({
+    default: m.ShortcutHelp,
+  })),
+);
 
 interface CustomBackgroundProps {
-  settings: any
-  bgImage: string
+  settings: any;
+  bgImage: string;
 }
 
 function CustomBackground({ settings, bgImage }: CustomBackgroundProps) {
-  if (!bgImage) return null
+  if (!bgImage) return null;
 
   return (
     <>
       {/* The actual image layer */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: -2,
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        filter: settings.bgBlur > 0 ? `blur(${settings.bgBlur * 2}px)` : undefined,
-        transform: settings.bgBlur > 0 ? 'scale(1.08)' : undefined,
-      }} />
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -2,
+          backgroundImage: `url(${bgImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter:
+            settings.bgBlur > 0 ? `blur(${settings.bgBlur * 2}px)` : undefined,
+          transform: settings.bgBlur > 0 ? "scale(1.08)" : undefined,
+        }}
+      />
       {/* Dim overlay on top of image */}
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: -1,
-        background: `rgba(0,0,0,${(settings.bgDim ?? 40) / 100})`,
-      }} />
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -1,
+          background: `rgba(0,0,0,${(settings.bgDim ?? 40) / 100})`,
+        }}
+      />
     </>
-  )
+  );
 }
 
 function App() {
-  const [settings, setSettings] = useSettings()
-  const [bgImage] = useLocalStorage<string>('neko-bg-image', '')
+  const [settings, setSettings] = useSettings();
+  const [bgImage] = useLocalStorage<string>("neko-bg-image", "");
   const {
     categories,
     addCategory,
@@ -52,29 +77,29 @@ function App() {
     addBookmark,
     deleteBookmark,
     editBookmark,
-  } = useBookmarks()
+  } = useBookmarks();
 
-  const appRef = useRef<HTMLDivElement>(null)
+  const appRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const root = document.documentElement
-    const fontValue = (settings.font || 'JetBrains Mono').includes(' ')
-      ? `'${settings.font || 'JetBrains Mono'}'`
-      : (settings.font || 'JetBrains Mono')
-    root.style.setProperty('--font-mono', fontValue)
-  }, [settings.font])
+    const root = document.documentElement;
+    const fontValue = (settings.font || "JetBrains Mono").includes(" ")
+      ? `'${settings.font || "JetBrains Mono"}'`
+      : settings.font || "JetBrains Mono";
+    root.style.setProperty("--font-mono", fontValue);
+  }, [settings.font]);
 
   useEffect(() => {
     const stealFocus = () => {
-      window.focus()
+      window.focus();
       if (document.activeElement === document.body) {
-        appRef.current?.focus()
+        appRef.current?.focus();
       }
-    }
-    stealFocus()
-    const timer = setTimeout(stealFocus, 50)
-    return () => clearTimeout(timer)
-  }, [])
+    };
+    stealFocus();
+    const timer = setTimeout(stealFocus, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -83,12 +108,16 @@ function App() {
 
       <div
         ref={appRef}
-        className={`app ${settings.theme}${bgImage ? ' has-bg' : ''}`}
+        className={`app ${settings.theme}${bgImage ? " has-bg" : ""}`}
         tabIndex={-1}
-        style={{
-          outline: 'none',
-          ...(bgImage ? { backgroundColor: 'transparent', background: 'none' } : {}),
-        } as CSSProperties}
+        style={
+          {
+            outline: "none",
+            ...(bgImage
+              ? { backgroundColor: "transparent", background: "none" }
+              : {}),
+          } as CSSProperties
+        }
       >
         <Suspense fallback={null}>
           <SettingsPanel
@@ -132,14 +161,13 @@ function App() {
         </div>
 
         {settings.showStatusBar && <ActivityWidget />}
-        
+
         <Suspense fallback={null}>
           <FocusMode />
         </Suspense>
       </div>
     </>
-  )
+  );
 }
 
-export default App
-
+export default App;

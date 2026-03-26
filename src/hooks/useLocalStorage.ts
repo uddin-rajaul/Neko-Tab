@@ -112,10 +112,26 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T 
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(value))
+      window.dispatchEvent(new CustomEvent('neko-storage-sync', { detail: key }))
     } catch (e) {
       console.error('Failed to save to localStorage:', e)
     }
   }, [key, value])
+
+  // Cross-component sync: when another hook instance writes to the same key,
+  // update this instance's state to match
+  useEffect(() => {
+    const handler = (e: Event) => {
+      if ((e as CustomEvent).detail !== key) return
+      try {
+        const raw = localStorage.getItem(key)
+        if (raw === null) return
+        setValue(prev => JSON.stringify(prev) === raw ? prev : JSON.parse(raw))
+      } catch { /* ignore */ }
+    }
+    window.addEventListener('neko-storage-sync', handler)
+    return () => window.removeEventListener('neko-storage-sync', handler)
+  }, [key])
 
   return [value, setValue]
 }

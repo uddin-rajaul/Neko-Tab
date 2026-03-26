@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { useBookmarks, useLocalStorage } from '../hooks/useLocalStorage'
-import type { UrlAlias } from '../types'
+import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
+import type { UrlAlias, ThemeType } from '../types'
 import { Search } from 'lucide-react'
 
 interface Result {
@@ -9,8 +9,9 @@ interface Result {
   label: string
   sub: string
   url?: string
+  action?: () => void
   icon: string
-  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent'
+  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command'
 }
 
 interface RecentItem {
@@ -43,15 +44,62 @@ function isUrl(str: string): boolean {
   return /^https?:\/\//i.test(str) || /^[\w-]+\.\w{2,}(\/.*)?$/.test(str)
 }
 
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+// ── Slash command data ──
+
+const THEME_LIST: { id: ThemeType; name: string }[] = [
+  { id: 'carbon', name: 'Carbon' }, { id: 'paper', name: 'Paper' },
+  { id: 'nord', name: 'Nord' }, { id: 'solarized', name: 'Solarized' },
+  { id: 'matrix', name: 'Matrix' }, { id: 'dracula', name: 'Dracula' },
+  { id: 'monokai', name: 'Monokai' }, { id: 'gruvbox', name: 'Gruvbox' },
+  { id: 'tokyo-night', name: 'Tokyo Night' }, { id: 'catppuccin', name: 'Catppuccin' },
+  { id: 'one-dark', name: 'One Dark' }, { id: 'rose-pine', name: 'Rosé Pine' },
+  { id: 'everforest', name: 'Everforest' },
+  { id: 'cyberpunk', name: 'Cyberpunk' }, { id: 'aurora', name: 'Aurora' },
+  { id: 'synthwave', name: 'Synthwave' }, { id: 'vaporwave', name: 'Vaporwave' },
+  { id: 'retro-terminal', name: 'Retro CRT' }, { id: 'sunset', name: 'Sunset' },
+  { id: 'ocean', name: 'Ocean' }, { id: 'midnight', name: 'Midnight' },
+]
+
+const FONT_LIST = [
+  'JetBrains Mono', 'Geist Mono', 'Space Mono', 'Fira Code',
+  'Cascadia Code', 'IBM Plex Mono', 'Intel One Mono', 'Iosevka',
+  'Commit Mono', 'Source Code Pro', 'Inconsolata', 'Hack',
+]
+
+const SLASH_COMMANDS = [
+  { name: 'theme', desc: 'Change color theme', icon: '◑', hint: '<name>' },
+  { name: 'font', desc: 'Change font family', icon: '𝐀', hint: '<name>' },
+  { name: 'goal', desc: "Set today's daily goal", icon: '▸', hint: '<text>' },
+  { name: 'note', desc: 'Append text to scratchpad', icon: '✎', hint: '<text>' },
+  { name: 'clock', desc: 'Set clock format', icon: '◷', hint: '12h | 24h' },
+  { name: 'export', desc: 'Export settings to JSON', icon: '↓' },
+  { name: 'clear', desc: 'Clear recent history', icon: '✕' },
+]
+
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
   const [engine, setEngine] = useState('google')
+  const [toast, setToast] = useState<string | null>(null)
   const { categories } = useBookmarks()
+  const [settings, setSettings] = useSettings()
   const [aliases] = useLocalStorage<UrlAlias[]>('neko-aliases', [])
   const [recent, setRecent] = useLocalStorage<RecentItem[]>('neko-recent', [])
+  const [, setDailyGoal] = useLocalStorage<{ text: string; date: string } | null>('neko-daily-goal', null)
+  const [, setScratchpad] = useLocalStorage<string>('neko-scratchpad', '')
   const inputRef = useRef<HTMLInputElement>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 2000)
+  }, [])
 
   const addRecent = (label: string, url: string) => {
     setRecent(prev => {
@@ -94,6 +142,192 @@ export function CommandPalette() {
 
   const results = useMemo<Result[]>(() => {
     const out: Result[] = []
+
+    // ── Slash commands ──
+    if (query.startsWith('/')) {
+      const raw = query.slice(1)
+      const spaceIdx = raw.indexOf(' ')
+      const cmdName = spaceIdx === -1 ? raw : raw.slice(0, spaceIdx)
+      const args = spaceIdx === -1 ? '' : raw.slice(spaceIdx + 1)
+      const hasSpace = spaceIdx !== -1
+
+      if (!hasSpace) {
+        // Show matching command suggestions
+        for (const cmd of SLASH_COMMANDS) {
+          if (fuzzy(cmd.name, cmdName)) {
+            const item: Result = {
+              id: `cmd-${cmd.name}`,
+              label: `/${cmd.name}`,
+              sub: cmd.hint ? `${cmd.desc} — ${cmd.hint}` : cmd.desc,
+              icon: cmd.icon,
+              type: 'command',
+            }
+            // No-arg commands get direct actions
+            if (!cmd.hint) {
+              switch (cmd.name) {
+                case 'export':
+                  item.action = () => {
+                    import('../utils/backup').then(m => m.exportSettings())
+                    showToast('Exporting...')
+                  }
+                  break
+                case 'clear':
+                  item.action = () => {
+                    setRecent([])
+                    showToast('History cleared')
+                  }
+                  break
+              }
+            }
+            out.push(item)
+          }
+        }
+        return out
+      }
+
+      // Command with arguments
+      switch (cmdName) {
+        case 'theme':
+          for (const t of THEME_LIST) {
+            if (!args || fuzzy(t.name, args) || fuzzy(t.id, args)) {
+              out.push({
+                id: `cmd-theme-${t.id}`,
+                label: t.name,
+                sub: settings.theme === t.id ? '● current' : 'apply theme',
+                icon: '◑',
+                type: 'command',
+                action: () => {
+                  setSettings(prev => ({ ...prev, theme: t.id }))
+                  showToast(`Theme → ${t.name}`)
+                },
+              })
+            }
+          }
+          break
+
+        case 'font':
+          for (const f of FONT_LIST) {
+            if (!args || fuzzy(f, args)) {
+              out.push({
+                id: `cmd-font-${f}`,
+                label: f,
+                sub: settings.font === f ? '● current' : 'apply font',
+                icon: '𝐀',
+                type: 'command',
+                action: () => {
+                  setSettings(prev => ({ ...prev, font: f }))
+                  showToast(`Font → ${f}`)
+                },
+              })
+            }
+          }
+          break
+
+        case 'goal':
+          if (args.trim()) {
+            out.push({
+              id: 'cmd-goal-set',
+              label: args.trim().slice(0, 120),
+              sub: "set as today's goal",
+              icon: '▸',
+              type: 'command',
+              action: () => {
+                setDailyGoal({ text: args.trim().slice(0, 120), date: todayKey() })
+                showToast('Goal set')
+              },
+            })
+          } else {
+            out.push({
+              id: 'cmd-goal-hint',
+              label: '/goal <text>',
+              sub: 'type your goal after the command',
+              icon: '▸',
+              type: 'command',
+            })
+          }
+          break
+
+        case 'note':
+          if (args.trim()) {
+            out.push({
+              id: 'cmd-note-append',
+              label: args.trim(),
+              sub: 'append to scratchpad',
+              icon: '✎',
+              type: 'command',
+              action: () => {
+                setScratchpad(prev => prev ? prev + '\n' + args.trim() : args.trim())
+                showToast('Added to scratchpad')
+              },
+            })
+          } else {
+            out.push({
+              id: 'cmd-note-hint',
+              label: '/note <text>',
+              sub: 'type your note after the command',
+              icon: '✎',
+              type: 'command',
+            })
+          }
+          break
+
+        case 'clock': {
+          const formats: { value: '12h' | '24h'; label: string }[] = [
+            { value: '12h', label: '12-Hour' },
+            { value: '24h', label: '24-Hour' },
+          ]
+          for (const f of formats) {
+            if (!args || fuzzy(f.value, args) || fuzzy(f.label, args)) {
+              out.push({
+                id: `cmd-clock-${f.value}`,
+                label: f.label,
+                sub: settings.clockFormat === f.value ? '● current' : 'switch format',
+                icon: '◷',
+                type: 'command',
+                action: () => {
+                  setSettings(prev => ({ ...prev, clockFormat: f.value }))
+                  showToast(`Clock → ${f.label}`)
+                },
+              })
+            }
+          }
+          break
+        }
+
+        case 'export':
+          out.push({
+            id: 'cmd-export-run',
+            label: 'Export to JSON',
+            sub: 'download settings backup',
+            icon: '↓',
+            type: 'command',
+            action: () => {
+              import('../utils/backup').then(m => m.exportSettings())
+              showToast('Exporting...')
+            },
+          })
+          break
+
+        case 'clear':
+          if (!args || fuzzy('recent', args)) {
+            out.push({
+              id: 'cmd-clear-recent',
+              label: 'Clear recent history',
+              sub: `${recent.length} items`,
+              icon: '✕',
+              type: 'command',
+              action: () => {
+                setRecent([])
+                showToast('History cleared')
+              },
+            })
+          }
+          break
+      }
+      return out
+    }
+
+    // ── Normal search (existing logic) ──
 
     // When empty — show recent first
     if (!query.trim()) {
@@ -138,12 +372,19 @@ export function CommandPalette() {
     }
 
     return out
-  }, [query, categories, aliases, engine])
+  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, showToast, setSettings, setRecent, setDailyGoal, setScratchpad])
 
   useEffect(() => { setSelected(0) }, [query])
 
   const launch = (r: Result) => {
-    if (r.url) {
+    // Command suggestion without action — autocomplete it
+    if (r.type === 'command' && !r.action) {
+      setQuery(r.label + ' ')
+      return
+    }
+    if (r.action) {
+      r.action()
+    } else if (r.url) {
       addRecent(r.label, r.url)
       window.location.href = r.url
     }
@@ -154,6 +395,12 @@ export function CommandPalette() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s + 1, results.length - 1)) }
     if (e.key === 'ArrowUp')   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)) }
+    // Tab autocompletes command suggestions
+    if (e.key === 'Tab' && results[selected]?.type === 'command' && !results[selected]?.action) {
+      e.preventDefault()
+      setQuery(results[selected].label + ' ')
+      return
+    }
     if (e.key === 'Enter') {
       e.preventDefault()
       if (results[selected]) {
@@ -191,21 +438,23 @@ export function CommandPalette() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="search, go to URL, or type to search web..."
+                placeholder="search, go to URL, or type / for commands..."
                 spellCheck={false}
               />
-              <div className="cp-engines">
-                {Object.entries(SEARCH_ENGINES).map(([key, val]) => (
-                  <button
-                    key={key}
-                    className={`cp-engine-btn ${engine === key ? 'active' : ''}`}
-                    onClick={e => { e.stopPropagation(); setEngine(key) }}
-                    title={val.name}
-                  >
-                    {key.slice(0, 2)}
-                  </button>
-                ))}
-              </div>
+              {!query.startsWith('/') && (
+                <div className="cp-engines">
+                  {Object.entries(SEARCH_ENGINES).map(([key, val]) => (
+                    <button
+                      key={key}
+                      className={`cp-engine-btn ${engine === key ? 'active' : ''}`}
+                      onClick={e => { e.stopPropagation(); setEngine(key) }}
+                      title={val.name}
+                    >
+                      {key.slice(0, 2)}
+                    </button>
+                  ))}
+                </div>
+              )}
               <span className="cp-esc">esc</span>
             </div>
 
@@ -223,7 +472,9 @@ export function CommandPalette() {
                       <span className="cp-item-label">{r.label}</span>
                       <span className="cp-item-sub">{r.sub}</span>
                     </div>
-                    <span className="cp-item-enter">↵</span>
+                    <span className="cp-item-enter">
+                      {r.type === 'command' && !r.action ? '→' : '↵'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -233,6 +484,7 @@ export function CommandPalette() {
               <div className="cp-hint-row">
                 <span>↑↓ navigate</span>
                 <span>↵ open</span>
+                <span>/commands</span>
                 {recent.length > 0
                   ? <button className="cp-clear-btn" onClick={e => { e.stopPropagation(); setRecent([]) }}>clear history</button>
                   : <span>esc close</span>
@@ -241,6 +493,12 @@ export function CommandPalette() {
             )}
           </div>
         </div>,
+        document.body
+      )}
+
+      {/* Toast feedback for slash commands */}
+      {toast && createPortal(
+        <div className="cp-toast">{toast}</div>,
         document.body
       )}
     </>

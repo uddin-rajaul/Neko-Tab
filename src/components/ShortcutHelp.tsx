@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 
 const SHORTCUTS = [
   { keys: 'Ctrl+K',         desc: 'Command palette — search bookmarks & aliases' },
+  { keys: '/command',        desc: 'Slash commands — /theme, /font, /goal, /note' },
   { keys: 'Ctrl+`',         desc: 'Toggle scratchpad / notes drawer' },
   { keys: 'Ctrl+Shift+T',   desc: 'Start / stop work timer' },
   { keys: '?',              desc: 'Show this shortcut help' },
