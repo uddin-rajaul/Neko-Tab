@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { PenLine, X, List, BookOpen } from 'lucide-react'
+import { NotebookPen, X, List, BookOpen } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
 interface CheckItem { id: string; text: string; done: boolean }
@@ -92,7 +92,7 @@ export function Scratchpad() {
   return (
     <>
       <button className="scratchpad-toggle" onClick={() => setIsOpen(o => !o)} title="Scratchpad (Ctrl+`)">
-        <PenLine size={20} />
+        <NotebookPen size={20} />
       </button>
 
       {isOpen && (
@@ -101,7 +101,7 @@ export function Scratchpad() {
             <div className="scratchpad-header">
               <div className="scratchpad-tabs">
                 <button className={`sp-tab ${mode === 'notes' ? 'active' : ''}`} onClick={() => setMode('notes')}>
-                  <PenLine size={12} /> notes
+                  <NotebookPen size={12} /> notes
                 </button>
                 <button className={`sp-tab ${mode === 'checklist' ? 'active' : ''}`} onClick={() => setMode('checklist')}>
                   <List size={12} /> checklist
