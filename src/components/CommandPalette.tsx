@@ -128,7 +128,7 @@ export function CommandPalette() {
       // '/' key opens if not in input
       if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
         e.preventDefault()
-        setIsOpen(true); setQuery(''); setSelected(0)
+        setIsOpen(true); setQuery('/'); setSelected(0)
       }
       if (e.key === 'Escape') { setIsOpen(false) }
     }
@@ -379,6 +379,7 @@ export function CommandPalette() {
   const launch = (r: Result) => {
     // Command suggestion without action — autocomplete it
     if (r.type === 'command' && !r.action) {
+      if (r.id.endsWith('-hint')) return
       setQuery(r.label + ' ')
       return
     }
@@ -398,6 +399,7 @@ export function CommandPalette() {
     // Tab autocompletes command suggestions
     if (e.key === 'Tab' && results[selected]?.type === 'command' && !results[selected]?.action) {
       e.preventDefault()
+      if (results[selected].id.endsWith('-hint')) return
       setQuery(results[selected].label + ' ')
       return
     }
