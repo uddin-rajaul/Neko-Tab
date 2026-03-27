@@ -78,7 +78,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     if (uploadedFile) {
       convertImageToAscii(uploadedFile, 50, isInverted)
         .then(ascii => {
-          setLocalSettings(prev => ({ ...prev, asciiArt: ascii }))
+          setLocalSettings(prev => ({ ...prev, customAsciiArt: ascii }))
         })
         .catch(err => console.error('Failed to convert image', err))
     }
@@ -412,32 +412,73 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 {activeTab === 'ascii' && (
                   <div className='saas-section'>
                     <div className='saas-card'>
-                      <label className='saas-label'>Image to ASCII Converter</label>
-                      <label className='saas-upload-area'>
-                        <Upload size={24} className="saas-upload-icon" />
-                        <span className="saas-upload-text">Click to upload image</span>
-                        <input 
-                          type='file' 
-                          accept='image/*' 
-                          onChange={handleImageUpload}
-                          className='saas-hidden-file'
-                        />
-                      </label>
-                      <div className='saas-upload-options'>
-                        {renderToggle('Invert Colors', isInverted, setIsInverted)}
+                      <label className='saas-label'>ASCII Art Source</label>
+                      <div className='saas-segmented-control'>
+                        <button 
+                          className={`saas-segment ${localSettings.asciiArtSource === 'os' ? 'active' : ''}`}
+                          onClick={() => handleChange('asciiArtSource', 'os')}
+                        >
+                          System OS
+                        </button>
+                        <button 
+                          className={`saas-segment ${localSettings.asciiArtSource === 'cat' ? 'active' : ''}`}
+                          onClick={() => handleChange('asciiArtSource', 'cat')}
+                        >
+                          Neko Cat
+                        </button>
+                        <button 
+                          className={`saas-segment ${localSettings.asciiArtSource === 'custom' ? 'active' : ''}`}
+                          onClick={() => handleChange('asciiArtSource', 'custom')}
+                        >
+                          Custom
+                        </button>
                       </div>
                     </div>
 
-                    <div className='saas-card'>
-                      <label className='saas-label'>Custom ASCII Input</label>
-                      <textarea
-                        className='saas-textarea'
-                        value={localSettings.asciiArt || ''}
-                        onChange={e => handleChange('asciiArt', e.target.value)}
-                        placeholder="Paste your custom ASCII art here..."
-                        spellCheck={false}
-                      />
-                    </div>
+                    {localSettings.asciiArtSource === 'os' && (
+                      <div className='saas-card'>
+                        <p className='saas-hint'>System OS ASCII art is selected (automatically matches your operating system).</p>
+                      </div>
+                    )}
+
+                    {localSettings.asciiArtSource === 'custom' && (
+                      <>
+                        <div className='saas-card'>
+                          <label className='saas-label'>Image to ASCII Converter</label>
+                          <label className='saas-upload-area'>
+                            <Upload size={24} className="saas-upload-icon" />
+                            <span className="saas-upload-text">Click to upload image</span>
+                            <input 
+                              type='file' 
+                              accept='image/*' 
+                              onChange={handleImageUpload}
+                              className='saas-hidden-file'
+                            />
+                          </label>
+                          <div className='saas-upload-options'>
+                            {renderToggle('Invert Colors', isInverted, setIsInverted)}
+                          </div>
+                        </div>
+
+                        <div className='saas-card'>
+                          <label className='saas-label'>Custom ASCII Input</label>
+                          <textarea
+                            className='saas-textarea'
+                            value={localSettings.customAsciiArt || localSettings.asciiArt || ''}
+                            onChange={e => handleChange('customAsciiArt', e.target.value)}
+                            placeholder="Paste your custom ASCII art here..."
+                            spellCheck={false}
+                            rows={10}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {localSettings.asciiArtSource === 'cat' && (
+                      <div className='saas-card'>
+                        <p className='saas-hint'>The classic Neko Cat ASCII art is selected.</p>
+                      </div>
+                    )}
                   </div>
                 )}
 

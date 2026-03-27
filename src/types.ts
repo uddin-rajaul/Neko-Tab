@@ -34,6 +34,8 @@ export interface ThemeInfo {
   category?: 'color' | 'animated' | 'special'
 }
 
+export type AsciiArtSource = 'os' | 'cat' | 'custom'
+
 export interface Settings {
   userName: string
   showGreeting: boolean
@@ -42,7 +44,9 @@ export interface Settings {
   showStatusBar: boolean
   theme: ThemeType
   clockFormat: '12h' | '24h'
-  asciiArt?: string
+  asciiArtSource: AsciiArtSource
+  asciiArt?: string // Deprecated, but keep for migration if needed
+  customAsciiArt?: string
   // Background
   bgDim: number        // 0–90
   bgBlur: number       // 0–10

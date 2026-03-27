@@ -1,6 +1,8 @@
 import { useEffect, useRef, type CSSProperties, Suspense, lazy } from 'react'
 import { useBookmarks, useSettings, useLocalStorage } from './hooks/useLocalStorage'
+import { WINDOWS_ASCII, MACOS_ASCII, LINUX_ASCII, CAT_ASCII, DETECTED_OS } from './components/ascii'
 import { Bookmarks } from './components/Bookmarks'
+
 import { Clock } from './components/Clock'
 import { PixelArt } from './components/PixelArt'
 import { ActivityWidget } from './components/ActivityWidget'
@@ -55,6 +57,13 @@ function App() {
   } = useBookmarks()
 
   const appRef = useRef<HTMLDivElement>(null)
+
+  let displayAsciiArt = CAT_ASCII
+  if (settings.asciiArtSource === 'os') {
+    displayAsciiArt = DETECTED_OS === 'windows' ? WINDOWS_ASCII : DETECTED_OS === 'macos' ? MACOS_ASCII : LINUX_ASCII
+  } else if (settings.asciiArtSource === 'custom') {
+    displayAsciiArt = settings.customAsciiArt || settings.asciiArt || ''
+  }
 
   useEffect(() => {
     const root = document.documentElement
@@ -116,7 +125,7 @@ function App() {
         {/* Content Section */}
         <div className="content-section">
           <div className="ascii-column">
-            <PixelArt asciiArt={settings.asciiArt} />
+            <PixelArt asciiArt={displayAsciiArt} />
           </div>
           <div className="links-column">
             <Bookmarks
