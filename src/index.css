@@ -3150,8 +3150,9 @@ input[type="checkbox"]:checked::after {
   backdrop-filter: blur(6px);
   z-index: 2000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 20vh;
 }
 
 /* Theme vars scoped to cp-panel so portal doesn't need .app parent */
