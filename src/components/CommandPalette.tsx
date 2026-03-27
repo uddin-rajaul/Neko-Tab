@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType } from '../types'
-import { Search } from 'lucide-react'
+import { Search, Earth } from 'lucide-react'
+import { openChromeNewTab } from './ChromeTabButton'
 
 interface Result {
   id: string
@@ -10,7 +11,7 @@ interface Result {
   sub: string
   url?: string
   action?: () => void
-  icon: string
+  icon: any // Using any to avoid importing ReactNode while supporting Lucide components
   type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command'
 }
 
@@ -78,6 +79,7 @@ const SLASH_COMMANDS = [
   { name: 'clock', desc: 'Set clock format', icon: '◷', hint: '12h | 24h' },
   { name: 'export', desc: 'Export settings to JSON', icon: '↓' },
   { name: 'clear', desc: 'Clear recent history', icon: '✕' },
+  { name: 'chrome-tab', desc: 'Open Chrome new tab page', icon: <Earth size={16} />, hint: '' },
 ]
 
 export function CommandPalette() {
@@ -162,22 +164,22 @@ export function CommandPalette() {
               icon: cmd.icon,
               type: 'command',
             }
-            // No-arg commands get direct actions
-            if (!cmd.hint) {
-              switch (cmd.name) {
-                case 'export':
-                  item.action = () => {
-                    import('../utils/backup').then(m => m.exportSettings())
-                    showToast('Exporting...')
-                  }
-                  break
-                case 'clear':
-                  item.action = () => {
-                    setRecent([])
-                    showToast('History cleared')
-                  }
-                  break
-              }
+            switch (cmd.name) {
+             case 'export':
+                item.action = () => {
+                  import('../utils/backup').then(m => m.exportSettings())
+                  showToast('Exporting...')
+                }
+                break
+              case 'clear':
+                item.action = () => {
+                  setRecent([])
+                  showToast('History cleared')
+                }
+                break
+              case 'chrome-tab':
+                item.action = () => openChromeNewTab()
+                break
             }
             out.push(item)
           }
@@ -322,6 +324,16 @@ export function CommandPalette() {
               },
             })
           }
+          break
+        case 'chrome-tab':
+          out.push({
+            id: 'cmd-chrome-tab-run',
+            label: 'Open Chrome Tab',
+            sub: 'Navigate to chrome://new-tab-page',
+            icon: <Earth size={16} />,
+            type: 'command',
+            action: () => openChromeNewTab()
+          })
           break
       }
       return out
