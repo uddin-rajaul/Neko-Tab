@@ -4,10 +4,7 @@ import { Earth } from 'lucide-react'
 export const openChromeNewTab = () => {
   if (typeof chrome !== 'undefined' && chrome.tabs) {
     chrome.tabs.create({ url: 'chrome://new-tab-page' })
-  } else {
-    // Fallback for non-extension environment (dev mode)
-    window.open('https://www.google.com/search?q=chrome+new+tab', '_blank')
-  }
+  } 
 }
 
 export function ChromeTabButton() {
