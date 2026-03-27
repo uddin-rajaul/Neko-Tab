@@ -2262,8 +2262,8 @@ input[type="checkbox"]:checked::after {
 /* ------------- SAAS MODAL REDESIGN ------------- */
 .saas-modal {
   position: relative;
-  background: #1A1D20;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary, #1A1D20);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   border-radius: 12px;
   width: 900px;
   max-width: 95vw;
@@ -2278,8 +2278,8 @@ input[type="checkbox"]:checked::after {
 
 .saas-sidebar {
   width: 240px;
-  background: #141618;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary, #141618);
+  border-right: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
@@ -2296,7 +2296,7 @@ input[type="checkbox"]:checked::after {
   font-size: 16px;
   padding: 0 8px 24px 8px;
   margin-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.05));
   flex-shrink: 0;
 }
 
@@ -2318,7 +2318,7 @@ input[type="checkbox"]:checked::after {
   text-align: left;
   padding: 10px 12px;
   border-radius: 6px;
-  color: #888;
+  color: var(--text-secondary, #888);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -2327,13 +2327,13 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-nav-item:hover {
-  color: #E0E0E0;
-  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary, #E0E0E0);
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
 }
 
 .saas-nav-item.active {
   color: var(--accent, #3dd2cc);
-  background: rgba(61, 210, 204, 0.1);
+  background: var(--bg-tertiary, rgba(61, 210, 204, 0.1));
   font-weight: 600;
 }
 
@@ -2341,14 +2341,14 @@ input[type="checkbox"]:checked::after {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #1A1D20;
+  background: var(--bg-primary, #1A1D20);
   min-width: 0;
   min-height: 0;
 }
 
 .saas-main-header {
   padding: 24px 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2358,14 +2358,14 @@ input[type="checkbox"]:checked::after {
 .saas-title {
   font-size: 18px;
   font-weight: 600;
-  color: #E0E0E0;
+  color: var(--text-primary, #E0E0E0);
   margin: 0;
 }
 
 .saas-close-btn {
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--text-secondary, #888);
   cursor: pointer;
   padding: 8px;
   border-radius: 4px;
@@ -2383,8 +2383,8 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-close-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #fff);
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
 }
 
 .saas-content-scroll {
@@ -2400,7 +2400,7 @@ input[type="checkbox"]:checked::after {
   background: transparent;
 }
 .saas-content-scroll::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--bg-tertiary, #333);
   border-radius: 4px;
 }
 
@@ -2419,7 +2419,7 @@ input[type="checkbox"]:checked::after {
 
 .saas-section-label {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary, #888);
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -2445,7 +2445,7 @@ input[type="checkbox"]:checked::after {
 
 .saas-theme-card .theme-name {
   font-size: 13px;
-  color: #888;
+  color: var(--text-secondary, #888);
   transition: color 0.2s;
   text-align: center;
 }
@@ -2456,8 +2456,8 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   border-radius: 8px;
   padding: 24px;
   display: flex;
@@ -2467,15 +2467,15 @@ input[type="checkbox"]:checked::after {
 
 .saas-label {
   font-size: 14px;
-  color: #E0E0E0;
+  color: var(--text-primary, #E0E0E0);
   font-weight: 500;
 }
 
 .saas-input {
-  background: #141618;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-tertiary, #141618);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   border-radius: 6px;
-  color: #E0E0E0;
+  color: var(--text-primary, #E0E0E0);
   font-family: inherit;
   font-size: 14px;
   padding: 10px 12px;
@@ -2490,8 +2490,8 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-textarea {
-  background: #141618;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-tertiary, #141618);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
   border-radius: 6px;
   color: var(--accent, #3dd2cc);
   font-family: monospace;
@@ -2522,14 +2522,14 @@ input[type="checkbox"]:checked::after {
 
 .saas-toggle-label {
   font-size: 14px;
-  color: #bbb;
+  color: var(--text-secondary, #bbb);
 }
 
 .saas-toggle-btn {
   position: relative;
   width: 40px;
   height: 24px;
-  background: #333;
+  background: var(--bg-tertiary, #333);
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -2558,28 +2558,28 @@ input[type="checkbox"]:checked::after {
 
 .saas-segmented-control {
   display: flex;
-  background: #141618;
+  background: var(--bg-secondary, #141618);
   border-radius: 6px;
   padding: 4px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--border, rgba(255,255,255,0.05));
 }
 
 .saas-segment {
   flex: 1;
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--text-secondary, #888);
   padding: 8px;
   font-size: 13px;
   font-weight: 500;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2;
 }
 
 .saas-segment.active {
-  background: #222526;
-  color: #fff;
+  background: var(--bg-tertiary, #222526);
+  color: var(--text-primary, #fff);
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
@@ -2589,9 +2589,9 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-btn-icon {
-  background: #141618;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #888;
+  background: var(--bg-secondary, #141618);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+  color: var(--text-secondary, #888);
   border-radius: 6px;
   width: 42px;
   flex-shrink: 0;
@@ -2603,8 +2603,8 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-btn-icon:hover {
-  background: #222526;
-  color: #E0E0E0;
+  background: var(--bg-tertiary, #222526);
+  color: var(--text-primary, #E0E0E0);
 }
 
 .saas-upload-area {
@@ -2614,16 +2614,16 @@ input[type="checkbox"]:checked::after {
   justify-content: center;
   gap: 12px;
   padding: 32px;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border: 2px dashed var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
-  background: #141618;
+  background: var(--bg-secondary, #141618);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .saas-upload-area:hover {
   border-color: var(--accent, #3dd2cc);
-  background: rgba(61, 210, 204, 0.02);
+  background: var(--bg-tertiary, rgba(61, 210, 204, 0.02));
 }
 
 .saas-hidden-file {
@@ -2631,21 +2631,21 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-upload-icon {
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .saas-upload-text {
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary, #888);
 }
 
 .saas-footer {
   padding: 16px 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background: rgba(20, 22, 24, 0.5);
+  background: var(--bg-secondary, rgba(20, 22, 24, 0.5));
   flex-shrink: 0;
 }
 
@@ -2671,8 +2671,8 @@ input[type="checkbox"]:checked::after {
 
 .saas-btn-secondary {
   background: transparent;
-  color: #888;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary, #888);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   padding: 8px 16px;
   font-weight: 600;
   font-size: 13px;
@@ -2682,8 +2682,8 @@ input[type="checkbox"]:checked::after {
 }
 
 .saas-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #E0E0E0;
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #E0E0E0);
 }
 
 @keyframes slideIn {
@@ -2706,7 +2706,7 @@ input[type="checkbox"]:checked::after {
     width: 100%;
     padding: 16px;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.05));
   }
   .saas-nav {
     flex-direction: row;
