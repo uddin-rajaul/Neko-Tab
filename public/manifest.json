@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Neko Tab",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Custom Terminal-style New Tab Page",
   "chrome_url_overrides": {
     "newtab": "index.html"
