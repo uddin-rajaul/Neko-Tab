@@ -2795,6 +2795,29 @@ input[type="checkbox"]:checked::after {
   color: var(--text-primary, #fff);
 }
 
+.chrome-tab-toggle {
+  position: fixed;
+  top: var(--spacing-md);
+  right: calc(var(--spacing-md) + 144px);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary, var(--ash));
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.chrome-tab-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #fff);
+  backdrop-filter: blur(4px);
+}
+
 .scratchpad-overlay {
   position: fixed;
   inset: 0;
@@ -3624,6 +3647,7 @@ input[type="checkbox"]:checked::after {
 }
 
 /* search result type accent */
+.cp-item-command .cp-item-icon { color: var(--accent); opacity: 1; }
 .cp-item-search .cp-item-icon { color: var(--accent); opacity: 1; }
 .cp-item-search .cp-item-label { color: var(--text-primary); }
 .cp-item-url .cp-item-icon { color: #60a5fa; opacity: 1; }

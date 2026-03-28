@@ -56,4 +56,6 @@ export interface Settings {
   githubUsername: string
   // Font
   font: string
+  // Chrome Tab
+  showChromeTab: boolean
 }

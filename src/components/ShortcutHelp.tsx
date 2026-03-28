@@ -6,6 +6,7 @@ const SHORTCUTS = [
   { keys: '/command',        desc: 'Slash commands — /theme, /font, /goal, /note' },
   { keys: 'Ctrl+`',         desc: 'Toggle scratchpad / notes drawer' },
   { keys: 'Ctrl+Shift+T',   desc: 'Start / stop work timer' },
+  { keys: 'c',              desc: 'Open Chrome new tab page' },
   { keys: '?',              desc: 'Show this shortcut help' },
   { keys: 'Escape',         desc: 'Close any open panel' },
   { keys: '↑ / ↓',         desc: 'Navigate command palette results' },

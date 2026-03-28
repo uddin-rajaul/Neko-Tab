@@ -57,7 +57,8 @@ const DEFAULT_SETTINGS: Settings = {
   font: 'JetBrains Mono',
   asciiArtSource: 'cat',
   customAsciiArt: CAT_ASCII,
-  asciiArt: CAT_ASCII
+  asciiArt: CAT_ASCII,
+  showChromeTab: false
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {
