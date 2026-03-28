@@ -20,7 +20,8 @@
 
 /* Content Section - ASCII Art and Quick Links side by side */
 .content-section {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xl);
   width: 100%;
   max-width: 1200px;
@@ -30,13 +31,13 @@
 
 /* ASCII Column */
 .ascii-column {
-  flex-shrink: 1;
-  max-width: 450px;
+  /* Provide a flexible bounding box that allows contents to align cleanly */
+  min-width: 0;
 }
 
 /* Links Column */
 .links-column {
-  flex: 1;
+  min-width: 0;
 }
 
 /* Left Column - Pixel Art (legacy, keeping for compatibility) */
@@ -60,11 +61,12 @@
 
 /* Pixel Art Container */
 .pixel-art-container {
-  width: auto;
+  width: max-content;
+  max-width: 100%;
+  margin-left: auto; /* Pushes the entire block to the right edge (adjacent to gap) */
   height: auto;
   overflow-x: auto;
   overflow-y: hidden;
-  max-width: 100%;
 }
 
 /* Hide scrollbar for cleaner look but still allow scrolling if needed */
