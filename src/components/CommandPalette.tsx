@@ -406,8 +406,8 @@ export function CommandPalette() {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s + 1, results.length - 1)) }
-    if (e.key === 'ArrowUp')   { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)) }
+    if (e.key === 'ArrowDown' || (e.ctrlKey && e.code === 'KeyN')) { e.preventDefault(); setSelected(s => Math.min(s + 1, results.length - 1)) }
+    if (e.key === 'ArrowUp'   || (e.ctrlKey && e.code === 'KeyP')) { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)) }
     // Tab autocompletes command suggestions
     if (e.key === 'Tab' && results[selected]?.type === 'command' && !results[selected]?.action) {
       e.preventDefault()
