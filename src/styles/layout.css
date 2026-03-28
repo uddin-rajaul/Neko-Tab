@@ -61,9 +61,8 @@
 
 /* Pixel Art Container */
 .pixel-art-container {
-  width: max-content;
+  width: auto;
   max-width: 100%;
-  margin-left: auto; /* Pushes the entire block to the right edge (adjacent to gap) */
   height: auto;
   overflow-x: auto;
   overflow-y: hidden;
