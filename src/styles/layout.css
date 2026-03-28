@@ -30,7 +30,8 @@
 
 /* ASCII Column */
 .ascii-column {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  max-width: 450px;
 }
 
 /* Links Column */
@@ -61,7 +62,18 @@
 .pixel-art-container {
   width: auto;
   height: auto;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+/* Hide scrollbar for cleaner look but still allow scrolling if needed */
+.pixel-art-container::-webkit-scrollbar {
+  height: 4px;
+}
+.pixel-art-container::-webkit-scrollbar-thumb {
+  background: var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
 }
 
 .pixel-art {

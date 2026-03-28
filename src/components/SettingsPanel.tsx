@@ -490,7 +490,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                           <label className='saas-label'>Custom ASCII Input</label>
                           <textarea
                             className='saas-textarea'
-                            value={localSettings.customAsciiArt || localSettings.asciiArt || ''}
+                            value={localSettings.customAsciiArt ?? localSettings.asciiArt ?? ''}
                             onChange={e => handleChange('customAsciiArt', e.target.value)}
                             placeholder="Paste your custom ASCII art here..."
                             spellCheck={false}

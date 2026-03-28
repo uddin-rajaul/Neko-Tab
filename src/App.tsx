@@ -87,7 +87,7 @@ function App() {
   if (settings.asciiArtSource === 'os') {
     displayAsciiArt = DETECTED_OS === 'windows' ? WINDOWS_ASCII : DETECTED_OS === 'macos' ? MACOS_ASCII : LINUX_ASCII
   } else if (settings.asciiArtSource === 'custom') {
-    displayAsciiArt = settings.customAsciiArt || settings.asciiArt || ''
+    displayAsciiArt = settings.customAsciiArt ?? settings.asciiArt ?? ''
   }
 
   useEffect(() => {
