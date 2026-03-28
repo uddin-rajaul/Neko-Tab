@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias } from '../types'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -111,6 +111,25 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     if (file) {
       setUploadedFile(file)
     }
+  }
+
+  const handleResetData = () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to reset ALL data? This will delete your bookmarks, notes, and settings. This cannot be undone.'
+    )
+
+    if (!confirmed) return
+
+    localStorage.clear()
+
+    const reload = () => window.location.reload()
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+      chrome.storage.local.clear(reload)
+      return
+    }
+
+    reload()
   }
 
   const renderToggle = (label: string, checked: boolean, onChange: (val: boolean) => void) => (
@@ -657,6 +676,25 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                       </div>
                       <p className='saas-hint'>Keyboard shortcut "c" will always open a new Chrome tab regardless of this setting.
                       </p>
+                    </div>                    <div className='saas-card' style={{ borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                      <label
+                        className='saas-label'
+                        style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: 8 }}
+                      >
+                        <AlertTriangle size={16} /> Danger Zone
+                      </label>
+
+                      <p className='saas-hint' style={{ marginBottom: 12 }}>
+                        Resetting will permanently delete all your settings, bookmarks, aliases, and notes. This action cannot be undone.
+                      </p>
+
+                      <button
+                        className='saas-btn-secondary'
+                        onClick={handleResetData}
+                        style={{ width: '100%', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                      >
+                        <Trash2 size={14} style={{ marginRight: 8 }} /> Reset All Data & Settings
+                      </button>
                     </div>
                   </div>
                 )}
