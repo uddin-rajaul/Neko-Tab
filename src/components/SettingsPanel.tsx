@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias } from '../types'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -52,7 +52,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'backup';
+type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'backup' | 'advanced';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -184,6 +184,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 >
                   <Download size={16} /> Export/Import
                 </button>
+                <button
+                  className={`saas-nav-item ${activeTab === 'advanced' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('advanced')}
+                >
+                  <Cpu size={16} /> Advanced
+                </button>
               </nav>
             </div>
 
@@ -197,6 +203,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'widgets' && 'Widgets & Background'}
                   {activeTab === 'aliases' && 'URL Aliases'}
                   {activeTab === 'backup' && 'Backup & Restore'}
+                  {activeTab === 'advanced' && 'Advanced Settings'}
                 </h3>
               </div>
 
@@ -638,6 +645,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         />
                       </label>
                     </div>
+                  </div>
+                )}
+                {/* ADVANCED TAB */}
+                {activeTab === 'advanced' && (
+                  <div className='saas-section'>
+
                   </div>
                 )}
               </div>
