@@ -21,21 +21,25 @@
 /* Content Section - ASCII Art and Quick Links side by side */
 .content-section {
   display: flex;
-  gap: var(--spacing-xl);
+  justify-content: center;
+  gap: 80px;
   width: 100%;
-  max-width: 1200px;
-  margin-top: var(--spacing-xl);
+  max-width: 1000px;
+  margin: var(--spacing-xl) auto 0;
   align-items: flex-start;
 }
 
 /* ASCII Column */
 .ascii-column {
-  flex-shrink: 0;
+  /* Fixed base widths prevent massive texts from shifting adjacent columns */
+  flex: 0 1 350px;
+  min-width: 0;
 }
 
 /* Links Column */
 .links-column {
-  flex: 1;
+  flex: 0 1 500px;
+  min-width: 0;
 }
 
 /* Left Column - Pixel Art (legacy, keeping for compatibility) */
@@ -60,8 +64,19 @@
 /* Pixel Art Container */
 .pixel-art-container {
   width: auto;
+  max-width: 100%;
   height: auto;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Hide scrollbar for cleaner look but still allow scrolling if needed */
+.pixel-art-container::-webkit-scrollbar {
+  height: 4px;
+}
+.pixel-art-container::-webkit-scrollbar-thumb {
+  background: var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
 }
 
 .pixel-art {
