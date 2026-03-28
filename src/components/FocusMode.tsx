@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Scan, Play, Pause, RotateCcw, X, Shield, Plus, Target } from 'lucide-react'
+import { Scan, Play, Pause, RotateCcw, X, Shield, Plus } from 'lucide-react'
 import { useActivity } from '../hooks/useActivity'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useFocusSessions } from '../hooks/useFocusSessions'
