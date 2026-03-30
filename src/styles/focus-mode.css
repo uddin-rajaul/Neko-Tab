@@ -635,3 +635,10 @@
 .identity-text { font-style: italic; margin-bottom: 32px; color: var(--text-secondary); }
 
 
+
+.summary-distractions {
+  font-size: 0.85rem;
+  color: var(--accent, #3dd2cc);
+  opacity: 0.8;
+  margin-top: 8px;
+}

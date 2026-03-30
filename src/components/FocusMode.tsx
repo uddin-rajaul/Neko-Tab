@@ -67,6 +67,7 @@ interface CustomSite {
 interface SummaryData {
   task: string
   durationSec: number
+  distractions: number
 }
 
 export function FocusMode() {
@@ -150,9 +151,22 @@ export function FocusMode() {
       interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000)
     } else if (timeLeft === 0 && pomodoroState.isRunning && !hasCompletedRef.current) {
       hasCompletedRef.current = true
+      
+      const realStartedAt = pomodoroState.startedAt ?? Date.now() - pomodoroState.durationSec * 1000
+      let distractions = 0
+      try {
+        const stored = localStorage.getItem('neko-distraction-log')
+        if (stored) {
+          const logData = JSON.parse(stored)
+          if (logData.entries && Array.isArray(logData.entries)) {
+            distractions = logData.entries.filter((e: any) => e.timestamp >= realStartedAt).length
+          }
+        }
+      } catch (e) {}
+      
       const completedSession: FocusSession = {
         task: pomodoroState.task || 'Deep work',
-        startedAt: pomodoroState.startedAt ?? Date.now() - pomodoroState.durationSec * 1000,
+        startedAt: realStartedAt,
         completedAt: Date.now(),
         durationSec: pomodoroState.durationSec,
         completed: true,
@@ -161,7 +175,7 @@ export function FocusMode() {
       completeFocusSession()
       setPomodoroState({ isRunning: false, startedAt: null, pausedTimeLeft: null, task: '', durationSec: durationMin * 60 })
       syncBlockingState(false, blockedSites, customSites)
-      setSummaryData({ task: completedSession.task, durationSec: completedSession.durationSec })
+      setSummaryData({ task: completedSession.task, durationSec: completedSession.durationSec, distractions })
       setShowSummary(true)
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
       audio.play().catch(() => {})
@@ -482,6 +496,9 @@ export function FocusMode() {
             <div className="summary-details">
               <p className="summary-task">"{summaryData.task}"</p>
               <p className="summary-time">{Math.round(summaryData.durationSec / 60)} minutes focused.</p>
+              {summaryData.distractions > 0 && (
+                <p className="summary-distractions">{summaryData.distractions} distractions attempted.</p>
+              )}
             </div>
             <p className="identity-text">{identityLine}</p>
             <button className="focus-btn primary" onClick={() => setShowSummary(false)}>

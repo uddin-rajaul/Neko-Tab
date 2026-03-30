@@ -120,5 +120,37 @@
       </ul>
     </div>
   </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const domain = params.get('domain');
+
+    if (domain) {
+      const now = new Date();
+      // Use local timezone but consistent string structure (e.g. YYYY-MM-DD or standard locale)
+      const dateStr = now.toLocaleDateString();
+      
+      const newEntry = {
+        domain: domain,
+        timestamp: Date.now(),
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      
+      try {
+        const stored = localStorage.getItem('neko-distraction-log');
+        let logData = stored ? JSON.parse(stored) : { date: dateStr, entries: [] };
+        
+        // Reset if it's a new day
+        if (logData.date !== dateStr) {
+          logData = { date: dateStr, entries: [] };
+        }
+        
+        logData.entries.push(newEntry);
+        localStorage.setItem('neko-distraction-log', JSON.stringify(logData));
+      } catch (e) {
+        console.error('Failed to log distraction', e);
+      }
+    }
+  </script>
 </body>
 </html>

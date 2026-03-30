@@ -60,6 +60,7 @@ When you open `Ctrl+K` with an empty query, the last 10 visited URLs and searche
 - **Site blocking** — block Facebook, Instagram, TikTok, Twitter/X, LinkedIn, Reddit, YouTube, Netflix, Twitch, or add custom domains
 - **Dashboard** — today's blocks, current streak, best streak, weekly consistency chart
 - **Session log** — view all completed sessions for the day
+- **Distraction log** — silently logs attempted visits to blocked sites and displays a summary after the session
 - **Notifications** — desktop notification + sound on completion
 - **Identity reinforcement** — motivational messages based on your streak
 
@@ -86,6 +87,7 @@ Toggle with `Ctrl+Shift+R` or the tab icon in the top-right. Opens a new Chrome 
 - **GitHub Streak** — contribution streak with 14-day sparkline (optional, no auth needed)
 - **Focus Streak** — days with at least one completed Pomodoro session, with 7-day sparkline
 - **Work Timer** — simple elapsed time tracker, `Ctrl+Shift+T` to toggle
+- **Idle Tab Counter** — a subtle, daily new tab counter that increments on every new tab opened to combat habitual tab opening
 
 ### Keyboard Shortcuts
 

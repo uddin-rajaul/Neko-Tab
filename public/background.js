@@ -36,7 +36,7 @@ async function updateBlockingRules(isActive, blockedDomains) {
     action: {
       type: 'redirect',
       redirect: {
-        extensionPath: '/blocked.html'
+        url: chrome.runtime.getURL('/blocked.html?domain=' + encodeURIComponent(domain))
       }
     },
     condition: {
@@ -52,7 +52,7 @@ async function updateBlockingRules(isActive, blockedDomains) {
     action: {
       type: 'redirect',
       redirect: {
-        extensionPath: '/blocked.html'
+        url: chrome.runtime.getURL('/blocked.html?domain=' + encodeURIComponent(domain))
       }
     },
     condition: {

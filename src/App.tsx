@@ -12,6 +12,7 @@ import { ActivityWidget } from "./components/ActivityWidget";
 import { DailyGoal } from "./components/DailyGoal";
 import { CommandPalette } from "./components/CommandPalette";
 import { ChromeTabButton } from './components/ChromeTabButton'
+import { TabCounter } from './components/TabCounter'
 
 // Lazy load overlay components to improve initial mount time
 const SettingsPanel = lazy(() =>
@@ -137,6 +138,7 @@ function App() {
           <Scratchpad />
           <ShortcutHelp />
           <ChromeTabButton visible={settings.showChromeTab} />
+          <TabCounter />
         </Suspense>
 
         {/* Center Section */}
