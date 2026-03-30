@@ -47,6 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
   showClock: true,
   showWeather: false,
   showStatusBar: true,
+    showTabCounter: true,
   theme: 'carbon',
   clockFormat: '24h',
   bgDim: 40,

@@ -37,6 +37,7 @@
   display: flex;
   justify-content: flex-end; /* This keeps cat flush near the links */
   padding-right: var(--spacing-md, 16px);
+  overflow: hidden;
 }
 
 /* Links Column */
@@ -44,6 +45,10 @@
   flex: 1;
   max-width: 900px;
   min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .no-transition, .no-transition * {
@@ -101,6 +106,8 @@
   width: auto;
   display: block;
   text-align: left;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .app.light .ascii-display,
@@ -225,6 +232,9 @@
   padding: 0;
   width: 100%;
   position: relative;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
 }
 
 .bookmarks-header {

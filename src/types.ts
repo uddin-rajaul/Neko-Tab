@@ -42,6 +42,7 @@ export interface Settings {
   showClock: boolean
   showWeather: boolean
   showStatusBar: boolean
+  showTabCounter: boolean
   theme: ThemeType
   clockFormat: '12h' | '24h'
   asciiArtSource: AsciiArtSource

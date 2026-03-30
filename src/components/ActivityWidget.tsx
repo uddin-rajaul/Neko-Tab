@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Activity } from 'lucide-react'
 import { GitHubStreak } from './GitHubStreak'
 import { FocusStreak } from './FocusStreak'
+import { TabCounter } from './TabCounter'
 import { useSettings } from '../hooks/useLocalStorage'
 
 interface HeapInfo {
@@ -115,6 +116,7 @@ export function ActivityWidget() {
           <GitHubStreak username={settings.githubUsername} />
         )}
         <FocusStreak />
+        {settings.showTabCounter !== false && <TabCounter />}
       </div>
     </div>
   )
