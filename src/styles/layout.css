@@ -22,9 +22,9 @@
 .content-section {
   display: flex;
   justify-content: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xxl, 48px);
   width: 100%;
-  max-width: 1000px;
+  max-width: 1400px;
   margin: var(--spacing-xl) auto 0;
   align-items: flex-start;
 }
@@ -35,12 +35,14 @@
   flex: 0 0 350px;
   min-width: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* This keeps cat flush near the links */
+  padding-right: var(--spacing-md, 16px);
 }
 
 /* Links Column */
 .links-column {
-  flex: 0 0 600px;
+  flex: 1;
+  max-width: 900px;
   min-width: 0;
 }
 
