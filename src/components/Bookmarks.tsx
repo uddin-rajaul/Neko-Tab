@@ -35,13 +35,28 @@ export function Bookmarks({
 }: BookmarksProps) {
   const [editing, setEditing] = useState<EditingState>({ type: null })
   const [isEditMode, setIsEditMode] = useState(false)
-  const [topSites, setTopSites] = useState<{ title: string; url: string }[]>([])
+  const [topSites, setTopSites] = useState<{ title: string; url: string }[]>(() => {
+    try {
+      const stored = localStorage.getItem('neko-top-sites')
+      return stored ? JSON.parse(stored) : []
+    } catch (e) {
+      return []
+    }
+  })
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.topSites) {
       chrome.topSites.get((sites) => {
-        setTopSites(sites.slice(0, 4)) // Limit to 4 items
+        const sliced = sites.slice(0, 4)
+        // Update storage for the next visit
+        localStorage.setItem('neko-top-sites', JSON.stringify(sliced))
+        
+        // Only update UI now if it was empty, otherwise wait until next tab load
+        // This prevents the layout shift you noticed.
+        if (topSites.length === 0 && sliced.length > 0) {
+          setTopSites(sliced)
+        }
       })
     }
   }, [])
