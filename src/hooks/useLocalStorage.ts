@@ -25,7 +25,7 @@ const DEFAULT_CATEGORIES: BookmarkCategory[] = [
     id: '3',
     name: 'Socials',
     bookmarks: [
-      { id: '3-1', title: 'Twitter', url: 'https://twitter.com' },
+      { id: '3-1', title: 'X', url: 'https://x.com' },
       { id: '3-2', title: 'Reddit', url: 'https://reddit.com' },
       { id: '3-3', title: 'LinkedIn', url: 'https://linkedin.com' },
     ]
