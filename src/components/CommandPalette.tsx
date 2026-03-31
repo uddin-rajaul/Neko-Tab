@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType } from '../types'
-import { Search, Earth } from 'lucide-react'
+import { Search, Earth, Calendar } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 
 interface Result {
@@ -78,6 +78,7 @@ const SLASH_COMMANDS = [
   { name: 'goal', desc: "Set today's daily goal", icon: '▸', hint: '<text>' },
   { name: 'note', desc: 'Append text to scratchpad', icon: '✎', hint: '<text>' },
   { name: 'clock', desc: 'Set clock format', icon: '◷', hint: '12h | 24h' },
+  { name: 'calendar', desc: 'Toggle mini calendar', icon: <Calendar size={16} /> },
   { name: 'export', desc: 'Export settings to JSON', icon: '↓' },
   { name: 'clear', desc: 'Clear recent history', icon: '✕' },
 ]
@@ -179,6 +180,12 @@ export function CommandPalette() {
                 break
               case 'chrome-tab':
                 item.action = () => openChromeNewTab()
+                break
+              case 'calendar':
+                item.action = () => {
+                  setSettings(prev => ({ ...prev, showCalendar: !prev.showCalendar }))
+                  showToast(`Calendar → ${!settings.showCalendar ? 'ON' : 'OFF'}`)
+                }
                 break
             }
             out.push(item)
