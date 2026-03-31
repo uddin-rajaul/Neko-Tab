@@ -12,14 +12,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
   z-index: 100;
 }
 
 .settings-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary, #fff);
-  backdrop-filter: blur(4px);
+  backdrop-filter: none;
 }
 
 .settings-overlay {
@@ -29,7 +29,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -643,5 +643,4 @@ input[type="checkbox"]:checked::after {
   font-size: 12px;
   font-weight: bold;
 }
-
 

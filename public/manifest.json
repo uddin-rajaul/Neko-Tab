@@ -14,7 +14,9 @@
   "permissions": [
     "topSites",
     "storage",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "webRequest",
+    "notifications"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -37,7 +39,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "blocked.html"
+        "blocked.html",
+        "blocked.js"
       ],
       "matches": [
         "<all_urls>"

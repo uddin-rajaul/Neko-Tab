@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import { Earth } from 'lucide-react'
+import { recordTabUsage } from '../utils/tabUsage'
 
 export const openChromeNewTab = () => {
   if (typeof chrome !== 'undefined' && chrome.tabs) {
+    void recordTabUsage()
     chrome.tabs.update({ url: 'chrome://new-tab-page' })
   } 
 }

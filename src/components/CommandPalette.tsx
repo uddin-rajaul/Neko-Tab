@@ -4,6 +4,7 @@ import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalSto
 import type { UrlAlias, ThemeType } from '../types'
 import { Search, Earth } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
+import { recordTabUsage } from '../utils/tabUsage'
 
 interface Result {
   id: string
@@ -398,6 +399,7 @@ export function CommandPalette() {
     if (r.action) {
       r.action()
     } else if (r.url) {
+      void recordTabUsage()
       addRecent(r.label, r.url)
       window.location.href = r.url
     }
@@ -421,6 +423,7 @@ export function CommandPalette() {
         launch(results[selected])
       } else if (query.trim()) {
         // fallback: web search
+        void recordTabUsage()
         window.location.href = SEARCH_ENGINES[engine].url + encodeURIComponent(query)
         setIsOpen(false); setQuery('')
       }

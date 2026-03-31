@@ -6,6 +6,11 @@ export interface FocusSession {
   completedAt: number
   durationSec: number
   completed: boolean
+  tabsUsed?: number
+  distractions?: {
+    domain: string
+    attemptedAt: number
+  }[]
 }
 
 function todayKey(): string {

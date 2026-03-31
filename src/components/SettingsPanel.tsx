@@ -393,7 +393,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                       <label className='saas-label'>Display Options</label>
                       <div className='saas-toggle-list'>
                         {renderToggle('Show Status Bar', localSettings.showStatusBar, val => handleChange('showStatusBar', val))}
-                        {renderToggle('Show Tab Counter', localSettings.showTabCounter, val => handleChange('showTabCounter', val))}
+                        {localSettings.showStatusBar && renderToggle('Show Tab Counter', localSettings.showTabCounter ?? true, val => handleChange('showTabCounter', val))}
                         {renderToggle('Show Greeting', localSettings.showGreeting, val => handleChange('showGreeting', val))}
                         {renderToggle('Show Clock', localSettings.showClock, val => handleChange('showClock', val))}
                       </div>

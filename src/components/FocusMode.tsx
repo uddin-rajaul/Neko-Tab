@@ -4,6 +4,7 @@ import { useActivity } from '../hooks/useActivity'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useFocusSessions } from '../hooks/useFocusSessions'
 import type { FocusSession } from '../hooks/useFocusSessions'
+import { clearFocusSessionTabUsageCount, readFocusSessionTabUsageCount } from '../utils/tabUsage'
 
 const ConsistencyIcon = ({ size = 18, className = "" }: { size?: number, className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -57,6 +58,8 @@ interface PomodoroState {
   pausedTimeLeft: number | null
   task: string
   durationSec: number
+  sessionId: string | null
+  ownerTabId: string | null
 }
 
 interface CustomSite {
@@ -67,6 +70,11 @@ interface CustomSite {
 interface SummaryData {
   task: string
   durationSec: number
+  tabsUsed: number
+  distractions: {
+    domain: string
+    attemptedAt: number
+  }[]
 }
 
 export function FocusMode() {
@@ -81,6 +89,8 @@ export function FocusMode() {
     pausedTimeLeft: null,
     task: '',
     durationSec: 25 * 60,
+    sessionId: null,
+    ownerTabId: null,
   })
   const [blockedSites, setBlockedSites] = useLocalStorage<string[]>('blocked-sites', [])
   const [customSites, setCustomSites] = useLocalStorage<CustomSite[]>('custom-blocked-sites', [])
@@ -93,6 +103,39 @@ export function FocusMode() {
   const { addSession, todayBlocks, todayFormatted, streak, bestStreak, weeklyBlocks, identityLine } = useFocusSessions()
   const hasCompletedRef = useRef(false)
   const taskRef = useRef<HTMLInputElement>(null)
+
+  const getClientTabId = useCallback(() => {
+    const existingId = sessionStorage.getItem('neko-focus-tab-id')
+    if (existingId) return existingId
+
+    const nextId = crypto.randomUUID()
+    sessionStorage.setItem('neko-focus-tab-id', nextId)
+    return nextId
+  }, [])
+
+  const readDistractionLog = useCallback(async (sessionId: string | null) => {
+    if (!sessionId) return []
+
+    try {
+      const storageKey = `focus-distraction-log:${sessionId}`
+      const raw = localStorage.getItem(storageKey)
+      if (!raw) return []
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }, [])
+
+  const clearDistractionLog = useCallback(async (sessionId: string | null) => {
+    if (!sessionId) return
+
+    try {
+      localStorage.removeItem(`focus-distraction-log:${sessionId}`)
+    } catch {
+      // Ignore cleanup failures for ephemeral session data.
+    }
+  }, [])
 
   // Restore timer state on mount
   useEffect(() => {
@@ -108,7 +151,7 @@ export function FocusMode() {
     if (pomodoroState.task) setTaskInput(pomodoroState.task)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const syncBlockingState = useCallback((running: boolean, sites: string[], custom: CustomSite[]) => {
+  const syncBlockingState = useCallback((running: boolean, sites: string[], custom: CustomSite[], sessionId: string | null) => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
       const presetDomains = running
         ? DISTRACTING_SITES.filter(s => sites.includes(s.id)).map(s => s.domain)
@@ -117,7 +160,8 @@ export function FocusMode() {
       chrome.storage.local.set({
         focusBlocking: {
           isActive: running,
-          blockedDomains: [...presetDomains, ...customDomains]
+          blockedDomains: [...presetDomains, ...customDomains],
+          sessionId: running ? sessionId : null,
         }
       })
     }
@@ -145,32 +189,87 @@ export function FocusMode() {
 
   // Timer countdown
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>
-    if (isActive && pomodoroState.isRunning && timeLeft > 0) {
-      interval = setInterval(() => setTimeLeft(prev => prev - 1), 1000)
-    } else if (timeLeft === 0 && pomodoroState.isRunning && !hasCompletedRef.current) {
-      hasCompletedRef.current = true
-      const completedSession: FocusSession = {
-        task: pomodoroState.task || 'Deep work',
-        startedAt: pomodoroState.startedAt ?? Date.now() - pomodoroState.durationSec * 1000,
-        completedAt: Date.now(),
-        durationSec: pomodoroState.durationSec,
-        completed: true,
+    if (!pomodoroState.isRunning || !pomodoroState.startedAt) {
+      if (pomodoroState.pausedTimeLeft !== null) {
+        setTimeLeft(pomodoroState.pausedTimeLeft)
+      } else {
+        setTimeLeft(durationMin * 60)
       }
-      addSession(completedSession)
-      completeFocusSession()
-      setPomodoroState({ isRunning: false, startedAt: null, pausedTimeLeft: null, task: '', durationSec: durationMin * 60 })
-      syncBlockingState(false, blockedSites, customSites)
-      setSummaryData({ task: completedSession.task, durationSec: completedSession.durationSec })
-      setShowSummary(true)
+      return
+    }
+
+    const syncRemaining = () => {
+      const elapsed = Math.floor((Date.now() - pomodoroState.startedAt!) / 1000)
+      const remaining = Math.max(0, pomodoroState.durationSec - elapsed)
+      setTimeLeft(remaining)
+    }
+
+    syncRemaining()
+    const interval = setInterval(syncRemaining, 1000)
+    window.addEventListener('focus', syncRemaining)
+    document.addEventListener('visibilitychange', syncRemaining)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', syncRemaining)
+      document.removeEventListener('visibilitychange', syncRemaining)
+    }
+  }, [pomodoroState.isRunning, pomodoroState.startedAt, pomodoroState.durationSec, pomodoroState.pausedTimeLeft, durationMin])
+
+  useEffect(() => {
+    if (
+      timeLeft === 0 &&
+      pomodoroState.isRunning &&
+      !hasCompletedRef.current &&
+      pomodoroState.ownerTabId === getClientTabId()
+    ) {
+      hasCompletedRef.current = true
+      const finishSession = async () => {
+        const distractions = await readDistractionLog(pomodoroState.sessionId)
+        const tabsUsed = await readFocusSessionTabUsageCount(pomodoroState.sessionId)
+        const completedSession: FocusSession = {
+          task: pomodoroState.task || 'Deep work',
+          startedAt: pomodoroState.startedAt ?? Date.now() - pomodoroState.durationSec * 1000,
+          completedAt: Date.now(),
+          durationSec: pomodoroState.durationSec,
+          completed: true,
+          tabsUsed,
+          distractions,
+        }
+
+        addSession(completedSession)
+        completeFocusSession()
+        setPomodoroState({
+          isRunning: false,
+          startedAt: null,
+          pausedTimeLeft: null,
+          task: '',
+          durationSec: durationMin * 60,
+          sessionId: null,
+          ownerTabId: null,
+        })
+        syncBlockingState(false, blockedSites, customSites, null)
+        setSummaryData({
+          task: completedSession.task,
+          durationSec: completedSession.durationSec,
+          tabsUsed,
+          distractions,
+        })
+        setShowSummary(true)
+        await clearDistractionLog(pomodoroState.sessionId)
+        await clearFocusSessionTabUsageCount(pomodoroState.sessionId)
+      }
+
+      void finishSession()
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
       audio.play().catch(() => {})
-      if ('Notification' in window && Notification.permission === 'granted') {
+      if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'neko-focus-session-complete' }).catch(() => {})
+      } else if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Focus session complete!', { body: 'Great job. Take a break.', icon: '/favicon.svg' })
       }
     }
-    return () => clearInterval(interval)
-  }, [isActive, pomodoroState.isRunning, timeLeft]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timeLeft, pomodoroState.isRunning, pomodoroState.sessionId, pomodoroState.startedAt, pomodoroState.durationSec, pomodoroState.task, pomodoroState.ownerTabId, blockedSites, customSites, durationMin, addSession, completeFocusSession, syncBlockingState, readDistractionLog, clearDistractionLog, getClientTabId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
@@ -196,33 +295,49 @@ export function FocusMode() {
   const startTimer = () => {
     hasCompletedRef.current = false
     const dur = pomodoroState.pausedTimeLeft !== null ? pomodoroState.pausedTimeLeft : durationMin * 60
+    const sessionId = pomodoroState.sessionId ?? crypto.randomUUID()
+    const ownerTabId = getClientTabId()
+    void clearDistractionLog(sessionId)
+    void clearFocusSessionTabUsageCount(sessionId)
     setPomodoroState({
       isRunning: true,
       startedAt: Date.now() - ((durationMin * 60 - dur) * 1000),
       pausedTimeLeft: null,
       task: taskInput.trim() || 'Deep work',
       durationSec: durationMin * 60,
+      sessionId,
+      ownerTabId,
     })
-    syncBlockingState(true, blockedSites, customSites)
+    syncBlockingState(true, blockedSites, customSites, sessionId)
   }
 
   const pauseTimer = () => {
     setPomodoroState(prev => ({ ...prev, isRunning: false, startedAt: null, pausedTimeLeft: timeLeft }))
-    syncBlockingState(false, blockedSites, customSites)
+    syncBlockingState(false, blockedSites, customSites, null)
   }
 
   const resetTimer = () => {
+    void clearDistractionLog(pomodoroState.sessionId)
+    void clearFocusSessionTabUsageCount(pomodoroState.sessionId)
     hasCompletedRef.current = false
-    setPomodoroState({ isRunning: false, startedAt: null, pausedTimeLeft: null, task: '', durationSec: durationMin * 60 })
+    setPomodoroState({
+      isRunning: false,
+      startedAt: null,
+      pausedTimeLeft: null,
+      task: '',
+      durationSec: durationMin * 60,
+      sessionId: null,
+      ownerTabId: null,
+    })
     setTimeLeft(durationMin * 60)
     setTaskInput('')
-    syncBlockingState(false, blockedSites, customSites)
+    syncBlockingState(false, blockedSites, customSites, null)
   }
 
   const toggleSiteBlock = (siteId: string) => {
     setBlockedSites(prev => {
       const next = prev.includes(siteId) ? prev.filter(id => id !== siteId) : [...prev, siteId]
-      if (pomodoroState.isRunning) syncBlockingState(true, next, customSites)
+      if (pomodoroState.isRunning) syncBlockingState(true, next, customSites, pomodoroState.sessionId)
       return next
     })
   }
@@ -236,13 +351,13 @@ export function FocusMode() {
     const next = [...customSites, newSite]
     setCustomSites(next)
     setCustomSiteInput('')
-    if (pomodoroState.isRunning) syncBlockingState(true, blockedSites, next)
+    if (pomodoroState.isRunning) syncBlockingState(true, blockedSites, next, pomodoroState.sessionId)
   }
 
   const removeCustomSite = (siteId: string) => {
     const next = customSites.filter(s => s.id !== siteId)
     setCustomSites(next)
-    if (pomodoroState.isRunning) syncBlockingState(true, blockedSites, next)
+    if (pomodoroState.isRunning) syncBlockingState(true, blockedSites, next, pomodoroState.sessionId)
   }
 
   const maxWeekly = Math.max(...weeklyBlocks, 1)
@@ -482,6 +597,12 @@ export function FocusMode() {
             <div className="summary-details">
               <p className="summary-task">"{summaryData.task}"</p>
               <p className="summary-time">{Math.round(summaryData.durationSec / 60)} minutes focused.</p>
+              <p className="summary-time">
+                {summaryData.tabsUsed} tab{summaryData.tabsUsed === 1 ? '' : 's'} opened during this block.
+              </p>
+              <p className="summary-time">
+                {summaryData.distractions.length} distraction{summaryData.distractions.length === 1 ? '' : 's'} attempted.
+              </p>
             </div>
             <p className="identity-text">{identityLine}</p>
             <button className="focus-btn primary" onClick={() => setShowSummary(false)}>

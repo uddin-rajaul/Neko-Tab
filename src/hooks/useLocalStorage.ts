@@ -47,7 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
   showClock: true,
   showWeather: false,
   showStatusBar: true,
-    showTabCounter: true,
+  showTabCounter: true,
   theme: 'carbon',
   clockFormat: '24h',
   bgDim: 40,
@@ -114,16 +114,31 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T 
   // Cross-component sync: when another hook instance writes to the same key,
   // update this instance's state to match
   useEffect(() => {
-    const handler = (e: Event) => {
-      if ((e as CustomEvent).detail !== key) return
+    const syncFromStorage = () => {
       try {
         const raw = localStorage.getItem(key)
         if (raw === null) return
         setValue(prev => JSON.stringify(prev) === raw ? prev : JSON.parse(raw))
       } catch { /* ignore */ }
     }
-    window.addEventListener('neko-storage-sync', handler)
-    return () => window.removeEventListener('neko-storage-sync', handler)
+
+    const customHandler = (e: Event) => {
+      if ((e as CustomEvent).detail !== key) return
+      syncFromStorage()
+    }
+
+    const storageHandler = (e: StorageEvent) => {
+      if (e.key !== key) return
+      syncFromStorage()
+    }
+
+    window.addEventListener('neko-storage-sync', customHandler)
+    window.addEventListener('storage', storageHandler)
+
+    return () => {
+      window.removeEventListener('neko-storage-sync', customHandler)
+      window.removeEventListener('storage', storageHandler)
+    }
   }, [key])
 
   return [value, setValue]

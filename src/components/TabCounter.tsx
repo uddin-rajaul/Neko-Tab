@@ -1,44 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
+import { getTabUsageStorageKey, readTabUsageCount } from '../utils/tabUsage'
 
-export const TabCounter: React.FC = () => {
-  const [tabCount, setTabCount] = useState<number>(0);
+export function TabCounter() {
+  const [tabCount, setTabCount] = useState(0)
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const storageKey = `neko-tab-count-${today}`;
-    
-    let count = parseInt(localStorage.getItem(storageKey) || '0', 10);
-    
-    if (!sessionStorage.getItem('tab_counted')) {
-      sessionStorage.setItem('tab_counted', 'true');
-      count += 1;
-      localStorage.setItem(storageKey, count.toString());
-      
-      // Clean up old counts
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('neko-tab-count-') && key !== storageKey) {
-          localStorage.removeItem(key);
-        }
+    const syncCount = async () => {
+      setTabCount(await readTabUsageCount())
+    }
+
+    const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+      if (areaName !== 'local' || !changes[getTabUsageStorageKey()]) return
+      setTabCount(Number(changes[getTabUsageStorageKey()].newValue ?? 0))
+    }
+
+    const handleStorageSync = (event: StorageEvent) => {
+      if (event.key !== getTabUsageStorageKey()) return
+      void syncCount()
+    }
+
+    void syncCount()
+
+    if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+      chrome.storage.onChanged.addListener(handleStorageChange)
+    } else {
+      window.addEventListener('storage', handleStorageSync)
+    }
+
+    return () => {
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        chrome.storage.onChanged.removeListener(handleStorageChange)
+      } else {
+        window.removeEventListener('storage', handleStorageSync)
       }
     }
-    
-    setTabCount(count);
-    
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === storageKey) {
-        setTabCount(parseInt(e.newValue || '0', 10));
-      }
-    };
-    
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+  }, [])
 
   return (
-    <div className="stat-item" title={`${tabCount} new tabs opened today`}>
-      <span className="stat-label">TABS</span>
+    <div className="stat-item" title={`${tabCount} tabs turned into real navigation today in this browser session`}>
+      <span className="stat-label">TABS TODAY</span>
       <span className="stat-value">{tabCount}</span>
     </div>
-  );
-};
+  )
+}
