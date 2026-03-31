@@ -53,6 +53,7 @@ export interface Settings {
   bgBlur: number       // 0–10
   // Widgets
   showDailyGoal: boolean
+  showCalendar: boolean
   showGitHubStreak: boolean
   githubUsername: string
   // Font

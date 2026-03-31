@@ -18,6 +18,19 @@
   margin: 0 auto;
 }
 
+.calendar-corner {
+  position: fixed;
+  top: 80px;
+  right: var(--spacing-xl);
+  z-index: 10;
+}
+
+@media (max-width: 800px) {
+  .calendar-corner {
+    display: none;
+  }
+}
+
 /* Content Section - ASCII Art and Quick Links side by side */
 .content-section {
   display: flex;

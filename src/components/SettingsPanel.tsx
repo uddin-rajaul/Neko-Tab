@@ -396,6 +396,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         {renderToggle('Show Tab Counter', localSettings.showTabCounter, val => handleChange('showTabCounter', val))}
                         {renderToggle('Show Greeting', localSettings.showGreeting, val => handleChange('showGreeting', val))}
                         {renderToggle('Show Clock', localSettings.showClock, val => handleChange('showClock', val))}
+                        {renderToggle('Show Calendar', localSettings.showCalendar ?? true, val => handleChange('showCalendar', val))}
                       </div>
                     </div>
 

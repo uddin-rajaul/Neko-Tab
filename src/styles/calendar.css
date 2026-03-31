@@ -1,0 +1,49 @@
+.mini-calendar {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.2;
+}
+
+.calendar-month-year {
+  margin-bottom: 8px;
+  opacity: 0.8;
+  font-size: 14px;
+}
+
+.calendar-days-header, .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 26px);
+  gap: 2px;
+}
+
+.calendar-header-cell, .calendar-cell {
+  width: 26px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.calendar-header-cell {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.calendar-cell.day {
+  cursor: default;
+  font-size: 11px;
+}
+
+.calendar-cell.today {
+  background: var(--text-secondary);
+  color: var(--bg-primary);
+}
+
+.calendar-cell.empty {
+  visibility: hidden;
+}
