@@ -27,6 +27,9 @@
   max-width: 1400px;
   margin: var(--spacing-xl) auto 0;
   align-items: flex-start;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ASCII Column */
@@ -38,6 +41,7 @@
   justify-content: flex-end; /* This keeps cat flush near the links */
   padding-right: var(--spacing-md, 16px);
   overflow: hidden;
+  height: 100%;
 }
 
 /* Links Column */
@@ -48,6 +52,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-height: 0;
 }
 

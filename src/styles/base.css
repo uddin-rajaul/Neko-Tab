@@ -36,6 +36,14 @@
   box-sizing: border-box;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-mono), 'Fira Code', 'Consolas', monospace;
   font-size: 16px;
@@ -52,14 +60,15 @@ input, button, textarea, select {
 /* Theme styles */
 .app {
   font-family: var(--font-mono), 'Fira Code', 'Consolas', monospace;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-xl);
-  padding-bottom: 80px;
   transition: background-color 0.3s ease, color 0.3s ease;
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
