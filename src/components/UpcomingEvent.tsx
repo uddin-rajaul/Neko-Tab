@@ -1,6 +1,6 @@
 import { Calendar } from 'lucide-react';
 import { useGoogleCalendar, type CalendarEvent } from '../hooks/useGoogleCalendar';
-import { useTime } from '../hooks/useLocalStorage';
+import { useTime, useLocalStorage, STORAGE_KEYS } from '../hooks/useLocalStorage';
 
 interface UpcomingEventProps {
   enabled: boolean;
@@ -37,13 +37,12 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date): string 
 export function UpcomingEvent({ enabled }: UpcomingEventProps) {
   const { event, isConnected } = useGoogleCalendar(enabled);
   const time = useTime();
+  const [wasConnected] = useLocalStorage(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
   
   const timeRemaining = calculateTimeRemaining(event, time);
 
-  const wasConnected = localStorage.getItem('neko-calendar-connected') === 'true';
-
   // Use the localStorage hint to decide whether to reserve space before the token is confirmed
-  if (!enabled || (!isConnected && !wasConnected)) {
+  if (!enabled || (!isConnected && wasConnected !== 'true')) {
     return null;
   }
 

@@ -61,7 +61,7 @@ function GoogleCalendarSettings({
   showGoogleCalendar: boolean, 
   onChange: (val: boolean) => void 
 }) {
-  const { isConnected, connect, disconnect, error } = useGoogleCalendar(true);
+  const { isConnected, connect, disconnect, error } = useGoogleCalendar(false);
   const isExtension = typeof chrome !== 'undefined' && !!chrome.identity;
 
   return (

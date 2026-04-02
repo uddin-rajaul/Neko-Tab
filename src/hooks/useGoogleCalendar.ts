@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { STORAGE_KEYS } from './useLocalStorage';
 
 export interface CalendarEvent {
   id: string;
@@ -14,11 +15,11 @@ export interface CalendarEvent {
   htmlLink: string;
 }
 
-export function useGoogleCalendar(enabled: boolean) {
+export function useGoogleCalendar(fetchEnabled: boolean) {
   const [token, setToken] = useState<string | null>(null);
   const [event, setEvent] = useState<CalendarEvent | null>(() => {
     try {
-      const cached = localStorage.getItem('neko-calendar-last-event');
+      const cached = localStorage.getItem(STORAGE_KEYS.CALENDAR_LAST_EVENT);
       return cached ? JSON.parse(cached) : null;
     } catch {
       return null;
@@ -27,20 +28,21 @@ export function useGoogleCalendar(enabled: boolean) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Always check for an existing token on mount to determine connection status
   useEffect(() => {
-    if (!enabled || !chrome.identity) return;
+    if (!chrome.identity) return;
 
     chrome.identity.getAuthToken({ interactive: false }, (authToken) => {
       if (chrome.runtime.lastError) {
-        localStorage.setItem('neko-calendar-connected', 'false');
+        localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
         return;
       }
       if (authToken) {
         setToken(authToken as string);
-        localStorage.setItem('neko-calendar-connected', 'true');
+        localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
       }
     });
-  }, [enabled]);
+  }, []);
 
   // Method to manually connect (interactive)
   const connect = useCallback(() => {
@@ -52,7 +54,7 @@ export function useGoogleCalendar(enabled: boolean) {
       }
       if (authToken) {
         setToken(authToken as string);
-        localStorage.setItem('neko-calendar-connected', 'true');
+        localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
         setError(null);
       }
     });
@@ -64,20 +66,19 @@ export function useGoogleCalendar(enabled: boolean) {
     chrome.identity.removeCachedAuthToken({ token }, () => {
       setToken(null);
       setEvent(null);
-      localStorage.setItem('neko-calendar-connected', 'false');
-      localStorage.removeItem('neko-calendar-last-event');
+      localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
+      localStorage.removeItem(STORAGE_KEYS.CALENDAR_LAST_EVENT);
     });
   }, [token]);
 
-  // Fetch upcoming event when token is available
+  // Fetch upcoming event when token is available and fetching is enabled
   useEffect(() => {
-    if (!enabled) {
-      setEvent(null);
+    if (!fetchEnabled) {
+      // If we're not supposed to fetch, we don't clear the event 
+      // (to preserve cache on home page if enabled is toggled)
       return;
     }
     
-    // Don't clear the event if token is missing but we're still enabled
-    // This preserves the cached event during the initial auth check
     if (!token) return;
 
     let isMounted = true;
@@ -112,9 +113,9 @@ export function useGoogleCalendar(enabled: boolean) {
           const newEvent = data.items?.[0] || null;
           setEvent(newEvent);
           if (newEvent) {
-            localStorage.setItem('neko-calendar-last-event', JSON.stringify(newEvent));
+            localStorage.setItem(STORAGE_KEYS.CALENDAR_LAST_EVENT, JSON.stringify(newEvent));
           } else {
-            localStorage.removeItem('neko-calendar-last-event');
+            localStorage.removeItem(STORAGE_KEYS.CALENDAR_LAST_EVENT);
           }
         }
       } catch (err: any) {
@@ -135,7 +136,7 @@ export function useGoogleCalendar(enabled: boolean) {
       isMounted = false;
       if (timeoutId) window.clearTimeout(timeoutId);
     };
-  }, [token, enabled]);
+  }, [token, fetchEnabled]);
 
   return {
     token,
