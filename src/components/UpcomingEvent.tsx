@@ -1,6 +1,8 @@
 import { Calendar } from 'lucide-react';
 import { useGoogleCalendar, type CalendarEvent } from '../hooks/useGoogleCalendar';
 import { useTime, useLocalStorage, STORAGE_KEYS } from '../hooks/useLocalStorage';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface UpcomingEventProps {
   enabled: boolean;
@@ -35,11 +37,21 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date): string 
 }
 
 export function UpcomingEvent({ enabled }: UpcomingEventProps) {
-  const { event, isConnected } = useGoogleCalendar(enabled);
+  const { event, isConnected, error } = useGoogleCalendar(enabled);
   const time = useTime();
   const [wasConnected] = useLocalStorage(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
   
   const timeRemaining = calculateTimeRemaining(event, time);
+
+  useEffect(() => {
+    if (error && enabled) {
+      setToast(`Calendar: ${error}`);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 3000);
+    }
+  }, [error, enabled]);
 
   // Use the localStorage hint to decide whether to reserve space before the token is confirmed
   if (!enabled || (!isConnected && wasConnected !== 'true')) {
@@ -47,41 +59,48 @@ export function UpcomingEvent({ enabled }: UpcomingEventProps) {
   }
 
   return (
-    <div 
-      className="upcoming-event-wrapper" 
-      style={{ 
-        height: '32px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        margin: '0 auto'
-      }}
-    >
-      {event && (
-        <a 
-          href={event.htmlLink} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="upcoming-event-widget"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '0.85rem',
-            color: 'var(--text-color)',
-            textDecoration: 'none',
-            cursor: 'pointer',
-            opacity: 0.8
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
-        >
-          <Calendar size={14} color="var(--accent-color)" />
-          <span style={{ fontWeight: 500 }}>{event.summary}</span>
-          <span style={{ opacity: 0.5 }}>•</span>
-          <span style={{ opacity: 0.8 }}>{timeRemaining}</span>
-        </a>
+    <>
+      <div 
+        className="upcoming-event-wrapper" 
+        style={{ 
+          height: '32px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          margin: '0 auto'
+        }}
+      >
+        {event && (
+          <a 
+            href={event.htmlLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="upcoming-event-widget"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '0.85rem',
+              color: 'var(--text-color)',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              opacity: 0.8
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
+          >
+            <Calendar size={14} color="var(--accent-color)" />
+            <span style={{ fontWeight: 500 }}>{event.summary}</span>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <span style={{ opacity: 0.8 }}>{timeRemaining}</span>
+          </a>
+        )}
+      </div>
+
+      {toast && createPortal(
+        <div className="cp-toast">{toast}</div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
