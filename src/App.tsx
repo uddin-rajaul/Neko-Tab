@@ -150,7 +150,10 @@ function App() {
                 format={settings.clockFormat}
               />
             )}
-            <UpcomingEvent enabled={settings.showGoogleCalendar} />
+            <UpcomingEvent 
+              enabled={settings.showGoogleCalendar} 
+              lookahead={settings.googleCalendarLookahead ?? 4320} 
+            />
           </div>
           {settings.showDailyGoal && <DailyGoal />}
           <CommandPalette />

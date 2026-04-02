@@ -63,4 +63,5 @@ export interface Settings {
   showBookmarks: boolean
   // Google Calendar
   showGoogleCalendar: boolean
+  googleCalendarLookahead: number // in minutes
 }

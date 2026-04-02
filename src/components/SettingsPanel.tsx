@@ -56,10 +56,14 @@ interface SettingsPanelProps {
 type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'integrations' | 'backup' | 'advanced';
 function GoogleCalendarSettings({ 
   showGoogleCalendar, 
-  onChange 
+  lookahead,
+  onChange,
+  onLookaheadChange 
 }: { 
   showGoogleCalendar: boolean, 
-  onChange: (val: boolean) => void 
+  lookahead: number,
+  onChange: (val: boolean) => void,
+  onLookaheadChange: (val: number) => void
 }) {
   const { isConnected, connect, disconnect, error } = useGoogleCalendar(false);
   const isExtension = typeof chrome !== 'undefined' && !!chrome.identity;
@@ -86,10 +90,27 @@ function GoogleCalendarSettings({
             <div className="saas-toggle-thumb" />
           </button>
         </div>
-      </div>
+        </div>
 
-      {!isConnected ? (
-        <div>
+        {isConnected && (
+        <div className='saas-flex-row' style={{ marginBottom: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+          <span className="saas-label" style={{ margin: 0 }}>Show events within:</span>
+          <select 
+            className='saas-input' 
+            style={{ width: 'auto', padding: '4px 8px', height: '32px' }}
+            value={lookahead}
+            onChange={(e) => onLookaheadChange(Number(e.target.value))}
+          >
+            <option value={60}>1 hour</option>
+            <option value={360}>6 hours</option>
+            <option value={4320}>3 days</option>
+            <option value={10080}>7 days</option>
+            <option value={14400}>10 days</option>
+          </select>
+        </div>
+        )}
+
+        {!isConnected ? (        <div>
           <p className='saas-hint' style={{ marginBottom: 12 }}>Connect your Google account to see your next upcoming event.</p>
           <button className='saas-btn-primary' onClick={connect}>
             Connect Google Calendar
@@ -689,7 +710,9 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <div className='saas-section'>
                     <GoogleCalendarSettings 
                       showGoogleCalendar={localSettings.showGoogleCalendar ?? false} 
+                      lookahead={localSettings.googleCalendarLookahead ?? 4320}
                       onChange={(val) => handleChange('showGoogleCalendar', val)} 
+                      onLookaheadChange={(val) => handleChange('googleCalendarLookahead', val)}
                     />
                   </div>
                 )}

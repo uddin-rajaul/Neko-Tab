@@ -69,7 +69,8 @@ const DEFAULT_SETTINGS: Settings = {
   asciiArt: CAT_ASCII,
   showChromeTab: false,
   showBookmarks: true,
-  showGoogleCalendar: false
+  showGoogleCalendar: false,
+  googleCalendarLookahead: 4320 // 3 days
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {

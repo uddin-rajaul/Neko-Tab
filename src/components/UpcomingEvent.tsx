@@ -6,9 +6,10 @@ import { createPortal } from 'react-dom';
 
 interface UpcomingEventProps {
   enabled: boolean;
+  lookahead: number;
 }
 
-function calculateTimeRemaining(event: CalendarEvent | null, now: Date): string {
+function calculateTimeRemaining(event: CalendarEvent | null, now: Date, lookaheadMins: number): string {
   if (!event) return '';
   
   const startStr = event.start.dateTime || event.start.date;
@@ -17,6 +18,9 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date): string 
   const startTime = new Date(startStr).getTime();
   const nowTime = now.getTime();
   const diffMs = startTime - nowTime;
+
+  // Filter based on lookahead window (only show if event is within the window)
+  if (diffMs > lookaheadMins * 60 * 1000) return '';
 
   if (diffMs <= 0) return 'now';
 
@@ -36,14 +40,14 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date): string 
   }
 }
 
-export function UpcomingEvent({ enabled }: UpcomingEventProps) {
+export function UpcomingEvent({ enabled, lookahead }: UpcomingEventProps) {
   const { event, isConnected, error } = useGoogleCalendar(enabled);
   const time = useTime();
   const [wasConnected] = useLocalStorage(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
   
-  const timeRemaining = calculateTimeRemaining(event, time);
+  const timeRemaining = calculateTimeRemaining(event, time, lookahead);
 
   useEffect(() => {
     if (error && enabled) {
@@ -70,7 +74,7 @@ export function UpcomingEvent({ enabled }: UpcomingEventProps) {
           margin: '0 auto'
         }}
       >
-        {event && (
+        {(event && timeRemaining) && (
           <a 
             href={event.htmlLink} 
             target="_blank" 
