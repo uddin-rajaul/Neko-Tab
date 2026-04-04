@@ -63,6 +63,15 @@ When you open `Ctrl+K` with an empty query, the last 10 visited URLs and searche
 - **Notifications** — desktop notification + sound on completion
 - **Identity reinforcement** — motivational messages based on your streak
 
+### Google Calendar Integration
+
+See your next upcoming event directly on the new tab page, right below the clock.
+
+- Connect your Google account from **Settings → Integrations → Google Calendar**
+- Configure how far ahead to show events (1 hour to 10 days)
+- Click the event to open it in Google Calendar
+- Disconnect anytime from the same settings panel
+
 ### Daily Goal
 
 A single focus line between the clock and command palette. Click to edit, resets at midnight.
@@ -128,6 +137,37 @@ npm install
 npm run dev
 ```
 
+### Google Calendar (for contributors building from source)
+
+The Google Calendar integration requires your own Google Cloud credentials. End users installing from the Chrome Web Store don't need to do any of this.
+
+1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
+2. Go to **APIs & Services → OAuth consent screen** → External → fill in app name and email
+3. Go to **Data access** → add scope `https://www.googleapis.com/auth/calendar.events.readonly`
+4. Build and load the extension once, then copy its actual Extension ID from `chrome://extensions`
+5. Go to **Clients → Create client** → Chrome Extension → paste that exact Extension ID
+6. Copy the generated **Client ID**
+
+The Extension ID must exactly match the one produced by your manifest `key`. Chrome's OAuth flow uses a redirect URL in the form `https://<extension-id>.chromiumapp.org/`, and Google will return `Error 400: invalid_request` if the OAuth client was created for a different ID.
+
+Then set up your local env:
+
+```bash
+cp .env.example .env.local
+# Fill in GOOGLE_CLIENT_ID and GOOGLE_EXTENSION_KEY in .env.local
+```
+
+To get your `GOOGLE_EXTENSION_KEY`:
+```bash
+npm run build
+# Pack extension in chrome://extensions (Developer mode → Pack extension → select dist/)
+openssl rsa -in dist.pem -pubout -outform DER | openssl base64 -A
+```
+
+If you copy this from a terminal, make sure you only copy the base64 output itself and not a trailing shell prompt character like `%`.
+
+Make sure `dist.pem` and `dist.crx` are in your `.gitignore` and never committed.
+
 ### Load as a browser extension
 
 ```bash
@@ -147,6 +187,7 @@ Open the gear icon (top-right) to access:
 - **ASCII Art** — image-to-ASCII converter, custom art editor, or OS-specific art (Windows/Mac/Linux)
 - **Widgets** — background image with dim/blur controls, daily goal, GitHub streak (set username)
 - **Aliases** — define short URL aliases for the command palette
+- **Integrations** — connect Google Calendar to show upcoming events on the home page
 - **Focus Mode** — configure default duration and blocked sites
 - **Advanced** — reset all user data and wipe stored settings cleanly
 
@@ -159,6 +200,7 @@ Open the gear icon (top-right) to access:
 | `storage` | Persist settings, bookmarks, scratchpad, aliases, timer state |
 | `declarativeNetRequest` | Block sites during Focus Mode sessions |
 | `host_permissions: <all_urls>` | Required for site blocking to apply on any domain |
+| `identity` | OAuth flow for Google Calendar integration |
 
 ---
 
