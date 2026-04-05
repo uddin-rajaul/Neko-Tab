@@ -197,6 +197,68 @@
 /* Clock */
 .clock-container {
   text-align: center;
+  margin-bottom: var(--spacing-lg);
+  cursor: pointer;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  user-select: none;
+}
+
+.center-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, max-width;
+}
+
+.app.clock-maximized {
+  overflow: hidden;
+  padding-bottom: var(--spacing-xl); /* Match top padding to center perfectly */
+}
+
+.app.clock-maximized .center-section {
+  max-width: 800px;
+  transform: translate3d(0, 0, 0);
+  z-index: 100;
+}
+
+.app.clock-maximized .clock-container {
+  transform: scale(1.6) translate3d(0, 0, 0);
+  margin-bottom: 30px;
+}
+
+.app.clock-maximized .content-section,
+.app.clock-maximized .activity-widget,
+.app.clock-maximized .settings-toggle,
+.app.clock-maximized .scratchpad-toggle,
+.app.clock-maximized .chrome-tab-toggle,
+.app.clock-maximized .focus-toggle-btn,
+.app.clock-maximized .cp-trigger {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.content-section,
+.activity-widget,
+.settings-toggle,
+.scratchpad-toggle,
+.chrome-tab-toggle,
+.focus-toggle-btn,
+.daily-goal-container,
+.cp-trigger {
+  transition: opacity 0.4s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease, visibility 0.4s ease;
+  overflow: visible;
+  max-height: 2000px; /* Large enough to not clip content */
 }
 
 .clock-time {

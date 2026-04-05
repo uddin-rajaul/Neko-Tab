@@ -1,4 +1,5 @@
 import { useTime } from '../hooks/useLocalStorage'
+import { useState, useEffect } from 'react'
 
 interface ClockProps {
   userName?: string
@@ -8,6 +9,54 @@ interface ClockProps {
 
 export function Clock({ userName = 'User', showGreeting = true, format = '24h' }: ClockProps) {
   const time = useTime()
+  const [isMaximized, setIsMaximized] = useState(false)
+
+  useEffect(() => {
+    const appEl = document.querySelector('.app')
+    if (isMaximized) {
+      appEl?.classList.add('clock-maximized')
+    } else {
+      appEl?.classList.remove('clock-maximized')
+    }
+    return () => {
+      appEl?.classList.remove('clock-maximized')
+    }
+  }, [isMaximized])
+
+  useEffect(() => {
+    if (!isMaximized) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. If typing in an input or textarea, don't exit
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+
+      // 2. Ignore modifier keys alone
+      if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
+
+      // 3. Check for registered shortcuts
+      const isCmdOrCtrl = e.ctrlKey || e.metaKey
+      const isShortcut = 
+        e.key === 'Escape' ||
+        (isCmdOrCtrl && e.key === 'k') ||
+        e.key === '/' ||
+        (isCmdOrCtrl && e.key === '`') ||
+        (isCmdOrCtrl && e.shiftKey && e.key === 'T') ||
+        (e.key.toLowerCase() === 'c' && !isCmdOrCtrl && !e.altKey) ||
+        e.key === '?'
+      
+      if (isShortcut) {
+        setIsMaximized(false)
+        // We do NOT stop propagation or prevent default here, 
+        // so the registered action can still trigger.
+      }
+    }
+
+    // Use capture phase to intercept before other handlers if necessary,
+    // though here we just need to see the event to trigger exit.
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [isMaximized])
   
   const hours = time.getHours()
   const minutes = time.getMinutes()
@@ -102,10 +151,14 @@ export function Clock({ userName = 'User', showGreeting = true, format = '24h' }
   })
 
   return (
-    <div className="clock-container">
+    <div 
+      className={`clock-container ${isMaximized ? 'maximized' : ''}`}
+      onClick={() => setIsMaximized(!isMaximized)}
+      title={isMaximized ? 'Click to exit' : 'Click to maximize'}
+    >
       <div className="clock-time">{formattedTime}</div>
       <div className="clock-date">{formattedDate}</div>
-      {showGreeting && (
+      {showGreeting && !isMaximized && (
         <div className="clock-greeting">{greeting}, {userName}</div>
       )}
     </div>
