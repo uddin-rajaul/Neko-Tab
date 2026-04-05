@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "Neko Tab",
   "version": "1.0.3",
+  // "key": "ADD_YOUR_OWN_KEY",
   "description": "Custom Terminal-style New Tab Page",
   "chrome_url_overrides": {
     "newtab": "index.html"
@@ -16,8 +17,15 @@
     "storage",
     "declarativeNetRequest",
     "webRequest",
-    "notifications"
+    "notifications",
+    "identity"
   ],
+  "oauth2": {
+    // "client_id": "ADD_YOUR_CLIENT_ID",
+    "scopes": [
+      "https://www.googleapis.com/auth/calendar.events.readonly"
+    ]
+  },
   "host_permissions": [
     "<all_urls>"
   ],

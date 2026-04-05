@@ -7,6 +7,7 @@ import {
 import { WINDOWS_ASCII, MACOS_ASCII, LINUX_ASCII, CAT_ASCII, DETECTED_OS } from "./components/ascii";
 import { Bookmarks } from "./components/Bookmarks";
 import { Clock } from "./components/Clock";
+import { UpcomingEvent } from "./components/UpcomingEvent";
 import { PixelArt } from "./components/PixelArt";
 import { ActivityWidget } from "./components/ActivityWidget";
 import { DailyGoal } from "./components/DailyGoal";
@@ -141,13 +142,19 @@ function App() {
 
         {/* Center Section */}
         <div className="center-section">
-          {settings.showClock && (
-            <Clock
-              userName={settings.userName}
-              showGreeting={settings.showGreeting}
-              format={settings.clockFormat}
+          <div style={{ marginBottom: (settings.showClock || settings.showGoogleCalendar) ? 'var(--spacing-lg)' : 0 }}>
+            {settings.showClock && (
+              <Clock
+                userName={settings.userName}
+                showGreeting={settings.showGreeting}
+                format={settings.clockFormat}
+              />
+            )}
+            <UpcomingEvent 
+              enabled={settings.showGoogleCalendar} 
+              lookahead={settings.googleCalendarLookahead ?? 4320} 
             />
-          )}
+          </div>
           {settings.showDailyGoal && <DailyGoal />}
           <CommandPalette />
         </div>

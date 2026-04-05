@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import type { BookmarkCategory, Settings } from '../types'
 import { CAT_ASCII } from '../components/ascii'
 
+export const STORAGE_KEYS = {
+  SETTINGS: 'startpage-settings',
+  BOOKMARKS: 'startpage-bookmarks',
+  BG_IMAGE: 'neko-bg-image',
+  CALENDAR_CONNECTED: 'neko-calendar-connected',
+  CALENDAR_LAST_EVENT: 'neko-calendar-last-event',
+} as const;
+
 const DEFAULT_CATEGORIES: BookmarkCategory[] = [
   {
     id: '1',
@@ -60,7 +68,9 @@ const DEFAULT_SETTINGS: Settings = {
   customAsciiArt: CAT_ASCII,
   asciiArt: CAT_ASCII,
   showChromeTab: false,
-  showBookmarks: true
+  showBookmarks: true,
+  showGoogleCalendar: false,
+  googleCalendarLookahead: 4320 // 3 days
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {
