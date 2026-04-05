@@ -63,6 +63,16 @@ When you open `Ctrl+K` with an empty query, the last 10 visited URLs and searche
 - **Notifications** — desktop notification + sound on completion
 - **Identity reinforcement** — motivational messages based on your streak
 
+### Google Calendar Integration
+
+See your next upcoming event directly on the new tab page, right below the clock.
+
+- Connect your Google account from **Settings → Integrations → Google Calendar**
+- Configure how far ahead to show events (1 hour to 10 days)
+- Click the event to open it in Google Calendar
+- Disconnect anytime from the same settings panel
+- Chrome only — requires the `identity` API
+
 ### Daily Goal
 
 A single focus line between the clock and command palette. Click to edit, resets at midnight.
@@ -147,6 +157,7 @@ Open the gear icon (top-right) to access:
 - **ASCII Art** — image-to-ASCII converter, custom art editor, or OS-specific art (Windows/Mac/Linux)
 - **Widgets** — background image with dim/blur controls, daily goal, GitHub streak (set username)
 - **Aliases** — define short URL aliases for the command palette
+- **Integrations** — connect Google Calendar to show upcoming events on the home page
 - **Focus Mode** — configure default duration and blocked sites
 - **Advanced** — reset all user data and wipe stored settings cleanly
 
@@ -159,6 +170,7 @@ Open the gear icon (top-right) to access:
 | `storage` | Persist settings, bookmarks, scratchpad, aliases, timer state |
 | `declarativeNetRequest` | Block sites during Focus Mode sessions |
 | `host_permissions: <all_urls>` | Required for site blocking to apply on any domain |
+| `identity` | OAuth flow for Google Calendar integration (Chrome only) |
 
 ---
 

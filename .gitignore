@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 .env
+dist.pem
+dist.crx
 
 # Testing
 coverage
