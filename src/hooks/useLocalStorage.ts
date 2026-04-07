@@ -70,7 +70,8 @@ const DEFAULT_SETTINGS: Settings = {
   showChromeTab: false,
   showBookmarks: true,
   showGoogleCalendar: false,
-  googleCalendarLookahead: 4320 // 3 days
+  googleCalendarLookahead: 4320, // 3 days
+  startupSitesEnabled: false,
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {

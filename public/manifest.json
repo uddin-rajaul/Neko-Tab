@@ -18,6 +18,7 @@
   "permissions": [
     "topSites",
     "storage",
+    "tabs",
     "declarativeNetRequest",
     "webRequest",
     "notifications",
@@ -35,6 +36,14 @@
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "commands": {
+    "open-startup-sites": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Open startup sites"
+    }
   },
   "browser_specific_settings": {
     "gecko": {

@@ -6,6 +6,29 @@ let activeFocusBlocking = { isActive: false, blockedDomains: [], sessionId: null
 
 loadFocusBlockingState()
 
+// Startup Sites shortcut handler
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== 'open-startup-sites') return
+
+  // Read fresh from disk each time — service worker may have cached stale state
+  const all = await chrome.storage.local.get(null)
+  const sitesRaw = all.neko_startup_sites
+  const enabled = all.neko_startup_enabled
+
+  if (!enabled) return
+
+  const sites = Array.isArray(sitesRaw) ? sitesRaw : []
+  if (sites.length === 0) return
+
+  // Show the card instead of opening directly — user confirms from the launcher
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (activeTab?.id != null) {
+    void chrome.tabs.sendMessage(activeTab.id, { type: 'neko-show-startup-card' }).catch(() => {
+      // Tab may not have a listener — that's fine
+    })
+  }
+})
+
 // Listen for changes to focus blocking state
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.focusBlocking) {

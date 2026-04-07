@@ -1,0 +1,89 @@
+/* ==================== STARTUP LAUNCHER ==================== */
+.startup-launcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.startup-launcher-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.startup-launcher-prompt {
+  color: var(--text-secondary);
+}
+
+.startup-launcher-open {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  color: var(--bg-primary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.startup-launcher-open:hover {
+  opacity: 0.85;
+}
+
+.startup-launcher-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+}
+
+.startup-launcher-dismiss:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+/* ==================== STARTUP TOAST ==================== */
+.startup-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 13px;
+  z-index: 9999;
+  animation: toast-in 0.2s ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
