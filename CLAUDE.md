@@ -98,21 +98,104 @@ For multi-step tasks, state a brief plan:
 - Follow existing patterns in the codebase
 - Always run a build before pushing — zero TypeScript errors required
 
+
 ## Project Structure
 
 ```
 src/
   components/   # React components, one per file
-  hooks/        # useLocalStorage, useSettings, useBookmarks, useTime
+  hooks/        # useLocalStorage, useSettings, useBookmarks, useTime, useGoogleCalendar
   utils/        # imageToAscii
   types.ts      # Shared TypeScript interfaces
-  index.css     # All styles (theme vars, components, layout)
+  styles/       # Split CSS files, imported via index.css manifest
+  index.css     # Pure @import manifest — do not add styles here directly
   App.tsx       # Root layout
 public/
-  manifest.json # Chrome Extension MV3
-  background.js # Service worker
+  manifest.json # Chrome Extension MV3 — placeholders injected at build time
+  background.js # Service worker (focus mode blocking)
+  dist.pem      # Extension private key — DO NOT regenerate, DO NOT commit changes
 screenshots/    # Only image.png and terminal.png are used in README
 ```
+
+## Build System & Manifest Injection
+
+`vite.config.ts` runs a `closeBundle` plugin that post-processes `dist/manifest.json`:
+- Replaces `__GOOGLE_CLIENT_ID__` with `GOOGLE_CLIENT_ID` from `.env.local`
+- Replaces `__GOOGLE_EXTENSION_KEY__` with `GOOGLE_EXTENSION_KEY` from `.env.local`
+- If `GOOGLE_EXTENSION_KEY` is missing or invalid base64, the `key` field is stripped entirely (safe for local dev without OAuth)
+
+`.env.local` holds both values and is gitignored. Never hardcode client IDs in source.
+
+## Chrome Extension — MV3 Rules
+
+These are hard constraints. Violating them causes silent failures and extension instability:
+
+**CSP (Content Security Policy)**
+- `manifest.json` must declare `content_security_policy.extension_pages` explicitly
+- Inline `<style>` blocks in `index.html` require their SHA-256 hash in the CSP `style-src`
+- When adding or changing the inline style block, get the hash from the Chrome extension error console and add it: `'sha256-XXXX='`
+- Current required hash: `sha256-9h6cMlG+wehv5PIl9iqaQcU8WSqE0ANpgmuDQF5LX6I=` (matches the instant-background `<style>` in `index.html`)
+- External font loading (`fonts.googleapis.com`, `fonts.gstatic.com`, `cdn.jsdelivr.net`) must be in `style-src` / `font-src`
+- Do NOT add `<link rel="preconnect">` or `<link rel="dns-prefetch">` to `index.html` for external domains — MV3 CSP blocks them on extension pages and Chrome logs violations that accumulate and destabilize the extension
+
+**Google Identity / OAuth**
+- The OAuth client in Google Cloud Console must be type **"Chrome extension"**, not "Web application"
+- For Chrome extension type clients, Google handles the redirect URI automatically — do NOT manually add `chromiumapp.org` URIs
+- The `Item ID` field in the Cloud Console must match the unpacked extension ID (derived from `dist.pem`)
+- Extension ID is stable as long as the `key` field is present in `manifest.json`
+- `dist.pem` is the private key that determines the extension ID — never regenerate it
+
+**`chrome.identity` usage**
+- `getAuthToken({ interactive: false })` on mount will fail silently at browser startup (cold token cache)
+- Do NOT write `CALENDAR_CONNECTED=false` to localStorage on `lastError` — this causes Chrome to re-validate OAuth on every new tab and destabilizes the extension
+- Only set `CALENDAR_CONNECTED=false` on explicit user disconnect, not on transient errors
+
+
+## Extension Persistence (Unpacked / Dev)
+
+Chrome and Brave do NOT persist unpacked extensions across restarts if the extension registration is stale or corrupt. Symptoms:
+- Extension disappears from `chrome://extensions` after browser restart
+- `chrome://extensions` shows `newtab` override as `[]` (empty)
+- Extension ID is not present in `~/.config/google-chrome/Default/Extensions/`
+
+**Root causes and fixes:**
+
+1. **Missing `key` in built manifest** — without `key`, Chrome assigns a random ID each install. The `key` must be the base64 public key derived from `dist.pem`. The Vite build pipeline handles this automatically from `.env.local`.
+
+2. **CSP violations on extension page load** — inline styles or external preconnect links that violate the CSP cause Chrome to log errors on every new tab. Accumulation of these errors causes Chrome to drop the extension after restart. Fix: ensure CSP includes the correct SHA-256 hash for inline styles and remove all external preconnect/dns-prefetch links from `index.html`.
+
+3. **Stale/duplicate extension entry in browser Preferences** — if the extension was loaded before the `key` was set, a stale entry with a different ID may conflict. Fix: remove the stale entry from `~/.config/google-chrome/Default/Preferences` or `~/.config/BraveSoftware/Brave-Browser/Default/Preferences` using the Python cleanup script below, then reload unpacked.
+
+**Cleanup script for stale Preferences entries:**
+```python
+import json, shutil
+
+# Use the correct path for your browser:
+# Chrome:  ~/.config/google-chrome/Default/Preferences
+# Brave:   ~/.config/BraveSoftware/Brave-Browser/Default/Preferences
+path = "/home/rajauluddin/.config/BraveSoftware/Brave-Browser/Default/Preferences"
+shutil.copy(path, path + ".bak")
+
+with open(path) as f:
+    prefs = json.load(f)
+
+ext_id = "bjmcgcoepohfafggeieneebblajgijcb"
+settings = prefs["extensions"]["settings"]
+if ext_id in settings:
+    del settings[ext_id]
+
+for section in ["settings", "settings_encrypted_hash"]:
+    macs = prefs.get("protection", {}).get("macs", {}).get("extensions", {}).get(section, {})
+    if ext_id in macs:
+        del macs[ext_id]
+
+with open(path, "w") as f:
+    json.dump(prefs, f, separators=(',', ':'))
+```
+Run with browser fully closed. Then reopen and Load unpacked → `dist/`.
+
+**Extension ID:** `bjmcgcoepohfafggeieneebblajgijcb` (stable, derived from `dist.pem`)
+
 
 ## localStorage Keys
 
@@ -130,3 +213,25 @@ screenshots/    # Only image.png and terminal.png are used in README
 | `neko-timer-start` | timestamp or null |
 | `neko-font` | selected font family string |
 | `neko-gh-streak-{user}` | cached GitHub streak data |
+| `neko-calendar-connected` | `'true'` or `'false'` string |
+| `neko-calendar-last-event` | JSON CalendarEvent or absent |
+
+## Google Calendar Integration Notes
+
+- Hook: `src/hooks/useGoogleCalendar.ts`
+- Component: `src/components/UpcomingEvent.tsx`
+- OAuth client ID injected at build time from `.env.local` → `GOOGLE_CLIENT_ID`
+- Extension key injected at build time from `.env.local` → `GOOGLE_EXTENSION_KEY`
+- Calendar permission scope: `https://www.googleapis.com/auth/calendar.events.readonly`
+- Token is fetched non-interactively on mount; interactive only on explicit user connect
+- `CALENDAR_CONNECTED` localStorage key is used to pre-reserve UI space before token is confirmed — do not reset it on transient startup errors
+
+## PR Review Checklist for Contributors
+
+When reviewing PRs that touch the extension manifest or OAuth:
+- [ ] No hardcoded client IDs or API keys in source files
+- [ ] `.env.local` values accessed via `import.meta.env.VITE_*` or Vite build injection only
+- [ ] No `<link rel="preconnect">` to external domains added to `index.html`
+- [ ] If inline styles are added/changed in `index.html`, the CSP hash must be updated
+- [ ] `chrome.identity` error handlers do not write negative state to localStorage on transient failures
+- [ ] Extension key (`dist.pem`) not regenerated or modified

@@ -1,3 +1,7 @@
+export interface StartupSite {
+  url: string
+}
+
 export interface UrlAlias {
   key: string   // e.g. "gh"
   url: string   // e.g. "https://github.com/raj"
@@ -64,4 +68,6 @@ export interface Settings {
   // Google Calendar
   showGoogleCalendar: boolean
   googleCalendarLookahead: number // in minutes
+  // Startup Sites
+  startupSitesEnabled: boolean
 }

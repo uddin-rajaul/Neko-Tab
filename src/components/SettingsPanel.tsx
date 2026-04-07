@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug } from 'lucide-react'
-import type { Settings as SettingsType, ThemeInfo, UrlAlias } from '../types'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink } from 'lucide-react'
+import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
+import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { useGoogleCalendar } from '../hooks/useGoogleCalendar'
@@ -53,7 +54,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'integrations' | 'backup' | 'advanced';
+type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced';
 function GoogleCalendarSettings({ 
   showGoogleCalendar, 
   lookahead,
@@ -143,6 +144,9 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [aliases, setAliases] = useLocalStorage<UrlAlias[]>('neko-aliases', [])
   const [aliasKey, setAliasKey] = useState('')
   const [aliasUrl, setAliasUrl] = useState('')
+  const [newSiteUrl, setNewSiteUrl] = useState('')
+  const [siteError, setSiteError] = useState<'invalid' | 'limit' | null>(null)
+  const { sites: startupSites, setSites: setStartupSites, enabled: startupEnabled, setEnabled: setStartupEnabled } = useStartupSites()
 
   // Sync local settings when panel opens or settings change externally
   useEffect(() => {
@@ -188,6 +192,25 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     const file = e.target.files?.[0]
     if (file) {
       setUploadedFile(file)
+    }
+  }
+
+  const addStartupSite = (url: string) => {
+    const trimmed = url.trim()
+    if (!trimmed) return
+    if (startupSites.length >= 10) {
+      setSiteError('limit')
+      setTimeout(() => setSiteError(null), 2000)
+      return
+    }
+    try {
+      new URL(trimmed)
+      setStartupSites((prev: StartupSite[]) => [...prev, { url: trimmed }])
+      setNewSiteUrl('')
+      setSiteError(null)
+    } catch {
+      setSiteError('invalid')
+      setTimeout(() => setSiteError(null), 2000)
     }
   }
 
@@ -276,6 +299,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <Hash size={16} /> Aliases
                 </button>
                 <button
+                  className={`saas-nav-item ${activeTab === 'startup' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('startup')}
+                >
+                  <ExternalLink size={16} /> Startup Sites
+                </button>
+                <button
                   className={`saas-nav-item ${activeTab === 'integrations' ? 'active' : ''}`}
                   onClick={() => setActiveTab('integrations')}
                 >
@@ -305,6 +334,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'ascii' && 'Custom ASCII Art'}
                   {activeTab === 'widgets' && 'Widgets & Background'}
                   {activeTab === 'aliases' && 'URL Aliases'}
+                  {activeTab === 'startup' && 'Startup Sites'}
                   {activeTab === 'integrations' && 'Integrations'}
                   {activeTab === 'backup' && 'Backup & Restore'}
                   {activeTab === 'advanced' && 'Advanced Settings'}
@@ -695,6 +725,64 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                               <span className='alias-arrow'>→</span>
                               <span className='alias-url'>{a.url}</span>
                               <button className='alias-delete' onClick={() => setAliases(prev => prev.filter(x => x.key !== a.key))}>
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* STARTUP SITES TAB */}
+                {activeTab === 'startup' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Enable startup sites', startupEnabled, v => setStartupEnabled(v))}
+                      </div>
+                      <p className='saas-hint'>When enabled, a prompt appears on your first new tab each day. Press <kbd style={{ fontFamily: 'inherit', fontSize: '0.85em', background: 'rgba(255,255,255,0.1)', padding: '1px 4px', borderRadius: 3 }}>Alt+Shift+S</kbd> at any time to open the stack instantly.</p>
+                    </div>
+                    <div className='saas-card'>
+                      <label className='saas-label'>Add Site URL</label>
+                      <div className='saas-flex-row' style={{ gap: 8 }}>
+                        <input
+                          type='text'
+                          className='saas-input'
+                          value={newSiteUrl}
+                          onChange={e => setNewSiteUrl(e.target.value)}
+                          placeholder='https://github.com'
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') addStartupSite(newSiteUrl)
+                          }}
+                          style={{ borderColor: siteError === 'invalid' ? '#ef4444' : undefined }}
+                        />
+                        <button
+                          className='saas-btn-icon'
+                          onClick={() => addStartupSite(newSiteUrl)}
+                          title={startupSites.length >= 10 ? 'Limit reached (10 sites max)' : 'Add site'}
+                        >
+                          <Plus size={18} />
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+                        <p className='saas-hint' style={{ margin: 0 }}>{startupSites.length}/10 sites</p>
+                        {siteError && (
+                          <span style={{ color: siteError === 'invalid' ? '#ef4444' : '#f59e0b', fontSize: 12 }}>
+                            {siteError === 'invalid' ? 'Invalid URL format' : 'Limit reached (10 sites max)'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {startupSites.length > 0 && (
+                      <div className='saas-card'>
+                        <label className='saas-label'>Sites</label>
+                        <div className='alias-list'>
+                          {startupSites.map((site: StartupSite, i: number) => (
+                            <div key={i} className='alias-row'>
+                              <span className='alias-url' style={{ flex: 1 }}>{site.url}</span>
+                              <button className='alias-delete' onClick={() => setStartupSites((prev: StartupSite[]) => prev.filter((_: StartupSite, j: number) => j !== i))}>
                                 <Trash2 size={13} />
                               </button>
                             </div>

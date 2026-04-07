@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties, Suspense, lazy } from "react";
+import { useEffect, useRef, useState, type CSSProperties, Suspense, lazy } from "react";
 import {
   useBookmarks,
   useSettings,
@@ -13,6 +13,7 @@ import { ActivityWidget } from "./components/ActivityWidget";
 import { DailyGoal } from "./components/DailyGoal";
 import { CommandPalette } from "./components/CommandPalette";
 import { ChromeTabButton } from './components/ChromeTabButton'
+import { StartupLauncher } from './components/StartupLauncher'
 
 // Lazy load overlay components to improve initial mount time
 const SettingsPanel = lazy(() =>
@@ -72,6 +73,7 @@ function CustomBackground({ settings, bgImage }: CustomBackgroundProps) {
 function App() {
   const [settings, setSettings] = useSettings();
   const [bgImage] = useLocalStorage<string>("neko-bg-image", "");
+  const [toast, setToast] = useState<string | null>(null);
   const {
     categories,
     addCategory,
@@ -110,6 +112,18 @@ function App() {
     const timer = setTimeout(stealFocus, 50);
     return () => clearTimeout(timer);
   }, []);
+
+  // Listen for messages from the background service worker (e.g., startup sites opened)
+  useEffect(() => {
+    const listener = (msg: any) => {
+      if (msg?.type === 'neko-startup-sites-opened') {
+        setToast(`Opened ${msg.count} startup site${msg.count !== 1 ? 's' : ''}`)
+        setTimeout(() => setToast(null), 2000)
+      }
+    }
+    chrome.runtime?.onMessage?.addListener(listener)
+    return () => chrome.runtime?.onMessage?.removeListener(listener)
+  }, [])
 
   return (
     <>
@@ -156,6 +170,7 @@ function App() {
             />
           </div>
           {settings.showDailyGoal && <DailyGoal />}
+          <StartupLauncher />
           <CommandPalette />
         </div>
 
@@ -185,6 +200,12 @@ function App() {
           <FocusMode />
         </Suspense>
       </div>
+
+      {toast && (
+        <div className="startup-toast">
+          {toast}
+        </div>
+      )}
     </>
   );
 }
