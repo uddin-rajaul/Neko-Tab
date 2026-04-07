@@ -45,6 +45,12 @@ export function useStartupSites() {
         await chrome.tabs.create({ url: site.url, active: false })
       }
     }
+
+    // Send toast notification to App component
+    chrome.runtime?.sendMessage?.({
+      type: 'neko-startup-sites-opened',
+      count: sites.length
+    }).catch(() => {})
   }, [sites, markShown])
 
   // Mirror to chrome.storage.local so the background service worker can read it
