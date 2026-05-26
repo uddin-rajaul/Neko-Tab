@@ -26,49 +26,60 @@ export function useStartupSites() {
 
   const openStartupSites = useCallback(async () => {
     if (sites.length === 0) return
-    markShown()
 
-    const existingTabs = await chrome.tabs.query({ currentWindow: true })
+    try {
+      const existingTabs = await chrome.tabs.query({ currentWindow: true })
 
-    for (const site of sites) {
-      const siteHostname = new URL(site.url).hostname
-      const alreadyOpen = existingTabs.find(t => {
-        try {
-          return new URL(t.url ?? '').hostname === siteHostname
-        } catch {
-          return false
+      for (const site of sites) {
+        const siteHostname = new URL(site.url).hostname
+        const alreadyOpen = existingTabs.find(t => {
+          try {
+            return new URL(t.url ?? '').hostname === siteHostname
+          } catch {
+            return false
+          }
+        })
+        if (alreadyOpen?.id != null) {
+          await chrome.tabs.update(alreadyOpen.id, { active: true })
+        } else {
+          await chrome.tabs.create({ url: site.url, active: false })
         }
-      })
-      if (alreadyOpen?.id != null) {
-        await chrome.tabs.update(alreadyOpen.id, { active: true })
-      } else {
-        await chrome.tabs.create({ url: site.url, active: false })
       }
-    }
 
-    // Send toast notification to App component
-    chrome.runtime?.sendMessage?.({
-      type: 'neko-startup-sites-opened',
-      count: sites.length
-    }).catch(() => {})
+      markShown()
+
+      // Send toast notification to App component
+      chrome.runtime?.sendMessage?.({
+        type: 'neko-startup-sites-opened',
+        count: sites.length
+      }).catch(() => {})
+    } catch (error) {
+      console.error('Failed to open startup sites:', error)
+    }
   }, [sites, markShown])
 
   // Mirror to chrome.storage.local so the background service worker can read it
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      void chrome.storage.local.set({ neko_startup_sites: sites })
+      void chrome.storage.local.set({ neko_startup_sites: sites }).catch(error => {
+        console.error('Failed to mirror startup sites to chrome.storage.local:', error)
+      })
     }
   }, [sites])
 
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      void chrome.storage.local.set({ neko_startup_enabled: enabled })
+      void chrome.storage.local.set({ neko_startup_enabled: enabled }).catch(error => {
+        console.error('Failed to mirror startup sites enabled state to chrome.storage.local:', error)
+      })
     }
   }, [enabled])
 
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      void chrome.storage.local.set({ neko_startup_shown: shownDate })
+      void chrome.storage.local.set({ neko_startup_shown: shownDate }).catch(error => {
+        console.error('Failed to mirror startup sites shown date to chrome.storage.local:', error)
+      })
     }
   }, [shownDate])
 

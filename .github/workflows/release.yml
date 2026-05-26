@@ -58,25 +58,37 @@ jobs:
             echo "RELEASE_TAG=$GITHUB_REF_NAME" >> $GITHUB_ENV
           fi
 
-      - name: Auto-Increment, Commit, and Move Tag
+      - name: Auto-Increment, Commit, and Create Tag
+        env:
+          NEW_VERSION: ${{ env.NEW_VERSION }}
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          TARGET_REF: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || 'main' }}
         run: |
-          jq --arg ver "${{ env.NEW_VERSION }}" '.version = $ver' public/manifest.json > tmp.json && mv tmp.json public/manifest.json
-          
+          jq --arg ver "$NEW_VERSION" '.version = $ver' public/manifest.json > tmp.json && mv tmp.json public/manifest.json
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           git add public/manifest.json
-          
+
           if git diff --staged --quiet; then
             echo "Version in manifest is already up to date. Skipping commit."
           else
-            git commit -m "chore: bump version to ${{ env.NEW_VERSION }} [skip ci]"
+            git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
             # Dynamically push back to the branch that triggered the workflow
-            git push origin ${{ github.event_name == 'workflow_dispatch' && github.ref_name || 'main' }}
+            git push origin "$TARGET_REF"
           fi
-          
-          git tag -f ${{ env.RELEASE_TAG }}
-          git push origin ${{ env.RELEASE_TAG }} --force
+
+          if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release tag $RELEASE_TAG already exists locally. Refusing to move it."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release tag $RELEASE_TAG already exists on origin. Refusing to move it."
+            exit 1
+          fi
+          git tag "$RELEASE_TAG"
+          git push origin "$RELEASE_TAG"
 
       - name: Set up Node.js
         uses: actions/setup-node@v5

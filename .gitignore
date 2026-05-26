@@ -33,3 +33,4 @@ node_modules/
 .codex
 .claude/
 graphify-out/
+docs/
