@@ -78,3 +78,33 @@ export interface TabItem {
   favicon?: string
   windowId: number
 }
+
+export type AIProvider = 'openai' | 'anthropic' | 'gemini' | 'custom'
+
+export interface AIProviderConfig {
+  provider: AIProvider
+  name: string
+  apiKey: string
+  baseUrl?: string
+  model?: string
+}
+
+export interface AIMemory {
+  keyword: string
+  url: string
+  usageCount: number
+  lastUsed: number
+  source: 'history' | 'ai' | 'manual'
+}
+
+export interface AIAction {
+  type: 'open_url' | 'search' | 'alias' | 'open_tabs' | 'history' | 'remember' | 'custom'
+  value: string
+  url?: string
+}
+
+export interface AISettings {
+  enabledProviders: AIProvider[]
+  activeProvider: AIProvider | null
+  customPrompt?: string
+}

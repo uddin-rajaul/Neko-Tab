@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
 import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { getConnectorsWithSettings, updateConnectorConfig } from '../connectors/registry'
+import { AIProviders } from './Settings/AIProviders'
+import { AIMemorySettings } from './Settings/AIMemory'
 
 const THEMES: ThemeInfo[] = [
   // Simple Color Themes
@@ -54,7 +56,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced';
+type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'ai';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -245,6 +247,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 >
                   <Cpu size={16} /> Advanced
                 </button>
+                <button
+                  className={`saas-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('ai')}
+                >
+                  <Key size={16} /> AI
+                </button>
               </nav>
             </div>
 
@@ -261,6 +269,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'integrations' && 'Integrations'}
                   {activeTab === 'backup' && 'Backup & Restore'}
                   {activeTab === 'advanced' && 'Advanced Settings'}
+                  {activeTab === 'ai' && 'AI & Command Interpreter'}
                 </h3>
               </div>
 
@@ -779,6 +788,19 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     </div>
                   </div>
                 )}
+                {/* AI TAB */}
+                {activeTab === 'ai' && (
+                  <>
+                    <AIProviders
+                      _settings={localSettings}
+                      _onSettingsChange={handleChange}
+                    />
+                    <div className="saas-section">
+                      <AIMemorySettings />
+                    </div>
+                  </>
+                )}
+
                 {/* ADVANCED TAB */}
                 {activeTab === 'advanced' && (
                   <div className='saas-section'>

@@ -6,6 +6,9 @@ import { Search, Earth } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 import { recordTabUsage } from '../utils/tabUsage'
 import { useOpenTabs } from '../hooks/useOpenTabs'
+import { useAIProviders } from '../hooks/useAIProviders'
+import { useAIMemory } from '../hooks/useAIMemory'
+import { executeActions, buildContext, fetchFrequentDestinations } from '../utils/ai-command-parser'
 
 interface Result {
   id: string
@@ -14,7 +17,7 @@ interface Result {
   url?: string
   action?: () => void
   icon: any
-  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command' | 'history' | 'calc' | 'tab'
+  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command' | 'history' | 'calc' | 'tab' | 'ai'
 }
 
 interface RecentItem {
@@ -223,9 +226,28 @@ export function CommandPalette() {
   const [, setDailyGoal] = useLocalStorage<{ text: string; date: string } | null>('neko-daily-goal', null)
   const [, setScratchpad] = useLocalStorage<string>('neko-scratchpad', '')
   const { tabs } = useOpenTabs()
+  const { activeProvider, executeCommand, loadProviders } = useAIProviders()
+  const { memories, saveMemory } = useAIMemory()
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const fetchedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    if (isOpen && !fetchedRef.current) {
+      fetchedRef.current = true
+      fetchFrequentDestinations().then(historyMemories => {
+        for (const m of historyMemories) {
+          const existing = memories.find(x => x.keyword === m.keyword)
+          if (!existing) {
+            saveMemory(m.keyword, m.url, 'history')
+          }
+        }
+      })
+    }
+  }, [isOpen])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
@@ -242,7 +264,7 @@ export function CommandPalette() {
 
   // Search browser history when query changes
   useEffect(() => {
-    if (!query.trim() || query.startsWith('/') || query.startsWith('=')) {
+    if (!query.trim() || query.startsWith('/') || query.startsWith('=') || query.startsWith('!')) {
       setHistoryResults([])
       return
     }
@@ -295,6 +317,10 @@ export function CommandPalette() {
   useEffect(() => {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 30)
   }, [isOpen])
+
+  useEffect(() => {
+    loadProviders()
+  }, [loadProviders])
 
   const results = useMemo<Result[]>(() => {
     const out: Result[] = []
@@ -493,6 +519,76 @@ export function CommandPalette() {
       return out
     }
 
+    // ── AI Command — triggered by "!" prefix ──
+    if (query.startsWith('!')) {
+      if (activeProvider) {
+        const aiQuery = query.slice(1).trim()
+        if (aiQuery) {
+          out.push({
+            id: 'ai-command',
+            label: aiQuery,
+            sub: aiLoading ? 'Processing...' : 'Ask AI',
+            icon: aiLoading ? <span className="cp-dots"><span /><span /><span /></span> : '✦',
+            type: 'ai' as const,
+            action: aiLoading ? undefined : async () => {
+              setAiLoading(true)
+              setAiError(null)
+
+              try {
+                const context = buildContext(
+                  aliases,
+                  categories,
+                  recent.slice(0, 10).map(r => ({ title: r.label, url: r.url })),
+                  historyResults.slice(0, 10).map(h => ({ title: h.label, url: h.url })),
+                  memories
+                )
+
+                const actions = await executeCommand(aiQuery, context)
+                const rememberActions = actions.filter(a => a.type === 'remember')
+                const execActions = actions.filter(a => a.type !== 'remember')
+
+                if (execActions.length > 0) {
+                  await executeActions(execActions)
+                }
+
+                for (const ra of rememberActions) {
+                  if (ra.url) {
+                    await saveMemory(ra.value, ra.url, 'ai')
+                    showToast(`Learned: "${ra.value}" → ${ra.url}`)
+                  }
+                }
+
+                if (execActions.length === 0 && rememberActions.length === 0) {
+                  setAiError('No actions returned from AI')
+                  return
+                }
+
+                if (execActions.length > 0) {
+                  showToast(`Executed ${execActions.length} action${execActions.length > 1 ? 's' : ''}`)
+                }
+              } catch (err) {
+                setAiError(err instanceof Error ? err.message : 'AI command failed')
+                return
+              } finally {
+                setAiLoading(false)
+              }
+              setIsOpen(false)
+              setQuery('')
+            },
+          })
+        }
+      } else {
+        out.push({
+          id: 'ai-no-provider',
+          label: 'No AI provider configured',
+          sub: 'Add an API key in Settings > AI',
+          icon: '⚠️',
+          type: 'command' as const,
+        })
+      }
+      return out
+    }
+
     // ── Normal search (existing logic) ──
 
     // When empty — show recent first
@@ -584,7 +680,7 @@ export function CommandPalette() {
     }
 
     return out
-  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad, tabs])
+  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad, tabs, activeProvider, aiLoading, executeCommand])
 
   useEffect(() => { setSelected(0) }, [query])
 
@@ -615,6 +711,10 @@ export function CommandPalette() {
       return
     }
     if (r.action) {
+      if (r.type === 'ai') {
+        r.action()
+        return
+      }
       r.action()
     } else if (r.url) {
       void recordTabUsage()
@@ -715,12 +815,17 @@ export function CommandPalette() {
               </div>
             )}
 
+            {aiError && (
+              <div className="cp-ai-error">⚠️ {aiError}</div>
+            )}
+
             {!query && (
               <div className="cp-hint-row">
                 <span>↑↓ navigate</span>
                 <span>↵ open</span>
                 <span>/commands</span>
                 <span>&gt; tabs</span>
+                {activeProvider && <span>! AI</span>}
                 {recent.length > 0
                   ? <button className="cp-clear-btn" onClick={e => { e.stopPropagation(); setRecent([]) }}>clear history</button>
                   : <span>esc close</span>
