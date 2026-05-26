@@ -5,6 +5,7 @@ import type { UrlAlias, ThemeType } from '../types'
 import { Search, Earth } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 import { recordTabUsage } from '../utils/tabUsage'
+import { useOpenTabs } from '../hooks/useOpenTabs'
 
 interface Result {
   id: string
@@ -13,7 +14,7 @@ interface Result {
   url?: string
   action?: () => void
   icon: any
-  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command' | 'history' | 'calc'
+  type: 'alias' | 'bookmark' | 'search' | 'url' | 'recent' | 'command' | 'history' | 'calc' | 'tab'
 }
 
 interface RecentItem {
@@ -221,7 +222,9 @@ export function CommandPalette() {
   const [recent, setRecent] = useLocalStorage<RecentItem[]>('neko-recent', [])
   const [, setDailyGoal] = useLocalStorage<{ text: string; date: string } | null>('neko-daily-goal', null)
   const [, setScratchpad] = useLocalStorage<string>('neko-scratchpad', '')
+  const { tabs } = useOpenTabs()
   const inputRef = useRef<HTMLInputElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const showToast = useCallback((msg: string) => {
@@ -562,16 +565,53 @@ export function CommandPalette() {
       })
     }
 
+    // Tab search — when query starts with "> " or when no other results match
+    const showTabs = query.startsWith('> ') || (query.trim() && out.length <= 2)
+    if (showTabs) {
+      const tabQuery = query.replace(/^>\s*/, '').toLowerCase()
+      for (const tab of tabs) {
+        if (fuzzy(tab.title, tabQuery) || fuzzy(tab.url, tabQuery)) {
+          out.push({
+            id: `tab-${tab.id}`,
+            label: tab.title,
+            sub: tab.url,
+            url: tab.url,
+            icon: tab.favicon ? <img src={tab.favicon} width={16} height={16} /> : '⬡',
+            type: 'tab' as const,
+          })
+        }
+      }
+    }
+
     return out
-  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad])
+  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad, tabs])
 
   useEffect(() => { setSelected(0) }, [query])
+
+  useEffect(() => {
+    if (!resultsRef.current) return
+    const el = resultsRef.current.children[selected] as HTMLElement | undefined
+    if (el) el.scrollIntoView({ block: 'nearest' })
+  }, [selected])
 
   const launch = (r: Result) => {
     // Command suggestion without action — autocomplete it
     if (r.type === 'command' && !r.action) {
       if (r.id.endsWith('-hint')) return
       setQuery(r.label + ' ')
+      return
+    }
+    if (r.type === 'tab' && r.url) {
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.get(Number(r.id.replace('tab-', '')), (tab) => {
+          if (tab.id) {
+            chrome.tabs.highlight({ windowId: tab.windowId, tabs: tab.index })
+            chrome.windows.update(tab.windowId || 0, { focused: true })
+          }
+        })
+      }
+      setIsOpen(false)
+      setQuery('')
       return
     }
     if (r.action) {
@@ -633,7 +673,7 @@ export function CommandPalette() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="search, go to URL, or type / for commands..."
+                placeholder="search, go to URL, or / for commands, > for tabs..."
                 spellCheck={false}
               />
               {!query.startsWith('/') && (
@@ -654,7 +694,7 @@ export function CommandPalette() {
             </div>
 
             {results.length > 0 && (
-              <div className="cp-results">
+              <div className="cp-results" ref={resultsRef}>
                 {results.map((r, i) => (
                   <div
                     key={r.id}
@@ -680,6 +720,7 @@ export function CommandPalette() {
                 <span>↑↓ navigate</span>
                 <span>↵ open</span>
                 <span>/commands</span>
+                <span>&gt; tabs</span>
                 {recent.length > 0
                   ? <button className="cp-clear-btn" onClick={e => { e.stopPropagation(); setRecent([]) }}>clear history</button>
                   : <span>esc close</span>

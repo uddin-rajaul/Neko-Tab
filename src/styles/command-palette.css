@@ -253,6 +253,20 @@
 .cp-item-search .cp-item-label { color: var(--text-primary); }
 .cp-item-url .cp-item-icon { color: #60a5fa; opacity: 1; }
 
+/* tab search results */
+.cp-item-tab .cp-item-label {
+  font-weight: 500;
+}
+
+.cp-item-tab .cp-item-sub {
+  opacity: 0.7;
+}
+
+.cp-item-tab .cp-item-icon img {
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
 /* glass mode — trigger bar */
 .has-bg .cp-trigger {
   background: transparent;

@@ -70,3 +70,11 @@ export interface Settings {
   // Startup Sites
   startupSitesEnabled: boolean
 }
+
+export interface TabItem {
+  id: number
+  title: string
+  url: string
+  favicon?: string
+  windowId: number
+}
