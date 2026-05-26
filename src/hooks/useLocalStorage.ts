@@ -69,8 +69,7 @@ const DEFAULT_SETTINGS: Settings = {
   asciiArt: CAT_ASCII,
   showChromeTab: false,
   showBookmarks: true,
-  showGoogleCalendar: false,
-  googleCalendarLookahead: 4320, // 3 days
+  connectors: {},
   startupSitesEnabled: false,
 }
 
@@ -103,6 +102,19 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T 
         // Migration: If user has custom art but no source selection yet, default to 'custom'
         if (key === 'startpage-settings' && parsed.asciiArt && !parsed.asciiArtSource) {
           (merged as any).asciiArtSource = 'custom'
+        }
+
+        // Migration: Move Google Calendar settings to connectors namespace
+        if (key === 'startpage-settings' && parsed.showGoogleCalendar !== undefined) {
+          (merged as any).connectors = {
+            ...(parsed.connectors || {}),
+            'google-calendar': {
+              enabled: parsed.showGoogleCalendar,
+              lookahead: parsed.googleCalendarLookahead ?? 4320,
+            },
+          }
+          delete (merged as any).showGoogleCalendar
+          delete (merged as any).googleCalendarLookahead
         }
         
         return merged as T

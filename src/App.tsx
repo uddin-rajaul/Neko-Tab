@@ -7,8 +7,8 @@ import {
 import { WINDOWS_ASCII, MACOS_ASCII, LINUX_ASCII, CAT_ASCII, DETECTED_OS } from "./components/ascii";
 import { Bookmarks } from "./components/Bookmarks";
 import { Clock } from "./components/Clock";
-import { UpcomingEvent } from "./components/UpcomingEvent";
 import { PixelArt } from "./components/PixelArt";
+import { getConnectorsWithWidget, hasActiveCenterWidgets } from "./connectors/registry";
 import { ActivityWidget } from "./components/ActivityWidget";
 import { DailyGoal } from "./components/DailyGoal";
 import { CommandPalette } from "./components/CommandPalette";
@@ -156,7 +156,7 @@ function App() {
 
         {/* Center Section */}
         <div className="center-section">
-          <div style={{ marginBottom: (settings.showClock || settings.showGoogleCalendar) ? 'var(--spacing-lg)' : 0 }}>
+          <div style={{ marginBottom: (settings.showClock || hasActiveCenterWidgets(settings)) ? 'var(--spacing-lg)' : 0 }}>
             {settings.showClock && (
               <Clock
                 userName={settings.userName}
@@ -164,10 +164,7 @@ function App() {
                 format={settings.clockFormat}
               />
             )}
-            <UpcomingEvent 
-              enabled={settings.showGoogleCalendar} 
-              lookahead={settings.googleCalendarLookahead ?? 4320} 
-            />
+            {getConnectorsWithWidget().map(C => <C.Widget key={C.id} />)}
           </div>
           {settings.showDailyGoal && <DailyGoal />}
           <StartupLauncher />

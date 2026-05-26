@@ -148,6 +148,16 @@ npm run build
 
 Then in Chrome/Edge: **Extensions → Load unpacked → select the `dist/` folder**.
 
+### Optional: Google Calendar Integration
+
+The extension works fully without any setup. To enable Google Calendar events on your new tab page:
+
+1. Copy `.env.local.example` to `.env.local`
+2. Follow the instructions in `.env.local.example` to add your Google OAuth credentials
+3. Rebuild with `npm run build`
+
+Without credentials, the extension runs normally — just without Calendar support. No unnecessary permissions are requested.
+
 ---
 
 ## Settings
@@ -173,7 +183,7 @@ Open the gear icon (top-right) to access:
 | `history` | Search browser history from the command palette and surface matching recently visited pages |
 | `declarativeNetRequest` | Block sites during Focus Mode sessions |
 | `host_permissions: <all_urls>` | Required for site blocking to apply on any domain |
-| `identity` | OAuth flow for Google Calendar integration (Chrome only) |
+| `identity` | OAuth flow for Google Calendar integration (Chrome only) — only included in the built extension if credentials are configured |
 
 ---
 

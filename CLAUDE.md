@@ -104,7 +104,11 @@ For multi-step tasks, state a brief plan:
 ```
 src/
   components/   # React components, one per file
-  hooks/        # useLocalStorage, useSettings, useBookmarks, useTime, useGoogleCalendar
+  connectors/   # Third-party integration modules, one folder per connector
+    types.ts    # Connector interface and helpers
+    registry.ts # Registry that collects all connectors
+    google-calendar/  # Google Calendar connector (reference implementation)
+  hooks/        # useLocalStorage, useSettings, useBookmarks, useTime
   utils/        # imageToAscii
   types.ts      # Shared TypeScript interfaces
   styles/       # Split CSS files, imported via index.css manifest
@@ -115,16 +119,20 @@ public/
   background.js # Service worker (focus mode blocking)
   dist.pem      # Extension private key — DO NOT regenerate, DO NOT commit changes
 screenshots/    # Only image.png and terminal.png are used in README
+docs/
+  superpowers/
+    specs/      # Design docs and specs
 ```
 
 ## Build System & Manifest Injection
 
-`vite.config.ts` runs a `closeBundle` plugin that post-processes `dist/manifest.json`:
-- Replaces `__GOOGLE_CLIENT_ID__` with `GOOGLE_CLIENT_ID` from `.env.local`
-- Replaces `__GOOGLE_EXTENSION_KEY__` with `GOOGLE_EXTENSION_KEY` from `.env.local`
-- If `GOOGLE_EXTENSION_KEY` is missing or invalid base64, the `key` field is stripped entirely (safe for local dev without OAuth)
+`vite.config.ts` runs a `closeBundle` plugin that builds `dist/manifest.json` from the template in `public/`:
 
-`.env.local` holds both values and is gitignored. Never hardcode client IDs in source.
+- **Google OAuth2**: Parses `manifest.json` as JSON. If `GOOGLE_CLIENT_ID` is present in `.env.local`, it's injected into the `oauth2.client_id` field. If missing, the entire `oauth2` block is deleted and `"identity"` is removed from permissions — making the extension fully functional without Calendar.
+- **Extension key**: If `GOOGLE_EXTENSION_KEY` is valid base64, it's set as `manifest.key`. Otherwise the `key` field is stripped entirely (safe for local dev without OAuth).
+- Errors in manifest injection are logged but do NOT fail the build — contributors should always get a working build.
+
+`.env.local.example` documents the optional variables. Never hardcode client IDs in source.
 
 ## Chrome Extension — MV3 Rules
 
@@ -201,7 +209,7 @@ Run with browser fully closed. Then reopen and Load unpacked → `dist/`.
 
 | Key | Contents |
 |---|---|
-| `startpage-settings` | Main Settings object |
+| `startpage-settings` | Main Settings object (connector configs are under `connectors.{id}`) |
 | `neko-bookmarks` | BookmarkCategory[] |
 | `neko-bg-image` | base64 background image |
 | `neko-scratchpad` | notes text |
@@ -216,12 +224,38 @@ Run with browser fully closed. Then reopen and Load unpacked → `dist/`.
 | `neko-calendar-connected` | `'true'` or `'false'` string |
 | `neko-calendar-last-event` | JSON CalendarEvent or absent |
 
-## Google Calendar Integration Notes
+## Connector System (Integrations)
 
-- Hook: `src/hooks/useGoogleCalendar.ts`
-- Component: `src/components/UpcomingEvent.tsx`
+Connectors live in `src/connectors/<name>/` and follow a standard `Connector` interface (`src/connectors/types.ts`):
+
+```typescript
+interface Connector {
+  id: string
+  name: string
+  description: string
+  placement: 'center-widget' | ConnectorPlacement[]
+  defaultConfig: Record<string, unknown>
+  Widget?: React.ComponentType              // Rendered on new tab page
+  SettingsWidget?: React.ComponentType      // Rendered in Settings → Integrations
+  oauth2ClientIdPlaceholder?: string        // For Google OAuth (chrome.identity)
+  oauth2Scopes?: string[]
+  manifestPermissions?: string[]            // Extra permissions needed
+}
+```
+
+The registry (`src/connectors/registry.ts`) collects all connectors. The app and settings panel iterate the registry rather than hardcoding individual integrations.
+
+### Adding a new connector
+1. Create `src/connectors/<name>/` with `index.ts`, your hooks, components
+2. Export a `Connector` object from `index.ts`
+3. Import and add it to the `connectors` array in `registry.ts`
+4. That's it — build, app, and settings pick it up automatically
+
+### Google Calendar (reference connector)
+- Hook: `src/connectors/google-calendar/useGoogleCalendar.ts`
+- Widget: `src/connectors/google-calendar/UpcomingEvent.tsx`
+- Settings: `src/connectors/google-calendar/settings.tsx`
 - OAuth client ID injected at build time from `.env.local` → `GOOGLE_CLIENT_ID`
-- Extension key injected at build time from `.env.local` → `GOOGLE_EXTENSION_KEY`
 - Calendar permission scope: `https://www.googleapis.com/auth/calendar.events.readonly`
 - Token is fetched non-interactively on mount; interactive only on explicit user connect
 - `CALENDAR_CONNECTED` localStorage key is used to pre-reserve UI space before token is confirmed — do not reset it on transient startup errors

@@ -65,9 +65,8 @@ export interface Settings {
   showChromeTab: boolean
   // Bookmarks
   showBookmarks: boolean
-  // Google Calendar
-  showGoogleCalendar: boolean
-  googleCalendarLookahead: number // in minutes
+  // Connectors (third-party integrations)
+  connectors: Record<string, Record<string, unknown>>
   // Startup Sites
   startupSitesEnabled: boolean
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from './useLocalStorage';
+import { STORAGE_KEYS } from '../../hooks/useLocalStorage';
 
 export interface CalendarEvent {
   id: string;
   summary: string;
   start: {
     dateTime?: string;
-    date?: string; // For all-day events
+    date?: string;
   };
   end: {
     dateTime?: string;
@@ -28,18 +28,11 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Always check for an existing token on mount to determine connection status.
-  // NOTE: Do NOT write CALENDAR_CONNECTED=false on lastError here — a transient
-  // startup failure (network not ready, token cache cold) would incorrectly wipe
-  // the connected state, which then causes the extension to be re-validated by
-  // Chrome and dropped from the active list on next restart.
   useEffect(() => {
     if (!chrome.identity) return;
 
     chrome.identity.getAuthToken({ interactive: false }, (authToken) => {
       if (chrome.runtime.lastError) {
-        // Transient error — leave CALENDAR_CONNECTED as-is so the UI retains
-        // its last known state. The user can manually disconnect if needed.
         return;
       }
       if (authToken) {
@@ -49,7 +42,6 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
     });
   }, []);
 
-  // Method to manually connect (interactive)
   const connect = useCallback(() => {
     if (!chrome.identity) return;
     chrome.identity.getAuthToken({ interactive: true }, (authToken) => {
@@ -65,7 +57,6 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
     });
   }, []);
 
-  // Method to disconnect
   const disconnect = useCallback(() => {
     if (!chrome.identity || !token) return;
     chrome.identity.removeCachedAuthToken({ token }, () => {
@@ -76,14 +67,11 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
     });
   }, [token]);
 
-  // Fetch upcoming event when token is available and fetching is enabled
   useEffect(() => {
     if (!fetchEnabled) {
-      // If we're not supposed to fetch, we don't clear the event 
-      // (to preserve cache on home page if enabled is toggled)
       return;
     }
-    
+
     if (!token) return;
 
     let isMounted = true;
@@ -95,7 +83,7 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
       try {
         const timeMin = new Date().toISOString();
         const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=1&singleEvents=true&orderBy=startTime`;
-        
+
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -129,7 +117,6 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
         if (isMounted) setLoading(false);
       }
 
-      // Refetch every 5 minutes
       if (isMounted) {
         timeoutId = window.setTimeout(fetchEvent, 5 * 60 * 1000);
       }

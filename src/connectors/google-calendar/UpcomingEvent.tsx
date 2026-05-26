@@ -1,17 +1,16 @@
 import { Calendar } from 'lucide-react';
-import { useGoogleCalendar, type CalendarEvent } from '../hooks/useGoogleCalendar';
-import { useTime, useLocalStorage, STORAGE_KEYS } from '../hooks/useLocalStorage';
+import { useGoogleCalendar } from './useGoogleCalendar';
+import { useTime } from '../../hooks/useLocalStorage';
+import { useSettings } from '../../hooks/useLocalStorage';
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { getConnectorConfig } from '../types';
 
-interface UpcomingEventProps {
-  enabled: boolean;
-  lookahead: number;
-}
+const CONNECTOR_ID = 'google-calendar';
 
-function calculateTimeRemaining(event: CalendarEvent | null, now: Date, lookaheadMins: number): string {
+function calculateTimeRemaining(event: any | null, now: Date, lookaheadMins: number): string {
   if (!event) return '';
-  
+
   const startStr = event.start.dateTime || event.start.date;
   if (!startStr) return '';
 
@@ -19,7 +18,6 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date, lookahea
   const nowTime = now.getTime();
   const diffMs = startTime - nowTime;
 
-  // Filter based on lookahead window (only show if event is within the window)
   if (diffMs > lookaheadMins * 60 * 1000) return '';
 
   if (diffMs <= 0) return 'now';
@@ -32,21 +30,26 @@ function calculateTimeRemaining(event: CalendarEvent | null, now: Date, lookahea
     return `in ${diffDays} day${diffDays > 1 ? 's' : ''}`;
   } else if (diffHours > 0) {
     const remainingMins = diffMins % 60;
-    return remainingMins > 0 
-      ? `in ${diffHours}h ${remainingMins}m` 
+    return remainingMins > 0
+      ? `in ${diffHours}h ${remainingMins}m`
       : `in ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
   } else {
     return `in ${diffMins} min${diffMins > 1 ? 's' : ''}`;
   }
 }
 
-export function UpcomingEvent({ enabled, lookahead }: UpcomingEventProps) {
+export function UpcomingEvent() {
+  const [settings] = useSettings();
+  const config = getConnectorConfig(settings, CONNECTOR_ID);
+  const enabled = !!config.enabled;
+  const lookahead = (config.lookahead as number) ?? 4320;
+
   const { event, isConnected, error } = useGoogleCalendar(enabled);
   const time = useTime();
-  const [wasConnected] = useLocalStorage(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
+  const [wasConnected] = useState(() => localStorage.getItem('neko-calendar-connected') === 'true');
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
-  
+
   const timeRemaining = calculateTimeRemaining(event, time, lookahead);
 
   useEffect(() => {
@@ -57,27 +60,26 @@ export function UpcomingEvent({ enabled, lookahead }: UpcomingEventProps) {
     }
   }, [error, enabled]);
 
-  // Use the localStorage hint to decide whether to reserve space before the token is confirmed
-  if (!enabled || (!isConnected && wasConnected !== 'true')) {
+  if (!enabled || (!isConnected && !wasConnected)) {
     return null;
   }
 
   return (
     <>
-      <div 
-        className="upcoming-event-wrapper" 
-        style={{ 
-          height: '32px', 
-          display: 'flex', 
-          alignItems: 'center', 
+      <div
+        className="upcoming-event-wrapper"
+        style={{
+          height: '32px',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto'
         }}
       >
         {(event && timeRemaining) && (
-          <a 
-            href={event.htmlLink} 
-            target="_blank" 
+          <a
+            href={event.htmlLink}
+            target="_blank"
             rel="noopener noreferrer"
             className="upcoming-event-widget"
             style={{
