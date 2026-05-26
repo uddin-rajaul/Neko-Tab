@@ -20,6 +20,24 @@ Press `Ctrl+K` or `/` to open the unified command palette. It replaces the tradi
 - **Engine switcher** — switch between Google, DuckDuckGo, GitHub, and YouTube inside the palette
 - **Fuzzy search** — matches bookmarks by title, URL, or category
 
+### AI Command Interpreter
+
+Type `!` in the command palette to trigger AI mode. Powered by your choice of provider (OpenAI, Anthropic, Gemini, or custom API).
+
+- **Natural language navigation** — `! open slack and discord` opens both in new tabs
+- **Smart URL resolution** — prefers your most-visited URLs from browser history
+- **AI Memory** — automatically learns which URLs you use for each service; suggests new mappings as you use the palette
+- **View and manage** learned mappings in **Settings → AI → AI Memory**
+
+### AI Memory
+
+The AI learns from your browsing patterns over time:
+
+- **History scan** — on first use, scans your Chrome history to build a map of frequently visited destinations
+- **Auto-learning** — every time the AI successfully opens a service, it remembers the exact URL you use
+- **AI suggestions** — the AI can propose new memory mappings when it opens unfamiliar services
+- **Settings UI** — view, edit, search, and delete learned memories in **Settings → AI**
+
 ### Theming
 
 20+ professionally crafted themes across three categories:
@@ -170,6 +188,7 @@ Open the gear icon (top-right) to access:
 - **Widgets** — background image with dim/blur controls, daily goal, GitHub streak (set username)
 - **Aliases** — define short URL aliases for the command palette
 - **Integrations** — connect Google Calendar to show upcoming events on the home page
+- **AI** — configure AI providers (OpenAI, Anthropic, Gemini), manage learned URL memories
 - **Focus Mode** — configure default duration and blocked sites
 - **Advanced** — reset all user data and wipe stored settings cleanly
 
