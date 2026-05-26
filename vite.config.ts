@@ -44,7 +44,8 @@ export default defineConfig(({ mode }) => {
             writeFileSync(manifestPath, manifest)
             console.log('manifest.json injected')
           } catch (error) {
-            console.warn('Could not inject manifest values:', error)
+            console.error('Failed to inject manifest values:', error)
+            throw error
           }
         }
       }

@@ -34,7 +34,9 @@ chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.focusBlocking) {
     const { isActive, blockedDomains, sessionId } = changes.focusBlocking.newValue || { isActive: false, blockedDomains: [], sessionId: null }
     activeFocusBlocking = { isActive, blockedDomains, sessionId: sessionId ?? null }
-    updateBlockingRules(isActive, blockedDomains)
+    void updateBlockingRules(isActive, blockedDomains).catch(error => {
+      console.error('Failed to sync focus blocking rules from storage:', error)
+    })
   }
 })
 
@@ -61,8 +63,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     activeFocusBlocking = nextState
 
     void (async () => {
-      await updateBlockingRules(nextState.isActive, nextState.blockedDomains)
-      sendResponse({ ok: true })
+      try {
+        await updateBlockingRules(nextState.isActive, nextState.blockedDomains)
+        sendResponse({ ok: true })
+      } catch (error) {
+        console.error('Failed to sync focus blocking rules:', error)
+        sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) })
+      }
     })()
 
     return true
@@ -204,15 +211,11 @@ async function updateBlockingRules(isActive, blockedDomains) {
     }
   }))
 
-  try {
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      addRules: rules,
-      removeRuleIds: []
-    })
-    console.log('Focus mode blocking enabled for:', normalizedDomains)
-  } catch (error) {
-    console.error('Failed to update blocking rules:', error)
-  }
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    addRules: rules,
+    removeRuleIds: []
+  })
+  console.log('Focus mode blocking enabled for:', normalizedDomains)
 }
 
 async function clearAllBlockingRules() {
