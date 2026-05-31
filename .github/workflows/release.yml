@@ -58,7 +58,8 @@ jobs:
             echo "RELEASE_TAG=$GITHUB_REF_NAME" >> $GITHUB_ENV
           fi
 
-      - name: Auto-Increment, Commit, and Create Tag
+      - name: Auto-Increment, Commit, and Create Tag (workflow_dispatch only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           NEW_VERSION: ${{ env.NEW_VERSION }}
           RELEASE_TAG: ${{ env.RELEASE_TAG }}
