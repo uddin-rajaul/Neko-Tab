@@ -3,7 +3,7 @@
 A minimalist, terminal-style new tab page for your browser. Built with React, TypeScript, and Vite.
 Designed around keyboard-first navigation, a command palette, and a clean aesthetic with zero clutter.
 
-<video src="screenshots/demo.mp4" controls muted loop autoplay width="100%"></video>
+<video src="https://github.com/uddin-rajaul/Neko-Tab/raw/main/screenshots/demo.mp4" type="video/mp4" controls muted loop autoplay width="100%"></video>
 
 ---
 
