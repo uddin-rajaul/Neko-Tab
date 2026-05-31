@@ -3,6 +3,11 @@
 A minimalist, terminal-style new tab page for your browser. Built with React, TypeScript, and Vite.
 Designed around keyboard-first navigation, a command palette, and a clean aesthetic with zero clutter.
 
+<!--
+  Screenshots need updating. Current: screenshots/demo.gif, image.png, terminal.png
+  TODO: Replace with fresh screenshots showing current UI
+-->
+
 ![Demo](screenshots/demo.gif)
 
 ---
@@ -11,12 +16,14 @@ Designed around keyboard-first navigation, a command palette, and a clean aesthe
 
 ### Command Palette
 
-Press `Ctrl+K` or `/` to open the unified command palette. It replaces the traditional search bar entirely.
+Press `Ctrl+K` or `/` to open the unified command palette. It replaces the traditional search bar entirely. Type `>` to search open tabs, `!` for AI commands, or `/` for slash commands.
 
 - **Smart routing** — type a URL (`github.com/raj`) and it navigates directly; type a keyword and it fuzzy-searches your bookmarks and aliases; type anything else and it falls through to web search
 - **URL aliases** — define short keys like `gh → https://github.com/raj` that appear first in results
 - **Browser history autocomplete** — typing `instagram` also searches browser history, shows matching previously visited pages with a `◷` icon, and dedupes them against aliases and bookmarks already shown
 - **Built-in calculator** — type `= 1920/2` to instantly evaluate numeric expressions with support for `+`, `-`, `*`, `/`, `%`, `()`, and `^`; press `Enter` to copy the result
+- **Tab search** — type `> reddit` to search all open browser tabs across windows; fuzzy matches by title and URL; select to focus that tab
+- **Slash commands** — type `/clock` to toggle clock maximized mode, `/chrome-tab` to open a Chrome tab
 - **Engine switcher** — switch between Google, DuckDuckGo, GitHub, and YouTube inside the palette
 - **Fuzzy search** — matches bookmarks by title, URL, or category
 
@@ -78,7 +85,8 @@ When you open `Ctrl+K` with an empty query, the last 10 visited URLs and searche
 - **Duration presets** — 15, 25, 45, 90 minutes, or custom
 - **Task tracking** — set an intention for each session
 - **Site blocking** — block Facebook, Instagram, TikTok, Twitter/X, LinkedIn, Reddit, YouTube, Netflix, Twitch, or add custom domains
-- **Dashboard** — today's blocks, current streak, best streak, weekly consistency chart
+- **Dashboard** — today's blocks, current streak, best streak, weekly consistency chart, tabs used per session
+- **Distraction logging** — each blocked site visit is logged with domain and timestamp per session
 - **Session log** — view all completed sessions for the day
 - **Notifications** — desktop notification + sound on completion
 - **Identity reinforcement** — motivational messages based on your streak
@@ -97,6 +105,10 @@ See your next upcoming event directly on the new tab page, right below the clock
 
 A single focus line between the clock and command palette. Click to edit, resets at midnight.
 
+### Startup Sites
+
+On the first new tab of each day, a greeting card appears: *"Good morning — open your startup sites?"* with an "Open all" button. Configure up to 10 URLs in **Settings → Startup Sites**. Already-open tabs are focused instead of duplicated. `Alt+Shift+S` to trigger from anywhere.
+
 ### Bookmarks
 
 A two-column quick-links panel below the command palette. Fully editable without leaving the tab:
@@ -107,7 +119,11 @@ A two-column quick-links panel below the command palette. Fully editable without
 
 ### Chrome Tab Button
 
-Toggle with `Ctrl+Shift+R` or the tab icon in the top-right. Opens a new Chrome tab with the same new tab page.
+Toggle with `Ctrl+Shift+R`, press `c` (when not in an input), or click the tab icon (top-right). Opens a new Chrome tab with the same new tab page.
+
+### Clock Maximization
+
+Click the clock to enter a fullscreen mode — the clock fills the entire view. Click again or press `Escape`/`Ctrl+K` to exit.
 
 ### Status Bar
 
@@ -115,6 +131,7 @@ Toggle with `Ctrl+Shift+R` or the tab icon in the top-right. Opens a new Chrome 
 - **PING** — real latency via `1.1.1.1` (not just `navigator.onLine`)
 - **GitHub Streak** — contribution streak with 14-day sparkline (optional, no auth needed)
 - **Focus Streak** — days with at least one completed Pomodoro session, with 7-day sparkline
+- **TABS TODAY** — counter of navigations away from the new tab page (bookmarks, URLs, searches)
 - **Work Timer** — simple elapsed time tracker, `Ctrl+Shift+T` to toggle
 
 ### Keyboard Shortcuts
@@ -128,14 +145,16 @@ Press `?` anywhere to show the full shortcut cheatsheet.
 | `Ctrl+Shift+T` | Start / stop work timer |
 | `Ctrl+F` | Open / close Focus Mode |
 | `Ctrl+Shift+S` | Save scratchpad (auto-saves anyway) |
+| `Ctrl+Shift+R` | Open Chrome tab |
+| `Alt+Shift+S` | Trigger startup sites card |
 | `?` | Show shortcut help |
+| `c` | Open Chrome tab (when not in input) |
 | `Escape` | Close any open panel |
 | `↑ / ↓` or `Ctrl+P / Ctrl+N` | Navigate palette results |
 | `Enter` | Open selected result |
 | `Enter / Escape` | Confirm / cancel daily goal edit |
 | `Enter` | New checklist item (scratchpad) |
 | `Backspace` | Delete empty checklist item |
-| `Tab` | Navigate focus mode inputs |
 
 ---
 
@@ -183,13 +202,15 @@ Without credentials, the extension runs normally — just without Calendar suppo
 Open the gear icon (top-right) to access:
 
 - **Appearance** — theme picker with live preview, font chooser (12 curated monospace fonts)
-- **Preferences** — name, clock format (12/24h), display toggles (clock, greeting, status bar, etc.)
+- **Preferences** — name, clock format (12/24h), display toggles (clock, greeting, status bar, tab counter, etc.)
 - **ASCII Art** — image-to-ASCII converter, custom art editor, or OS-specific art (Windows/Mac/Linux)
 - **Widgets** — background image with dim/blur controls, daily goal, GitHub streak (set username)
+- **Startup Sites** — configure up to 10 URLs to open on the first new tab of each day
 - **Aliases** — define short URL aliases for the command palette
 - **Integrations** — connect Google Calendar to show upcoming events on the home page
-- **AI** — configure AI providers (OpenAI, Anthropic, Gemini), manage learned URL memories
+- **AI** — configure AI providers (OpenAI, Anthropic, Gemini, custom API), manage learned URL memories
 - **Focus Mode** — configure default duration and blocked sites
+- **Export/Import** — download all settings as JSON or restore from a backup
 - **Advanced** — reset all user data and wipe stored settings cleanly
 
 ---
@@ -200,6 +221,10 @@ Open the gear icon (top-right) to access:
 |---|---|
 | `storage` | Persist settings, bookmarks, scratchpad, aliases, timer state |
 | `history` | Search browser history from the command palette and surface matching recently visited pages |
+| `tabs` | Search open browser tabs, open startup sites, manage tab focus |
+| `topSites` | Surface most visited URLs for smarter command palette results |
+| `notifications` | Desktop notifications for Focus Mode session completion |
+| `webRequest` | Track tab navigation for the tab usage counter |
 | `declarativeNetRequest` | Block sites during Focus Mode sessions |
 | `host_permissions: <all_urls>` | Required for site blocking to apply on any domain |
 | `identity` | OAuth flow for Google Calendar integration (Chrome only) — only included in the built extension if credentials are configured |
