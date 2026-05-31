@@ -3,12 +3,7 @@
 A minimalist, terminal-style new tab page for your browser. Built with React, TypeScript, and Vite.
 Designed around keyboard-first navigation, a command palette, and a clean aesthetic with zero clutter.
 
-<!--
-  Screenshots need updating. Current: screenshots/demo.gif, image.png, terminal.png
-  TODO: Replace with fresh screenshots showing current UI
--->
-
-![Demo](screenshots/demo.gif)
+<video src="screenshots/demo.mp4" controls muted loop autoplay width="100%"></video>
 
 ---
 
