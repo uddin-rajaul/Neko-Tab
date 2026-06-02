@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Neko Tab",
-  "version": "1.4.0",
+  "version": "2.0.2",
   "key": "__GOOGLE_EXTENSION_KEY__",
   "description": "Custom Terminal-style New Tab Page",
   "content_security_policy": {
