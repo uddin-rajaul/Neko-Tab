@@ -98,9 +98,12 @@ export interface AIMemory {
 }
 
 export interface AIAction {
-  type: 'open_url' | 'search' | 'alias' | 'open_tabs' | 'history' | 'remember' | 'custom'
+  type: 'open_url' | 'search' | 'alias' | 'open_tabs' | 'history' | 'remember' | 'custom' | 'answer' | 'save-to-journal'
   value: string
   url?: string
+  text?: string
+  urls?: Array<{ label: string; url: string }>
+  date?: string
 }
 
 export interface AISettings {

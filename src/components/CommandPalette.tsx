@@ -2,13 +2,14 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType } from '../types'
-import { Search, Earth } from 'lucide-react'
+import { Search, Earth, Bookmark } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 import { recordTabUsage } from '../utils/tabUsage'
 import { useOpenTabs } from '../hooks/useOpenTabs'
 import { useAIProviders } from '../hooks/useAIProviders'
 import { useAIMemory } from '../hooks/useAIMemory'
-import { executeActions, buildContext, fetchFrequentDestinations } from '../utils/ai-command-parser'
+import { executeActions, buildContext, fetchFrequentDestinations, parseDateQuery, fetchHistoryForDateRange } from '../utils/ai-command-parser'
+import type { AIAction } from '../types'
 
 interface Result {
   id: string
@@ -175,8 +176,12 @@ function tryCalc(expr: string): string | null {
   }
 }
 
+function toLocalDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 function todayKey(): string {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalDateKey(new Date())
 }
 
 // ── Slash command data ──
@@ -230,10 +235,20 @@ export function CommandPalette() {
   const { memories, saveMemory } = useAIMemory()
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [aiAnswer, setAiAnswer] = useState<{ text: string; urls: Array<{ label: string; url: string }>; dateKey: string } | null>(null)
+  const [, setJournal] = useLocalStorage<Record<string, string>>('neko-journal', {})
   const fetchedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    if (!isOpen) setAiAnswer(null)
+  }, [isOpen])
+
+  useEffect(() => {
+    if (query) setAiAnswer(null)
+  }, [query])
 
   useEffect(() => {
     if (isOpen && !fetchedRef.current) {
@@ -535,6 +550,20 @@ export function CommandPalette() {
               setAiError(null)
 
               try {
+                // Detect date in query and fetch targeted history
+                const dateRange = parseDateQuery(aiQuery)
+                let dateHistory: { title: string; url: string; ts: number }[] = []
+                let dateHistoryStr = ''
+                if (dateRange) {
+                  dateHistory = await fetchHistoryForDateRange(dateRange.startTime, dateRange.endTime)
+                  if (dateHistory.length > 0) {
+                    dateHistoryStr = `[${dateRange.label}]\n` + dateHistory.map(h => {
+                      const time = new Date(h.ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                      return `${time} — ${h.title} (${h.url})`
+                    }).join('\n')
+                  }
+                }
+
                 const context = buildContext(
                   aliases,
                   categories,
@@ -543,10 +572,23 @@ export function CommandPalette() {
                   memories
                 )
 
-                const actions = await executeCommand(aiQuery, context)
+                const actions = await executeCommand(aiQuery, { ...context, browsingHistory: dateHistoryStr || undefined })
+                const answerAction = actions.find(a => a.type === 'answer')
                 const rememberActions = actions.filter(a => a.type === 'remember')
-                const execActions = actions.filter(a => a.type !== 'remember')
+                const execActions = actions.filter(a => !['remember', 'answer', 'save-to-journal'].includes(a.type))
 
+                // Handle answer display
+                if (answerAction) {
+                  setAiAnswer({
+                    text: answerAction.value,
+                    urls: answerAction.urls || [],
+                    dateKey: dateRange ? toLocalDateKey(new Date(dateRange.startTime)) : toLocalDateKey(new Date()),
+                  })
+                  setAiLoading(false)
+                  return
+                }
+
+                // Execute navigation actions
                 if (execActions.length > 0) {
                   await executeActions(execActions)
                 }
@@ -558,7 +600,7 @@ export function CommandPalette() {
                   }
                 }
 
-                if (execActions.length === 0 && rememberActions.length === 0) {
+                if (execActions.length === 0 && rememberActions.length === 0 && !answerAction) {
                   setAiError('No actions returned from AI')
                   return
                 }
@@ -572,6 +614,8 @@ export function CommandPalette() {
               } finally {
                 setAiLoading(false)
               }
+
+              // Only close palette if there were no answer actions
               setIsOpen(false)
               setQuery('')
             },
@@ -737,6 +781,11 @@ export function CommandPalette() {
     }
     if (e.key === 'Enter') {
       e.preventDefault()
+      if (aiAnswer) {
+        setIsOpen(false)
+        setQuery('')
+        return
+      }
       if (results[selected]) {
         launch(results[selected])
       } else if (query.trim()) {
@@ -793,7 +842,52 @@ export function CommandPalette() {
               <span className="cp-esc">esc</span>
             </div>
 
-            {results.length > 0 && (
+            {aiAnswer ? (
+              <div className="cp-answer">
+                <div className="cp-answer-text">{aiAnswer.text}</div>
+                {aiAnswer.urls.length > 0 && (
+                  <div className="cp-answer-chips">
+                    {aiAnswer.urls.map((u, i) => (
+                      <button
+                        key={i}
+                        className="cp-chip"
+                        onClick={() => {
+                          if (typeof chrome !== 'undefined' && chrome.tabs) {
+                            chrome.tabs.create({ url: u.url })
+                          } else {
+                            window.location.href = u.url
+                          }
+                        }}
+                      >
+                        {u.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="cp-save-journal"
+                  onClick={() => {
+                    const dateKey = aiAnswer.dateKey
+                    const dateLabel = new Date(dateKey + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                    const linkList = aiAnswer.urls.length > 0
+                      ? '\n' + aiAnswer.urls.map(u => `• ${u.label} — ${u.url}`).join('\n')
+                      : ''
+                    const entry = `--- AI Summary (${dateLabel}) ---\n${aiAnswer.text}${linkList}`
+                    setJournal(prev => {
+                      const existing = prev[dateKey] || ''
+                      const sep = existing ? '\n\n' : ''
+                      return { ...prev, [dateKey]: existing + sep + entry }
+                    })
+                    setAiAnswer(null)
+                    setIsOpen(false)
+                    setQuery('')
+                    showToast('Saved to journal')
+                  }}
+                >
+                  <Bookmark size={14} style={{ marginRight: 6 }} /> Save to journal
+                </button>
+              </div>
+            ) : results.length > 0 && (
               <div className="cp-results" ref={resultsRef}>
                 {results.map((r, i) => (
                   <div
@@ -819,7 +913,13 @@ export function CommandPalette() {
               <div className="cp-ai-error">⚠️ {aiError}</div>
             )}
 
-            {!query && (
+            {aiAnswer && (
+              <div className="cp-hint-row">
+                <span>Click a chip to open in new tab</span>
+                <span>esc close</span>
+              </div>
+            )}
+            {!query && !aiAnswer && (
               <div className="cp-hint-row">
                 <span>↑↓ navigate</span>
                 <span>↵ open</span>

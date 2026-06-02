@@ -12,6 +12,10 @@ function sanitize(str: string): string {
   return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 200)
 }
 
+function sanitizeLong(str: string): string {
+  return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 4000)
+}
+
 export function useAIProviders() {
   const [providers, setProviders] = useState<AIProviderConfig[]>([])
   const [activeProvider, setActiveProvider] = useState<AIProvider | null>(null)
@@ -71,7 +75,7 @@ export function useAIProviders() {
 
   const executeCommand = useCallback(async (
     prompt: string,
-    context: { aliases: string; bookmarks: string; tabs: string; history: string; memories: string }
+    context: { aliases: string; bookmarks: string; tabs: string; history: string; memories: string; browsingHistory?: string }
   ): Promise<AIAction[]> => {
     const currentActive = activeProvider
     if (!currentActive) {
@@ -89,9 +93,14 @@ export function useAIProviders() {
 
     const safeQuery = sanitize(prompt)
 
+    const hasBrowsingHistory = context.browsingHistory && context.browsingHistory.length > 0
+    const historySection = hasBrowsingHistory
+      ? `browsing history (with timestamps):\n${sanitizeLong(context.browsingHistory!)}`
+      : `recent history: ${sanitize(context.history)}`
+
     const systemPrompt = `You are a command interpreter. Given the user's context and request, respond with a JSON array of actions.
 
-You are a command interpreter. Given the user's context and request, respond with a JSON array of actions.
+When the user asks about their browsing history (e.g. "what did I do yesterday", "summarize May 30"), examine the browsing history context and return an "answer" action with a concise 2-4 sentence summary and up to 5 relevant links as chips.
 
 When the user says "open X", check the known destinations first. If X matches a known destination, use its exact URL. For example:
 - "open slack" → {"type": "open_url", "value": "https://slack.com"}
@@ -109,7 +118,7 @@ Context:
 aliases: ${sanitize(context.aliases)}
 bookmarks: ${sanitize(context.bookmarks)}
 open tabs: ${sanitize(context.tabs)}
-recent history: ${sanitize(context.history)}
+${historySection}
 known destinations:
 ${sanitize(context.memories)}
 </context>
@@ -124,6 +133,11 @@ Available actions:
 - {"type": "alias", "value": "<alias key>"} — use a saved alias
 - {"type": "history", "value": "<search term for chrome history>"} — search browser history
 - {"type": "remember", "value": "<keyword>", "url": "<full url>"} — save a new memory mapping
+- {"type": "answer", "value": "<summary text>", "urls": [{"label": "<short label>", "url": "<full url>"}]} — display a text answer with link chips. Keep urls array to 5 items max.
+- {"type": "save-to-journal", "value": "<text to save>", "date": "<YYYY-MM-DD>"} — save a summary to the daily journal (use date from the user's request)
+
+When using "answer": keep summaries to 2-4 sentences. Label links with the page title or domain name.
+When using "save-to-journal": include a "date" field matching the date being summarized.
 
 Respond ONLY with a valid JSON array. No markdown, no explanation.`
 

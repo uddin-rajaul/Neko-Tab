@@ -33,6 +33,9 @@ Type `!` in the command palette to trigger AI mode. Powered by your choice of pr
 - **Natural language navigation** — `! open slack and discord` opens both in new tabs
 - **Smart URL resolution** — prefers your most-visited URLs from browser history
 - **AI Memory** — automatically learns which URLs you use for each service; suggests new mappings as you use the palette
+- **Browsing History Q&A** — ask `! what did I do yesterday` or `! summarize last week` — the AI fetches your Chrome history for that period and returns a concise summary with clickable link chips
+- **Save to journal** — each AI summary includes a **Save to journal** button that writes it to the scratchpad journal with the correct date stamp
+- **Supported date queries** — `today`, `yesterday`, `last week`, `this month`, specific dates (`May 30`, `june 1`), and day names (`Monday`)
 - **View and manage** learned mappings in **Settings → AI → AI Memory**
 
 ### AI Memory
