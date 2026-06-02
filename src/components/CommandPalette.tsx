@@ -9,7 +9,6 @@ import { useOpenTabs } from '../hooks/useOpenTabs'
 import { useAIProviders } from '../hooks/useAIProviders'
 import { useAIMemory } from '../hooks/useAIMemory'
 import { executeActions, buildContext, fetchFrequentDestinations, parseDateQuery, fetchHistoryForDateRange } from '../utils/ai-command-parser'
-import type { AIAction } from '../types'
 
 interface Result {
   id: string

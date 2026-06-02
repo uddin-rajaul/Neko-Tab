@@ -16,6 +16,38 @@ function sanitizeLong(str: string): string {
   return str.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 4000)
 }
 
+function isEscaped(s: string, i: number): boolean {
+  let n = 0
+  let j = i - 1
+  while (j >= 0 && s[j] === '\\') { n++; j-- }
+  return n % 2 === 1
+}
+
+function extractActions(content: string): AIAction[] | null {
+  let depth = 0
+  let start = -1
+  let inString = false
+  for (let i = 0; i < content.length; i++) {
+    const c = content[i]
+    if (inString) {
+      if (c === '"' && !isEscaped(content, i)) inString = false
+      continue
+    }
+    if (c === '"') { inString = true; continue }
+    if (c === '[') {
+      if (start === -1) start = i
+      depth++
+    } else if (c === ']') {
+      depth--
+      if (depth === 0 && start !== -1) {
+        try { return JSON.parse(content.slice(start, i + 1)) as AIAction[] }
+        catch { return null }
+      }
+    }
+  }
+  return null
+}
+
 export function useAIProviders() {
   const [providers, setProviders] = useState<AIProviderConfig[]>([])
   const [activeProvider, setActiveProvider] = useState<AIProvider | null>(null)
@@ -196,12 +228,10 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
       content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
     }
 
-    const jsonMatch = content.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
+    const actions = extractActions(content)
+    if (!actions) {
       throw new Error('AI response was not valid JSON')
     }
-
-    const actions = JSON.parse(jsonMatch[0]) as AIAction[]
     return actions
   }, [activeProvider, providers])
 

@@ -35,15 +35,29 @@ export default defineConfig(({ mode }) => {
               )
             }
 
-            // Inject or strip extension key
-            if (hasValidExtensionKey) {
-              manifestObj.key = normalizedExtensionKey
-            } else {
+            // Firefox build — strip Chrome-specific fields
+            const isFirefox = env.FIREFOX_BUILD === 'true'
+            if (isFirefox) {
               delete manifestObj.key
-              if (rawExtensionKey && rawExtensionKey !== 'your_extension_key_here') {
-                console.warn(
-                  'Skipping manifest key injection: GOOGLE_EXTENSION_KEY is not a valid base64-encoded public key.'
-                )
+              delete manifestObj.oauth2
+              manifestObj.permissions = manifestObj.permissions.filter(
+                (p: string) => p !== 'identity'
+              )
+              // Firefox MV3 requires background.scripts instead of service_worker
+              manifestObj.background = {
+                scripts: [manifestObj.background.service_worker]
+              }
+            } else {
+              // Inject or strip extension key (Chrome-specific)
+              if (hasValidExtensionKey) {
+                manifestObj.key = normalizedExtensionKey
+              } else {
+                delete manifestObj.key
+                if (rawExtensionKey && rawExtensionKey !== 'your_extension_key_here') {
+                  console.warn(
+                    'Skipping manifest key injection: GOOGLE_EXTENSION_KEY is not a valid base64-encoded public key.'
+                  )
+                }
               }
             }
 
