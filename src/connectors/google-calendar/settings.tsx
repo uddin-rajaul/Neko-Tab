@@ -1,4 +1,5 @@
 import { useGoogleCalendar } from './useGoogleCalendar';
+import { isIdentityAvailable } from '../../utils/browser';
 
 interface CalendarSettingsProps {
   config: Record<string, unknown>
@@ -9,15 +10,15 @@ export function GoogleCalendarSettings({ config, onConfigChange }: CalendarSetti
   const { isConnected, connect, disconnect, error } = useGoogleCalendar(false);
   const enabled = !!config.enabled;
   const lookahead = (config.lookahead as number) ?? 4320;
-  const isExtension = typeof chrome !== 'undefined' && !!chrome.identity;
+  const isExt = isIdentityAvailable();
 
   return (
     <div className='saas-card'>
       <label className='saas-label'>Google Calendar</label>
 
-      {!isExtension && (
+      {!isExt && (
         <div className='saas-hint' style={{ color: '#ffb300', marginBottom: 16, border: '1px solid rgba(255, 179, 0, 0.2)', padding: '8px', borderRadius: '4px' }}>
-          Identity API not detected. Please make sure this is running as a loaded extension in Chrome.
+          Identity API not detected. Please make sure this is running as a loaded extension in Chrome or Firefox.
         </div>
       )}
 

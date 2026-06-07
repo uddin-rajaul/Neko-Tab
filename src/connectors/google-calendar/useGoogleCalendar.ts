@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { STORAGE_KEYS } from '../../hooks/useLocalStorage';
+import { getAuthToken, removeCachedAuthToken } from '../../utils/browser';
 
 export interface CalendarEvent {
   id: string;
@@ -29,37 +30,29 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!chrome.identity) return;
-
-    chrome.identity.getAuthToken({ interactive: false }, (authToken) => {
-      if (chrome.runtime.lastError) {
-        return;
-      }
+    getAuthToken(false).then((authToken) => {
       if (authToken) {
-        setToken(authToken as string);
+        setToken(authToken);
         localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
       }
     });
   }, []);
 
   const connect = useCallback(() => {
-    if (!chrome.identity) return;
-    chrome.identity.getAuthToken({ interactive: true }, (authToken) => {
-      if (chrome.runtime.lastError) {
-        setError(chrome.runtime.lastError.message || 'Auth failed');
-        return;
-      }
+    getAuthToken(true).then((authToken) => {
       if (authToken) {
-        setToken(authToken as string);
+        setToken(authToken);
         localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
         setError(null);
+      } else {
+        setError('Auth failed');
       }
     });
   }, []);
 
   const disconnect = useCallback(() => {
-    if (!chrome.identity || !token) return;
-    chrome.identity.removeCachedAuthToken({ token }, () => {
+    if (!token) return;
+    removeCachedAuthToken(token).then(() => {
       setToken(null);
       setEvent(null);
       localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'false');
@@ -91,7 +84,7 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
         });
 
         if (response.status === 401) {
-          chrome.identity.removeCachedAuthToken({ token }, () => {
+          removeCachedAuthToken(token).then(() => {
             if (isMounted) setToken(null);
           });
           throw new Error('Unauthorized');
