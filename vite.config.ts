@@ -16,6 +16,12 @@ export default defineConfig(({ mode }) => {
     /^[A-Za-z0-9+/=]+$/.test(normalizedExtensionKey)
 
   return {
+    define: {
+      __GOOGLE_CLIENT_ID__: JSON.stringify(env.GOOGLE_CLIENT_ID || ''),
+      __GOOGLE_CLIENT_SCOPES__: JSON.stringify(
+        env.GOOGLE_CLIENT_SCOPES || 'https://www.googleapis.com/auth/calendar.events.readonly'
+      ),
+    },
     plugins: [
       react(),
       {

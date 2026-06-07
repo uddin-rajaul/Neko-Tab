@@ -2,6 +2,9 @@ declare global {
   var browser: typeof chrome | undefined
 }
 
+declare const __GOOGLE_CLIENT_ID__: string
+declare const __GOOGLE_CLIENT_SCOPES__: string
+
 function getRuntimeId(): string | undefined {
   try {
     if (typeof chrome !== 'undefined' && chrome.runtime?.id) return chrome.runtime.id
@@ -45,11 +48,18 @@ function getManifestValue<T>(path: string[]): T | undefined {
 }
 
 function getGoogleClientId(): string {
-  return getManifestValue<string>(['oauth2', 'client_id']) || ''
+  return getManifestValue<string>(['oauth2', 'client_id'])
+    || (typeof __GOOGLE_CLIENT_ID__ !== 'undefined' ? __GOOGLE_CLIENT_ID__ : '')
+    || ''
 }
 
 function getGoogleScopes(): string[] {
-  return getManifestValue<string[]>(['oauth2', 'scopes']) || []
+  const fromManifest = getManifestValue<string[]>(['oauth2', 'scopes'])
+  if (fromManifest && fromManifest.length > 0) return fromManifest
+  if (typeof __GOOGLE_CLIENT_SCOPES__ !== 'undefined') {
+    return __GOOGLE_CLIENT_SCOPES__.split(',').filter(Boolean)
+  }
+  return []
 }
 
 function getRedirectUri(): string {
