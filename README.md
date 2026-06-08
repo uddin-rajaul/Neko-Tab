@@ -49,9 +49,9 @@ The AI learns from your browsing patterns over time:
 
 ### Theming
 
-20+ professionally crafted themes across three categories:
+22+ professionally crafted themes across three categories:
 
-- **Color**: Carbon, Paper, Nord, Solarized, Matrix, Dracula, Monokai, Gruvbox, Tokyo Night, Catppuccin, One Dark, Rosé Pine, Everforest
+- **Color**: Carbon, Paper, Nord, Solarized, Matrix, Dracula, Monokai, Gruvbox, Tokyo Night, Catppuccin, One Dark, Rosé Pine, Everforest, ChatGPT, Claude
 - **Animated**: Cyberpunk, Aurora, Synthwave, Vaporwave
 - **Special Effects**: Retro CRT, Sunset, Ocean, Midnight
 

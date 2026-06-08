@@ -181,6 +181,34 @@
 }
 
 
+/* ChatGPT Theme */
+.app.chatgpt {
+  --bg-primary: #212121;
+  --bg-secondary: #171717;
+  --bg-tertiary: #2D2D2D;
+  --text-primary: #ECECF1;
+  --text-secondary: #8E8EA0;
+  --accent: #10A37F;
+  --accent-hover: #1A7F64;
+  --border: #4D4D4F;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Claude Theme */
+.app.claude {
+  --bg-primary: #1C1C1C;
+  --bg-secondary: #141414;
+  --bg-tertiary: #2D2D2D;
+  --text-primary: #E8E8E8;
+  --text-secondary: #9CA3AF;
+  --accent: #C9773A;
+  --accent-hover: #D68B4F;
+  --border: #3A3A3A;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* Legacy support */
 .app.dark {
   --bg-primary: #222526;
