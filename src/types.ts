@@ -28,6 +28,8 @@ export type ThemeType =
   | 'cyberpunk' | 'aurora' | 'synthwave' | 'vaporwave'
   // Special Effect Themes
   | 'retro-terminal' | 'sunset' | 'ocean' | 'midnight'
+  // AI-Inspired Themes
+  | 'chatgpt' | 'claude'
 
 export interface ThemeInfo {
   id: ThemeType

@@ -198,6 +198,7 @@ const THEME_LIST: { id: ThemeType; name: string }[] = [
   { id: 'synthwave', name: 'Synthwave' }, { id: 'vaporwave', name: 'Vaporwave' },
   { id: 'retro-terminal', name: 'Retro CRT' }, { id: 'sunset', name: 'Sunset' },
   { id: 'ocean', name: 'Ocean' }, { id: 'midnight', name: 'Midnight' },
+  { id: 'chatgpt', name: 'ChatGPT' }, { id: 'claude', name: 'Claude' },
 ]
 
 const FONT_LIST = [

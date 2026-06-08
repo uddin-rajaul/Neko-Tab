@@ -33,6 +33,9 @@ const THEMES: ThemeInfo[] = [
   { id: 'sunset', name: 'Sunset', bgColor: '#1a1423', textColor: '#ffecd2', accentColor: '#fcb69f', category: 'special' },
   { id: 'ocean', name: 'Ocean', bgColor: '#0c1821', textColor: '#ccd6f6', accentColor: '#64ffda', category: 'special' },
   { id: 'midnight', name: 'Midnight', bgColor: '#020617', textColor: '#e2e8f0', accentColor: '#6366f1', category: 'special' },
+  // AI-Inspired Themes
+  { id: 'chatgpt', name: 'ChatGPT', bgColor: '#212121', textColor: '#ECECF1', accentColor: '#10A37F', category: 'color' },
+  { id: 'claude', name: 'Claude', bgColor: '#1C1C1C', textColor: '#E8E8E8', accentColor: '#C9773A', category: 'color' },
 ]
 
 const FONTS = [
