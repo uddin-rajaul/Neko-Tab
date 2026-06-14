@@ -89,8 +89,8 @@ export function AIProviders() {
           body: JSON.stringify({ model: provider.model || 'claude-3-haiku-20240307', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
         })
       } else if (providerType === 'gemini') {
-        response = await fetch(`${baseUrl}/models?key=${provider.apiKey}`, {
-          headers: { 'Content-Type': 'application/json' },
+        response = await fetch(`${baseUrl}/models`, {
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': provider.apiKey },
         })
       } else {
         throw new Error(`Unknown provider: ${providerType}`)

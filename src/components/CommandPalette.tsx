@@ -866,6 +866,7 @@ export function CommandPalette() {
                         key={i}
                         className="cp-chip"
                         onClick={() => {
+                          if (!isSafeUrl(u.url)) return
                           if (typeof chrome !== 'undefined' && chrome.tabs) {
                             chrome.tabs.create({ url: u.url })
                           } else {
