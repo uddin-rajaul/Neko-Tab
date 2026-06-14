@@ -31,7 +31,11 @@ function loadSessions(): FocusSession[] {
 }
 
 function saveSessions(sessions: FocusSession[]) {
-  localStorage.setItem('focus-sessions', JSON.stringify(sessions))
+  try {
+    localStorage.setItem('focus-sessions', JSON.stringify(sessions))
+  } catch (e) {
+    console.error('Failed to save focus sessions:', e)
+  }
 }
 
 export function useFocusSessions() {

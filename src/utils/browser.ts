@@ -2,6 +2,10 @@ declare global {
   var browser: typeof chrome | undefined
 }
 
+export function isSafeUrl(url: string): boolean {
+  return /^https?:\/\//i.test(url)
+}
+
 declare const __GOOGLE_CLIENT_ID__: string
 declare const __GOOGLE_CLIENT_SCOPES__: string
 
@@ -80,7 +84,7 @@ export function getAuthToken(interactive: boolean): Promise<string | null> {
   if (typeof chrome !== 'undefined' && chrome.identity?.getAuthToken) {
     return new Promise((resolve) => {
       chrome.identity.getAuthToken({ interactive }, (result) => {
-        if (chrome.runtime.lastError) {
+        if (chrome?.runtime?.lastError) {
           resolve(null)
           return
         }

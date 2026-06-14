@@ -5,26 +5,28 @@ const BACKUP_PREFIXES = ['neko-', 'startpage-', 'activity_data', 'pomodoro-', 'b
  * Performance: O(N) single-pass iteration.
  */
 export function exportSettings() {
-  const backup: Record<string, string | null> = {}
-  
-  // Use Object.keys for a more modern, stable iteration than index-based loop
-  Object.keys(localStorage).forEach(key => {
-    if (BACKUP_PREFIXES.some(p => key.startsWith(p))) {
-      backup[key] = localStorage.getItem(key)
-    }
-  })
+  try {
+    const backup: Record<string, string | null> = {}
 
-  const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `neko-tab-backup-${new Date().toISOString().split('T')[0]}.json`
-  document.body.appendChild(a)
-  a.click()
-  
-  // Clean up
-  document.body.removeChild(a)
-  setTimeout(() => URL.revokeObjectURL(url), 100)
+    Object.keys(localStorage).forEach(key => {
+      if (BACKUP_PREFIXES.some(p => key.startsWith(p))) {
+        backup[key] = localStorage.getItem(key)
+      }
+    })
+
+    const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `neko-tab-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 100)
+  } catch (e) {
+    console.error('Failed to export settings:', e)
+  }
 }
 
 /**

@@ -128,6 +128,11 @@ export function FocusMode() {
 
     try {
       const storageKey = `focus-distraction-log:${sessionId}`
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        const current = await chrome.storage.local.get(storageKey)
+        const parsed = current[storageKey]
+        return Array.isArray(parsed) ? parsed : []
+      }
       const raw = localStorage.getItem(storageKey)
       if (!raw) return []
       const parsed = JSON.parse(raw)
@@ -141,7 +146,12 @@ export function FocusMode() {
     if (!sessionId) return
 
     try {
-      localStorage.removeItem(`focus-distraction-log:${sessionId}`)
+      const storageKey = `focus-distraction-log:${sessionId}`
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        await chrome.storage.local.remove(storageKey)
+      } else {
+        localStorage.removeItem(storageKey)
+      }
     } catch {
       // Ignore cleanup failures for ephemeral session data.
     }
