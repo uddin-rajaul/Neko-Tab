@@ -98,10 +98,13 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const BG_LIVE_KEYS = new Set<keyof SettingsType>(['bgDim', 'bgBlur'])
 
   const handleChange = <K extends keyof SettingsType>(key: K, value: SettingsType[K]) => {
-    setLocalSettings(prev => ({ ...prev, [key]: value }))
-    if (BG_LIVE_KEYS.has(key)) {
-      onSettingsChange({ ...localSettings, [key]: value })
-    }
+    setLocalSettings(prev => {
+      const updated = { ...prev, [key]: value }
+      if (BG_LIVE_KEYS.has(key)) {
+        onSettingsChange(updated)
+      }
+      return updated
+    })
   }
 
   const handleSave = () => {
@@ -154,7 +157,15 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     const reload = () => window.location.reload()
 
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.clear(reload)
+      chrome.storage.local.get('focusBlocking', (focusBlocking) => {
+        chrome.storage.local.clear(() => {
+          if (focusBlocking?.focusBlocking) {
+            chrome.storage.local.set({ focusBlocking: focusBlocking.focusBlocking }, reload)
+          } else {
+            reload()
+          }
+        })
+      })
       return
     }
 
@@ -794,10 +805,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 {/* AI TAB */}
                 {activeTab === 'ai' && (
                   <>
-                    <AIProviders
-                      _settings={localSettings}
-                      _onSettingsChange={handleChange}
-                    />
+                    <AIProviders />
                     <div className="saas-section">
                       <AIMemorySettings />
                     </div>

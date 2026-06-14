@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Plus, Pencil, Trash2, X, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import type { BookmarkCategory, Bookmark } from '../types'
 import { recordTabUsage } from '../utils/tabUsage'
+import { isSafeUrl } from '../utils/browser'
 
 interface BookmarksProps {
   categories: BookmarkCategory[]
@@ -174,7 +175,7 @@ export function Bookmarks({
             <div className="bookmarks-list">
               {topSites.map((site, index) => (
                 <div key={index} className="bookmark-item">
-                  <a href={site.url} className="bookmark-link" title={site.title} onClick={handleNavigate}>
+                  <a href={isSafeUrl(site.url) ? site.url : '#'} className="bookmark-link" title={site.title} onClick={handleNavigate}>
                     {(() => {
                       try {
                         const url = new URL(site.url);
@@ -274,7 +275,7 @@ export function Bookmarks({
                   ) : (
                     <>
                       <a 
-                        href={bookmark.url} 
+                        href={isSafeUrl(bookmark.url) ? bookmark.url : '#'} 
                         className="bookmark-link"
                         onClick={handleNavigate}
                       >

@@ -59,7 +59,6 @@ export function Clock({ userName = 'User', showGreeting = true, format = '24h' }
   }, [isMaximized])
   
   const hours = time.getHours()
-  const minutes = time.getMinutes()
 
   const greetingPool: Record<string, string[]> = {
     lateNight: [
@@ -120,7 +119,7 @@ export function Clock({ userName = 'User', showGreeting = true, format = '24h' }
   }
 
   const getSegment = () => {
-    const h = hours, m = minutes
+    const h = hours
     if (h < 4)  return 'lateNight'
     if (h < 6)  return 'earlyMorning'
     if (h < 10) return 'morning'
@@ -129,7 +128,6 @@ export function Clock({ userName = 'User', showGreeting = true, format = '24h' }
     if (h < 18) return 'lateAfternoon'
     if (h < 21) return 'evening'
     return 'night'
-    void m // suppress unused warning
   }
 
   const segment = getSegment()

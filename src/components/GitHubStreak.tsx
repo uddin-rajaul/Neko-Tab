@@ -10,11 +10,15 @@ interface ContribDay {
 }
 
 function computeStreak(days: ContribDay[]): number {
-  // days are oldest-to-newest; walk backwards from today
   const sorted = [...days].sort((a, b) => b.date.localeCompare(a.date))
   const today = new Date().toISOString().slice(0, 10)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+
+  const todayDay = sorted.find(d => d.date === today)
+  const startDay = (todayDay && todayDay.count > 0) ? today : yesterday
+
   let streak = 0
-  let expected = today
+  let expected = startDay
 
   for (const day of sorted) {
     if (day.date > expected) continue

@@ -9,7 +9,7 @@ import { useOpenTabs } from '../hooks/useOpenTabs'
 import { useAIProviders } from '../hooks/useAIProviders'
 import { useAIMemory } from '../hooks/useAIMemory'
 import { executeActions, buildContext, fetchFrequentDestinations, parseDateQuery, fetchHistoryForDateRange } from '../utils/ai-command-parser'
-import type { AIAction } from '../types'
+import { isSafeUrl } from '../utils/browser'
 
 interface Result {
   id: string
@@ -256,14 +256,17 @@ export function CommandPalette() {
       fetchedRef.current = true
       fetchFrequentDestinations().then(historyMemories => {
         for (const m of historyMemories) {
-          const existing = memories.find(x => x.keyword === m.keyword)
-          if (!existing) {
-            saveMemory(m.keyword, m.url, 'history')
-          }
+          saveMemory(m.keyword, m.url, 'history')
         }
       })
     }
   }, [isOpen])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    }
+  }, [])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
@@ -288,6 +291,10 @@ export function CommandPalette() {
     chrome.history.search(
       { text: query, maxResults: 5, startTime: 0 },
       (items) => {
+        if (chrome.runtime.lastError) {
+          setHistoryResults([])
+          return
+        }
         const seen = new Set<string>()
         const mapped = items
           .filter(item => item.url && item.title)
@@ -303,12 +310,7 @@ export function CommandPalette() {
   }, [query])
 
   // Mirror theme class onto the portaled panel so CSS vars resolve correctly
-  const themeClass = useMemo(() => {
-    const appEl = document.querySelector<HTMLElement>('.app')
-    return appEl
-      ? Array.from(appEl.classList).filter(c => c !== 'app' && c !== 'has-bg').join(' ')
-      : 'carbon'
-  }, [isOpen])
+  const themeClass = settings.theme || 'carbon'
 
   // Open/close
   useEffect(() => {
@@ -745,10 +747,12 @@ export function CommandPalette() {
     if (r.type === 'tab' && r.url) {
       if (typeof chrome !== 'undefined' && chrome.tabs) {
         chrome.tabs.get(Number(r.id.replace('tab-', '')), (tab) => {
-          if (tab.id) {
-            chrome.tabs.highlight({ windowId: tab.windowId, tabs: tab.index })
-            chrome.windows.update(tab.windowId || 0, { focused: true })
+          if (chrome.runtime.lastError || !tab) {
+            showToast('Tab no longer exists')
+            return
           }
+          chrome.tabs.highlight({ windowId: tab.windowId, tabs: tab.index })
+          chrome.windows.update(tab.windowId, { focused: true })
         })
       }
       setIsOpen(false)
@@ -762,6 +766,12 @@ export function CommandPalette() {
       }
       r.action()
     } else if (r.url) {
+      if (!isSafeUrl(r.url)) {
+        showToast('Invalid URL')
+        setIsOpen(false)
+        setQuery('')
+        return
+      }
       void recordTabUsage()
       addRecent(r.label, r.url)
       window.location.href = r.url
@@ -792,7 +802,10 @@ export function CommandPalette() {
       } else if (query.trim()) {
         // fallback: web search
         void recordTabUsage()
-        window.location.href = SEARCH_ENGINES[engine].url + encodeURIComponent(query)
+        const fallbackUrl = SEARCH_ENGINES[engine].url + encodeURIComponent(query)
+        if (isSafeUrl(fallbackUrl)) {
+          window.location.href = fallbackUrl
+        }
         setIsOpen(false); setQuery('')
       }
     }

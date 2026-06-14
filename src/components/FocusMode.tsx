@@ -110,7 +110,7 @@ export function FocusMode() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null)
   const [timeLeft, setTimeLeft] = useState(durationMin * 60)
   const { completeFocusSession } = useActivity()
-  const { addSession, todayBlocks, todayFormatted, streak, bestStreak, weeklyBlocks, identityLine } = useFocusSessions()
+  const { addSession, todaySessions, todayBlocks, todayFormatted, streak, bestStreak, weeklyBlocks, identityLine } = useFocusSessions()
   const hasCompletedRef = useRef(false)
   const taskRef = useRef<HTMLInputElement>(null)
 
@@ -128,6 +128,11 @@ export function FocusMode() {
 
     try {
       const storageKey = `focus-distraction-log:${sessionId}`
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        const current = await chrome.storage.local.get(storageKey)
+        const parsed = current[storageKey]
+        return Array.isArray(parsed) ? parsed : []
+      }
       const raw = localStorage.getItem(storageKey)
       if (!raw) return []
       const parsed = JSON.parse(raw)
@@ -141,14 +146,34 @@ export function FocusMode() {
     if (!sessionId) return
 
     try {
-      localStorage.removeItem(`focus-distraction-log:${sessionId}`)
+      const storageKey = `focus-distraction-log:${sessionId}`
+      if (typeof chrome !== 'undefined' && chrome.storage?.local) {
+        await chrome.storage.local.remove(storageKey)
+      } else {
+        localStorage.removeItem(storageKey)
+      }
     } catch {
       // Ignore cleanup failures for ephemeral session data.
     }
   }, [])
 
-  // Restore timer state on mount
+  // Restore timer state on mount (or orphan if another tab owned it)
   useEffect(() => {
+    const clientId = getClientTabId()
+    if (pomodoroState.isRunning && pomodoroState.ownerTabId && pomodoroState.ownerTabId !== clientId) {
+      setPomodoroState({
+        isRunning: false,
+        startedAt: null,
+        pausedTimeLeft: null,
+        task: '',
+        durationSec: durationMin * 60,
+        sessionId: null,
+        ownerTabId: null,
+      })
+      setTimeLeft(durationMin * 60)
+      return
+    }
+
     if (pomodoroState.isRunning && pomodoroState.startedAt) {
       const elapsed = Math.floor((Date.now() - pomodoroState.startedAt) / 1000)
       const remaining = pomodoroState.durationSec - elapsed
@@ -377,16 +402,6 @@ export function FocusMode() {
   }
 
   const maxWeekly = Math.max(...weeklyBlocks, 1)
-
-  const todaySessions = (() => {
-    try {
-      const raw = localStorage.getItem('focus-sessions')
-      const all: FocusSession[] = raw ? JSON.parse(raw) : []
-      const today = new Date().toLocaleDateString()
-      return all.filter(s => s.completed && new Date(s.completedAt).toLocaleDateString() === today)
-        .sort((a, b) => b.completedAt - a.completedAt)
-    } catch { return [] }
-  })()
 
 
   return (

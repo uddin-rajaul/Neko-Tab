@@ -23,7 +23,11 @@ export function useAIMemory() {
   const [memories, setMemories] = useState<AIMemory[]>([])
 
   useEffect(() => {
-    read().then(setMemories)
+    let cancelled = false
+    read().then(data => {
+      if (!cancelled) setMemories(data)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const saveMemory = useCallback(async (keyword: string, url: string, source: AIMemory['source']) => {

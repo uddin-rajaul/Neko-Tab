@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocalStorage } from './useLocalStorage'
+import { isSafeUrl } from '../utils/browser'
 import type { StartupSite } from '../types'
 
 const SITES_KEY   = 'neko_startup_sites'
@@ -31,6 +32,7 @@ export function useStartupSites() {
       const existingTabs = await chrome.tabs.query({ currentWindow: true })
 
       for (const site of sites) {
+        if (!isSafeUrl(site.url)) continue
         const siteHostname = new URL(site.url).hostname
         const alreadyOpen = existingTabs.find(t => {
           try {

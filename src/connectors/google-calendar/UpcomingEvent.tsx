@@ -9,7 +9,7 @@ import { getConnectorConfig } from '../types';
 const CONNECTOR_ID = 'google-calendar';
 
 function calculateTimeRemaining(event: any | null, now: Date, lookaheadMins: number): string {
-  if (!event) return '';
+  if (!event?.start) return '';
 
   const startStr = event.start.dateTime || event.start.date;
   if (!startStr) return '';

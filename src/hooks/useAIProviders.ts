@@ -23,14 +23,18 @@ export function useAIProviders() {
   const loadProviders = useCallback(async () => {
     if (typeof chrome === 'undefined' || !chrome.storage?.local) return
 
-    const stored = await chrome.storage.local.get('ai-providers') as { 'ai-providers'?: AIProviderConfig[] }
-    if (stored['ai-providers']) {
-      setProviders(stored['ai-providers'])
-    }
+    try {
+      const stored = await chrome.storage.local.get('ai-providers') as { 'ai-providers'?: AIProviderConfig[] }
+      if (stored['ai-providers']) {
+        setProviders(stored['ai-providers'])
+      }
 
-    const active = await chrome.storage.local.get('ai-active-provider') as { 'ai-active-provider'?: AIProvider }
-    if (active['ai-active-provider']) {
-      setActiveProvider(active['ai-active-provider'])
+      const active = await chrome.storage.local.get('ai-active-provider') as { 'ai-active-provider'?: AIProvider }
+      if (active['ai-active-provider']) {
+        setActiveProvider(active['ai-active-provider'])
+      }
+    } catch (e) {
+      console.error('Failed to load AI providers:', e)
     }
   }, [])
 
@@ -144,9 +148,12 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
     let response: Response
 
     if (currentActive === 'gemini') {
-      response = await fetch(`${baseUrl}/models/${model}:generateContent?key=${providerConfig.apiKey}`, {
+      response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': providerConfig.apiKey,
+        },
         body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }),
       })
     } else if (currentActive === 'openai' || currentActive === 'custom') {
@@ -201,7 +208,11 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
       throw new Error('AI response was not valid JSON')
     }
 
-    const actions = JSON.parse(jsonMatch[0]) as AIAction[]
+    const parsed = JSON.parse(jsonMatch[0])
+    if (!Array.isArray(parsed)) {
+      throw new Error('AI response was not an array')
+    }
+    const actions = parsed as AIAction[]
     return actions
   }, [activeProvider, providers])
 

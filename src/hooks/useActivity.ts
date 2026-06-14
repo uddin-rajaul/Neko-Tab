@@ -20,25 +20,31 @@ export function useActivity() {
   const [data, setData] = useState<ActivityData>(() => {
     const stored = localStorage.getItem('activity_data')
     if (stored) {
-      const parsed = JSON.parse(stored)
-      // Check if it's a new day
-      const today = new Date().toLocaleDateString()
-      if (parsed.date !== today) {
-        return {
-          ...parsed,
-          date: today,
-          secondsToday: 0, // Reset timer for new day
-          lastVisit: today
+      try {
+        const parsed = JSON.parse(stored)
+        const today = new Date().toLocaleDateString()
+        if (parsed.date !== today) {
+          return {
+            ...parsed,
+            date: today,
+            secondsToday: 0,
+            lastVisit: today
+          }
         }
+        return parsed
+      } catch {
+        return DEFAULT_DATA
       }
-      return parsed
     }
     return DEFAULT_DATA
   })
 
   useEffect(() => {
-    // Save to local storage whenever data changes
-    localStorage.setItem('activity_data', JSON.stringify(data))
+    try {
+      localStorage.setItem('activity_data', JSON.stringify(data))
+    } catch {
+      // Storage may be unavailable in private browsing
+    }
   }, [data])
 
   useEffect(() => {

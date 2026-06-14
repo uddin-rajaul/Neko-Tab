@@ -1,4 +1,5 @@
 import type { AIAction, AIMemory } from '../types'
+import { isSafeUrl } from './browser'
 
 const VALID_TYPES = new Set(['open_url', 'search', 'alias', 'open_tabs', 'history', 'remember', 'custom', 'answer', 'save-to-journal'])
 
@@ -29,7 +30,8 @@ export async function executeActions(actions: AIAction[]): Promise<void> {
 
     switch (action.type) {
       case 'open_url': {
-        const url = action.value.startsWith('http') ? action.value : `https://${action.value}`
+        const url = isSafeUrl(action.value) ? action.value : `https://${action.value}`
+        if (!isSafeUrl(url)) break
         if (typeof chrome !== 'undefined' && chrome.tabs) {
           chrome.tabs.create({ url })
         } else {
@@ -51,15 +53,19 @@ export async function executeActions(actions: AIAction[]): Promise<void> {
       }
 
       case 'alias':
-        window.location.href = action.value
-        return
+        if (isSafeUrl(action.value)) {
+          window.location.href = action.value
+          return
+        }
+        break
 
       case 'open_tabs': {
         const urls = action.value.split(',').map(u => u.trim())
         if (typeof chrome !== 'undefined' && chrome.tabs) {
           for (const url of urls) {
-            if (url) {
-              chrome.tabs.create({ url: url.startsWith('http') ? url : `https://${url}` })
+            const safe = isSafeUrl(url) ? url : `https://${url}`
+            if (url && isSafeUrl(safe)) {
+              chrome.tabs.create({ url: safe })
             }
           }
         }
@@ -69,7 +75,7 @@ export async function executeActions(actions: AIAction[]): Promise<void> {
       case 'history':
         if (typeof chrome !== 'undefined' && chrome.history) {
           chrome.history.search({ text: action.value, maxResults: 5 }, results => {
-            if (results[0]?.url) {
+            if (results[0]?.url && isSafeUrl(results[0].url)) {
               window.location.href = results[0].url
             }
           })

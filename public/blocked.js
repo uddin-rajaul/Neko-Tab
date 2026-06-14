@@ -8,8 +8,8 @@ async function logBlockedAttempt() {
     if (!focusBlocking?.isActive || !focusBlocking?.sessionId) return
 
     const storageKey = `${DISTRACTION_LOG_PREFIX}${focusBlocking.sessionId}`
-    const raw = localStorage.getItem(storageKey)
-    const attempts = raw ? JSON.parse(raw) : []
+    const current = await chrome.storage.local.get(storageKey)
+    const attempts = Array.isArray(current[storageKey]) ? current[storageKey] : []
     const domain = getDomainFromReferrer(document.referrer) ?? 'blocked site'
     const now = Date.now()
     const lastAttempt = attempts[attempts.length - 1]
@@ -23,7 +23,7 @@ async function logBlockedAttempt() {
       attemptedAt: now,
     })
 
-    localStorage.setItem(storageKey, JSON.stringify(attempts))
+    await chrome.storage.local.set({ [storageKey]: attempts })
   } catch {
     // Ignore logging failures on the blocked page.
   }

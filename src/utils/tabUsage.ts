@@ -33,7 +33,11 @@ async function setPersistentStorageValue(key: string, value: number) {
     return
   }
 
-  localStorage.setItem(key, String(value))
+  try {
+    localStorage.setItem(key, String(value))
+  } catch (e) {
+    console.error('Failed to save tab usage count:', e)
+  }
 }
 
 export async function readTabUsageCount() {

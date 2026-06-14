@@ -3,17 +3,12 @@ import { useAIProviders } from '../../hooks/useAIProviders'
 import type { AIProvider, AIProviderConfig } from '../../types'
 import { Key, Trash2, Plus, Check, AlertCircle } from 'lucide-react'
 
-interface AIProvidersProps {
-  _settings: any
-  _onSettingsChange: any
-}
-
 function maskKey(key: string): string {
   if (key.length <= 8) return key.slice(0, 2) + '****'
   return key.slice(0, 4) + '****' + key.slice(-4)
 }
 
-export function AIProviders(_props: AIProvidersProps) {
+export function AIProviders() {
   const { providers, activeProvider, saveProvider, removeProvider, setActive, loadProviders, providerDefaults } = useAIProviders()
 
   useEffect(() => {

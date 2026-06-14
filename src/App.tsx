@@ -101,18 +101,6 @@ function App() {
     root.style.setProperty("--font-mono", fontValue);
   }, [settings.font]);
 
-  useEffect(() => {
-    const stealFocus = () => {
-      window.focus();
-      if (document.activeElement === document.body) {
-        appRef.current?.focus();
-      }
-    };
-    stealFocus();
-    const timer = setTimeout(stealFocus, 50);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Listen for messages from the background service worker (e.g., startup sites opened)
   useEffect(() => {
     const listener = (msg: any) => {
