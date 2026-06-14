@@ -101,11 +101,14 @@ export function getAuthToken(interactive: boolean): Promise<string | null> {
     const scopes = getGoogleScopes()
     const redirectUri = getRedirectUri()
 
+    const state = crypto.randomUUID()
+
     const params = new URLSearchParams({
       client_id: clientId,
       response_type: 'token',
       redirect_uri: redirectUri,
       scope: scopes.join(' '),
+      state,
     })
 
     const authUrl = `https://accounts.google.com/o/oauth2/auth?${params}`
@@ -116,6 +119,7 @@ export function getAuthToken(interactive: boolean): Promise<string | null> {
         const fragment = redirectUrl.split('#')[1]
         if (!fragment) return null
         const fragmentParams = new URLSearchParams(fragment)
+        if (fragmentParams.get('state') !== state) return null
         return fragmentParams.get('access_token')
       })
       .catch(() => null)

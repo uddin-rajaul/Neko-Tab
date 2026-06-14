@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
     /^[A-Za-z0-9+/=]+$/.test(normalizedExtensionKey)
 
   return {
+    build: {
+      sourcemap: false,
+      target: 'es2021',
+    },
     define: {
       __GOOGLE_CLIENT_ID__: JSON.stringify(env.GOOGLE_CLIENT_ID || ''),
       __GOOGLE_CLIENT_SCOPES__: JSON.stringify(

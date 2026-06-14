@@ -157,7 +157,15 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     const reload = () => window.location.reload()
 
     if (typeof chrome !== 'undefined' && chrome.storage?.local) {
-      chrome.storage.local.clear(reload)
+      chrome.storage.local.get('focusBlocking', (focusBlocking) => {
+        chrome.storage.local.clear(() => {
+          if (focusBlocking?.focusBlocking) {
+            chrome.storage.local.set({ focusBlocking: focusBlocking.focusBlocking }, reload)
+          } else {
+            reload()
+          }
+        })
+      })
       return
     }
 
@@ -797,10 +805,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 {/* AI TAB */}
                 {activeTab === 'ai' && (
                   <>
-                    <AIProviders
-                      _settings={localSettings}
-                      _onSettingsChange={handleChange}
-                    />
+                    <AIProviders />
                     <div className="saas-section">
                       <AIMemorySettings />
                     </div>

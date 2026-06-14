@@ -49,10 +49,10 @@ export function useFocusSessions() {
     })
   }, [])
 
-  // Sessions completed today
+  // Sessions completed today (newest first)
   const todaySessions = sessions.filter(s => {
     return s.completed && new Date(s.completedAt).toLocaleDateString() === todayKey()
-  })
+  }).sort((a, b) => b.completedAt - a.completedAt)
 
   const todayBlocks = todaySessions.length
   const todaySeconds = todaySessions.reduce((acc, s) => acc + s.durationSec, 0)
@@ -141,6 +141,7 @@ export function useFocusSessions() {
   return {
     sessions,
     addSession,
+    todaySessions,
     todayBlocks,
     todaySeconds,
     todayFormatted: formatTime(todaySeconds),

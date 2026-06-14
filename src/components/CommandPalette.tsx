@@ -256,14 +256,17 @@ export function CommandPalette() {
       fetchedRef.current = true
       fetchFrequentDestinations().then(historyMemories => {
         for (const m of historyMemories) {
-          const existing = memories.find(x => x.keyword === m.keyword)
-          if (!existing) {
-            saveMemory(m.keyword, m.url, 'history')
-          }
+          saveMemory(m.keyword, m.url, 'history')
         }
       })
     }
   }, [isOpen])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    }
+  }, [])
 
   const showToast = useCallback((msg: string) => {
     setToast(msg)
@@ -307,12 +310,7 @@ export function CommandPalette() {
   }, [query])
 
   // Mirror theme class onto the portaled panel so CSS vars resolve correctly
-  const themeClass = useMemo(() => {
-    const appEl = document.querySelector<HTMLElement>('.app')
-    return appEl
-      ? Array.from(appEl.classList).filter(c => c !== 'app' && c !== 'has-bg').join(' ')
-      : 'carbon'
-  }, [isOpen])
+  const themeClass = settings.theme || 'carbon'
 
   // Open/close
   useEffect(() => {

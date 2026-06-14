@@ -36,7 +36,12 @@ declare global {
     }
 
     // Apply font variable immediately to prevent FOUT
-    const font = settings.font || 'JetBrains Mono';
+    const ALLOWED_FONTS = [
+      'JetBrains Mono', 'Geist Mono', 'Space Mono', 'Fira Code',
+      'Cascadia Code', 'IBM Plex Mono', 'Intel One Mono', 'Iosevka',
+      'Commit Mono', 'Source Code Pro', 'Inconsolata', 'Hack',
+    ]
+    const font = ALLOWED_FONTS.includes(settings.font) ? settings.font : 'JetBrains Mono';
     const fontValue = font.includes(' ') ? `'${font}'` : font;
     document.documentElement.style.setProperty('--font-mono', fontValue);
     

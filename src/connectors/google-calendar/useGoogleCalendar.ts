@@ -30,12 +30,15 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     getAuthToken(false).then((authToken) => {
+      if (!isMounted) return;
       if (authToken) {
         setToken(authToken);
         localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
       }
     });
+    return () => { isMounted = false; };
   }, []);
 
   const connect = useCallback(() => {
@@ -85,7 +88,14 @@ export function useGoogleCalendar(fetchEnabled: boolean) {
 
         if (response.status === 401) {
           removeCachedAuthToken(token).then(() => {
-            if (isMounted) setToken(null);
+            if (!isMounted) return;
+            setToken(null);
+            getAuthToken(true).then((newToken) => {
+              if (isMounted && newToken) {
+                setToken(newToken);
+                localStorage.setItem(STORAGE_KEYS.CALENDAR_CONNECTED, 'true');
+              }
+            });
           });
           throw new Error('Unauthorized');
         }

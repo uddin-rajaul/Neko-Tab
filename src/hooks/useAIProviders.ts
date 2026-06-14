@@ -208,7 +208,11 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
       throw new Error('AI response was not valid JSON')
     }
 
-    const actions = JSON.parse(jsonMatch[0]) as AIAction[]
+    const parsed = JSON.parse(jsonMatch[0])
+    if (!Array.isArray(parsed)) {
+      throw new Error('AI response was not an array')
+    }
+    const actions = parsed as AIAction[]
     return actions
   }, [activeProvider, providers])
 
