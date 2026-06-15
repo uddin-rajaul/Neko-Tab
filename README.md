@@ -255,11 +255,10 @@ No analytics, no tracking, no external servers — except searches you explicitl
 
 ## Support
 
-If Neko-Tab saves you time or you just like what it does, a small contribution goes a long way.
+Neko-Tab is free and open source. If it saves you time, consider buying me a coffee.
 
-**eSewa (Nepal):** `9823211188`
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/uddinrajaul)
 
-No pressure, the project is and will always be free and open source.
 
 ---
 
