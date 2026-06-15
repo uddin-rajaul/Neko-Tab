@@ -32,5 +32,6 @@ node_modules/
 .gitignore
 .codex
 .claude/
+.superpowers/
 graphify-out/
 docs/
