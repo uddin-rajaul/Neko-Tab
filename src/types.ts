@@ -67,6 +67,7 @@ export interface Settings {
   showChromeTab: boolean
   // Bookmarks
   showBookmarks: boolean
+  showAsciiArt: boolean
   // Connectors (third-party integrations)
   connectors: Record<string, Record<string, unknown>>
   // Startup Sites

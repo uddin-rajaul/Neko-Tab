@@ -69,6 +69,7 @@ const DEFAULT_SETTINGS: Settings = {
   asciiArt: CAT_ASCII,
   showChromeTab: false,
   showBookmarks: true,
+  showAsciiArt: true,
   connectors: {},
   startupSitesEnabled: false,
 }

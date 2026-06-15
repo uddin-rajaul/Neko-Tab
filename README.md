@@ -204,16 +204,16 @@ Without credentials, the extension runs normally — just without Calendar suppo
 Open the gear icon (top-right) to access:
 
 - **Appearance** — theme picker with live preview, font chooser (12 curated monospace fonts)
-- **Preferences** — name, clock format (12/24h), display toggles (clock, greeting, status bar, tab counter, etc.)
 - **ASCII Art** — image-to-ASCII converter, custom art editor, or OS-specific art (Windows/Mac/Linux)
+- **Preferences** — name, clock format (12/24h), display toggles (clock, greeting, status bar, tab counter, etc.)
 - **Widgets** — background image with dim/blur controls, daily goal, GitHub streak (set username)
-- **Startup Sites** — configure up to 10 URLs to open on the first new tab of each day
-- **Aliases** — define short URL aliases for the command palette
-- **Integrations** — connect Google Calendar to show upcoming events on the home page
 - **AI** — configure AI providers (OpenAI, Anthropic, Gemini, custom API), manage learned URL memories
-- **Focus Mode** — configure default duration and blocked sites
+- **Aliases** — define short URL aliases for the command palette
+- **Startup Sites** — configure up to 10 URLs to open on the first new tab of each day
+- **Integrations** — connect Google Calendar to show upcoming events on the home page
 - **Export/Import** — download all settings as JSON or restore from a backup
 - **Advanced** — reset all user data and wipe stored settings cleanly
+- **Support** — buy me a coffee ☕
 
 ---
 
@@ -244,7 +244,6 @@ No analytics, no tracking, no external servers — except searches you explicitl
 
 - React + TypeScript
 - Vite
-- Tailwind CSS
 - Lucide React (icons)
 - JetBrains Mono (default font), 11 more via lazy Google Fonts loading
 

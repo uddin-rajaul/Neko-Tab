@@ -161,9 +161,11 @@ function App() {
 
         {/* Content Section */}
         <div className="content-section">
-          <div className="ascii-column">
-            <PixelArt asciiArt={displayAsciiArt} />
-          </div>
+          {settings.showAsciiArt !== false && (
+            <div className="ascii-column">
+              <PixelArt asciiArt={displayAsciiArt} />
+            </div>
+          )}
           <div className="links-column">
             <Bookmarks
               categories={categories}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
 import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
@@ -59,7 +59,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'preferences' | 'ascii' | 'widgets' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'ai';
+type TabType = 'appearance' | 'ascii' | 'preferences' | 'widgets' | 'ai' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'support';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -214,22 +214,28 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <Palette size={16} /> Appearance
                 </button>
                 <button 
-                  className={`saas-nav-item ${activeTab === 'preferences' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('preferences')}
-                >
-                  <Monitor size={16} /> Preferences
-                </button>
-                <button 
                   className={`saas-nav-item ${activeTab === 'ascii' ? 'active' : ''}`}
                   onClick={() => setActiveTab('ascii')}
                 >
                   <Terminal size={16} /> ASCII Art
                 </button>
                 <button 
+                  className={`saas-nav-item ${activeTab === 'preferences' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('preferences')}
+                >
+                  <Monitor size={16} /> Preferences
+                </button>
+                <button 
                   className={`saas-nav-item ${activeTab === 'widgets' ? 'active' : ''}`}
                   onClick={() => setActiveTab('widgets')}
                 >
                   <LayoutGrid size={16} /> Widgets
+                </button>
+                <button
+                  className={`saas-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('ai')}
+                >
+                  <Key size={16} /> AI
                 </button>
                 <button
                   className={`saas-nav-item ${activeTab === 'aliases' ? 'active' : ''}`}
@@ -262,10 +268,10 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <Cpu size={16} /> Advanced
                 </button>
                 <button
-                  className={`saas-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('ai')}
+                  className={`saas-nav-item ${activeTab === 'support' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('support')}
                 >
-                  <Key size={16} /> AI
+                  <Heart size={16} /> Support
                 </button>
               </nav>
             </div>
@@ -275,15 +281,16 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
               <div className='saas-main-header'>
                 <h3 className='saas-title'>
                   {activeTab === 'appearance' && 'Theme & Appearance'}
-                  {activeTab === 'preferences' && 'System Preferences'}
                   {activeTab === 'ascii' && 'Custom ASCII Art'}
+                  {activeTab === 'preferences' && 'System Preferences'}
                   {activeTab === 'widgets' && 'Widgets & Background'}
+                  {activeTab === 'ai' && 'AI & Command Interpreter'}
                   {activeTab === 'aliases' && 'URL Aliases'}
                   {activeTab === 'startup' && 'Startup Sites'}
                   {activeTab === 'integrations' && 'Integrations'}
                   {activeTab === 'backup' && 'Backup & Restore'}
                   {activeTab === 'advanced' && 'Advanced Settings'}
-                  {activeTab === 'ai' && 'AI & Command Interpreter'}
+                  {activeTab === 'support' && '☕ Support Neko-Tab'}
                 </h3>
               </div>
 
@@ -499,6 +506,11 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                 {/* ASCII ART TAB */}
                 {activeTab === 'ascii' && (
                   <div className='saas-section'>
+                    <div className='saas-card'>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Show ASCII Art', localSettings.showAsciiArt ?? true, val => handleChange('showAsciiArt', val))}
+                      </div>
+                    </div>
                     <div className='saas-card'>
                       <label className='saas-label'>ASCII Art Source</label>
                       <div className='saas-segmented-control'>
@@ -841,6 +853,27 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                       >
                         <Trash2 size={14} style={{ marginRight: 8 }} /> Reset All Data & Settings
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* SUPPORT TAB */}
+                {activeTab === 'support' && (
+                  <div className='saas-section'>
+                    <div className='saas-card' style={{ textAlign: 'center', alignItems: 'center' }}>
+                      <label className='saas-label'>Support Neko-Tab</label>
+                      <p className='saas-hint' style={{ textAlign: 'center', maxWidth: 400, lineHeight: 1.6 }}>
+                        Neko-Tab is free and open source. If it saves you time, a small contribution helps keep it going.
+                      </p>
+                      <a
+                        href="https://ko-fi.com/uddinrajaul"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="saas-btn-primary"
+                        style={{ textDecoration: 'none', width: '100%', justifyContent: 'center', marginTop: 8 }}
+                      >
+                        ☕ Buy me a coffee
+                      </a>
                     </div>
                   </div>
                 )}
