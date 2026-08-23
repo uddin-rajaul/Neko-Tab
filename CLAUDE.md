@@ -223,6 +223,9 @@ Run with browser fully closed. Then reopen and Load unpacked → `dist/`.
 | `neko-gh-streak-{user}` | cached GitHub streak data |
 | `neko-calendar-connected` | `'true'` or `'false'` string |
 | `neko-calendar-last-event` | JSON CalendarEvent or absent |
+| `neko-gmail-connected` | `'true'` or `'false'` string |
+| `neko-gmail-last-emails` | `{ emails: GmailEmail[], unreadCount }` |
+| `neko-gmail-digest` | `{ text, date, lastAttempt? }` AI inbox digest |
 
 ## Connector System (Integrations)
 

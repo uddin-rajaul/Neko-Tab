@@ -23,7 +23,8 @@ export default defineConfig(({ mode }) => {
     define: {
       __GOOGLE_CLIENT_ID__: JSON.stringify(env.GOOGLE_CLIENT_ID || ''),
       __GOOGLE_CLIENT_SCOPES__: JSON.stringify(
-        env.GOOGLE_CLIENT_SCOPES || 'https://www.googleapis.com/auth/calendar.events.readonly'
+        env.GOOGLE_CLIENT_SCOPES ||
+          'https://www.googleapis.com/auth/calendar.events.readonly,https://www.googleapis.com/auth/gmail.readonly'
       ),
     },
     plugins: [
