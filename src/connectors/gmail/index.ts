@@ -9,6 +9,7 @@ export const gmailConnector: Connector = {
   placement: 'center-widget',
   defaultConfig: {
     enabled: false,
+    showAISummary: true,
   },
   Widget: GmailDigest,
   SettingsWidget: GmailSettings,

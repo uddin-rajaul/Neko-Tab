@@ -9,6 +9,7 @@ interface GmailSettingsProps {
 export function GmailSettings({ config, onConfigChange }: GmailSettingsProps) {
   const { isConnected, connect, disconnect, error } = useGmail(false);
   const enabled = !!config.enabled;
+  const showAISummary = !!config.showAISummary;
   const isExt = isIdentityAvailable();
 
   return (
@@ -33,6 +34,20 @@ export function GmailSettings({ config, onConfigChange }: GmailSettingsProps) {
             <div className="saas-toggle-thumb" />
           </button>
         </div>
+
+        {enabled && (
+          <div className="saas-toggle-row">
+            <span className="saas-toggle-label">Only show AI summary</span>
+            <button
+              className={`saas-toggle-btn ${showAISummary ? 'active' : ''}`}
+              onClick={() => onConfigChange({ showAISummary: !showAISummary })}
+              disabled={!isConnected}
+              style={{ opacity: !isConnected ? 0.5 : 1, cursor: !isConnected ? 'not-allowed' : 'pointer' }}
+            >
+              <div className="saas-toggle-thumb" />
+            </button>
+          </div>
+        )}
       </div>
 
       {!isConnected ? (

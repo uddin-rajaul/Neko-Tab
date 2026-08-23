@@ -37,11 +37,20 @@ function shortFrom(from: string): string {
   return name.trim();
 }
 
+async function apiError(res: Response): Promise<string> {
+  let detail = '';
+  try {
+    const data = await res.json();
+    detail = data?.error?.message ? ` — ${data.error.message}` : '';
+  } catch { /* non-JSON body */ }
+  return `Gmail API error: ${res.status}${detail}`;
+}
+
 async function fetchUnread(token: string): Promise<GmailCache> {
   // Unread count via resultSizeEstimate
   const countUrl = `${GMAIL_API}/messages?q=${encodeURIComponent('is:unread')}&maxResults=1`;
   const countRes = await fetch(countUrl, { headers: { Authorization: `Bearer ${token}` } });
-  if (!countRes.ok) throw new Error(`Gmail API error: ${countRes.status}`);
+  if (!countRes.ok) throw new Error(await apiError(countRes));
   const countData = await countRes.json();
   const unreadCount = countData.resultSizeEstimate ?? 0;
 
@@ -50,7 +59,7 @@ async function fetchUnread(token: string): Promise<GmailCache> {
   // Latest unread emails with metadata
   const listUrl = `${GMAIL_API}/messages?q=${encodeURIComponent('is:unread')}&maxResults=8`;
   const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${token}` } });
-  if (!listRes.ok) throw new Error(`Gmail API error: ${listRes.status}`);
+  if (!listRes.ok) throw new Error(await apiError(listRes));
   const listData = await listRes.json();
   const ids: { id: string }[] = listData.messages ?? [];
 
@@ -58,7 +67,7 @@ async function fetchUnread(token: string): Promise<GmailCache> {
     ids.map(async ({ id }) => {
       const msgUrl = `${GMAIL_API}/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`;
       const msgRes = await fetch(msgUrl, { headers: { Authorization: `Bearer ${token}` } });
-      if (!msgRes.ok) throw new Error(`Gmail API error: ${msgRes.status}`);
+      if (!msgRes.ok) throw new Error(await apiError(msgRes));
       const msg = await msgRes.json();
       return {
         id,
@@ -128,8 +137,9 @@ export function useGmail(fetchEnabled: boolean) {
         localStorage.setItem(STORAGE_KEYS.GMAIL_LAST_EMAILS, JSON.stringify(next));
       } catch (err: any) {
         if (!isMounted) return;
-        if (err.message?.includes('401')) {
-          // Token expired — clear cache and re-auth interactively on next connect
+        // 401 = expired token, 403 = token lacks the Gmail scope (e.g. cached
+        // from before the scope was added). Both need a fresh interactive grant.
+        if (err.message?.includes('401') || err.message?.includes('403')) {
           removeCachedAuthToken(token).then(() => {
             if (!isMounted) return;
             setToken(null);
