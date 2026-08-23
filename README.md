@@ -103,6 +103,17 @@ See your next upcoming event directly on the new tab page, right below the clock
 - Disconnect anytime from the same settings panel
 - Chrome only — requires the `identity` API
 
+### Gmail Integration
+
+See your unread email at a glance, right below the clock.
+
+- Connect your Google account from **Settings → Integrations → Gmail** (read-only scope)
+- Shows unread count plus the latest unread emails (sender, subject, snippet)
+- Optional AI-powered inbox digest that summarizes what needs attention
+- Refreshes automatically every 5 minutes, cached between sessions
+- Disconnect anytime from the same settings panel
+- Chrome only — requires the `identity` API
+
 ### Daily Goal
 
 A single focus line between the clock and command palette. Click to edit, resets at midnight.
@@ -187,15 +198,15 @@ npm run build
 
 Then in Chrome/Edge: **Extensions → Load unpacked → select the `dist/` folder**.
 
-### Optional: Google Calendar Integration
+### Optional: Google Calendar / Gmail Integration
 
-The extension works fully without any setup. To enable Google Calendar events on your new tab page:
+The extension works fully without any setup. To enable Google Calendar events and the Gmail unread widget on your new tab page:
 
 1. Copy `.env.local.example` to `.env.local`
 2. Follow the instructions in `.env.local.example` to add your Google OAuth credentials
 3. Rebuild with `npm run build`
 
-Without credentials, the extension runs normally — just without Calendar support. No unnecessary permissions are requested.
+Without credentials, the extension runs normally — just without Calendar and Gmail support. No unnecessary permissions are requested.
 
 ---
 
@@ -210,7 +221,7 @@ Open the gear icon (top-right) to access:
 - **AI** — configure AI providers (OpenAI, Anthropic, Gemini, custom API), manage learned URL memories
 - **Aliases** — define short URL aliases for the command palette
 - **Startup Sites** — configure up to 10 URLs to open on the first new tab of each day
-- **Integrations** — connect Google Calendar to show upcoming events on the home page
+- **Integrations** — connect Google Calendar to show upcoming events, and Gmail to see unread mail with an optional AI inbox summary
 - **Export/Import** — download all settings as JSON or restore from a backup
 - **Advanced** — reset all user data and wipe stored settings cleanly
 - **Support** — buy me a coffee ☕
@@ -229,7 +240,7 @@ Open the gear icon (top-right) to access:
 | `webRequest` | Track tab navigation for the tab usage counter |
 | `declarativeNetRequest` | Block sites during Focus Mode sessions |
 | `host_permissions: <all_urls>` | Required for site blocking to apply on any domain |
-| `identity` | OAuth flow for Google Calendar integration (Chrome only) — only included in the built extension if credentials are configured |
+| `identity` | OAuth flow for Google Calendar and Gmail integrations (Chrome only) — only included in the built extension if credentials are configured |
 
 ---
 
