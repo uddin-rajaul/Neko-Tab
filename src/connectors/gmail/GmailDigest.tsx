@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Mail, Sparkles, RefreshCw } from 'lucide-react';
+import { Mail, Sparkles, RefreshCw, ChevronDown } from 'lucide-react';
 import { useGmail, type GmailEmail } from './useGmail';
 import { useSettings } from '../../hooks/useLocalStorage';
 import { getConnectorConfig } from '../types';
@@ -48,6 +48,8 @@ export function GmailDigest() {
   const [summarizing, setSummarizing] = useState(false);
   const [digestError, setDigestError] = useState<string | null>(null);
   const [wasConnected] = useState(() => localStorage.getItem('neko-gmail-connected') === 'true');
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const autoAttempted = useRef(false);
 
   const { loadProviders, completeText, activeProvider } = useAIProviders();
@@ -55,6 +57,16 @@ export function GmailDigest() {
   useEffect(() => {
     loadProviders();
   }, [loadProviders]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [open]);
 
   const summarize = useCallback(async () => {
     if (!activeProvider || summarizing || emails.length === 0) return;
@@ -95,99 +107,146 @@ export function GmailDigest() {
     return null;
   }
 
+  const latest = emails[0];
+
   return (
-    <div
-      className="gmail-digest-widget"
-      style={{
-        maxWidth: '560px',
-        margin: '0 auto',
-        padding: '12px 16px',
-        border: '1px solid var(--border-color, rgba(128,128,128,0.3))',
-        borderRadius: '6px',
-        fontSize: '0.85rem',
-      }}
-    >
-      <a
-        href={GMAIL_URL}
-        target="_blank"
-        rel="noopener noreferrer"
+    <div ref={rootRef} style={{ position: 'relative', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
         style={{
-          display: 'flex',
+          display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
+          fontSize: '0.85rem',
           color: 'var(--text-color)',
-          textDecoration: 'none',
-          opacity: 0.9,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+          opacity: 0.8,
+          maxWidth: '480px',
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.8')}
       >
         <Mail size={14} color="var(--accent-color)" />
         <span style={{ fontWeight: 500 }}>
           gmail{unreadCount > 0 ? ` — ${unreadCount} unread` : ' — inbox zero'}
         </span>
-      </a>
-
-      {emails.length > 0 && (
-        <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 0' }}>
-          {emails.slice(0, 5).map((email) => (
-            <li key={email.id} style={{ display: 'flex', gap: '8px', lineHeight: 1.6 }}>
-              <span style={{ opacity: 0.6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
-                {email.from}
-              </span>
-              <a
-                href={GMAIL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: 'var(--text-color)', textDecoration: 'none', opacity: 0.75, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                title={email.subject}
-              >
-                {email.subject}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {(digest?.text || summarizing || digestError || unreadCount > 0) && (
-        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed var(--border-color, rgba(128,128,128,0.3))' }}>
-          {summarizing && (
-            <span style={{ opacity: 0.7, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <RefreshCw size={12} /> summarizing…
+        {latest && (
+          <>
+            <span style={{ opacity: 0.4 }}>•</span>
+            <span style={{ opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {latest.subject}
             </span>
-          )}
-          {!summarizing && digest?.text && (
-            <p style={{ margin: 0, whiteSpace: 'pre-wrap', opacity: 0.85 }}>{digest.text}</p>
-          )}
-          {digestError && (
-            <p style={{ margin: 0, color: '#ff4444', fontSize: '0.8rem' }}>summary failed: {digestError}</p>
-          )}
-          {!summarizing && unreadCount > 0 && (
-            <button
-              onClick={summarize}
-              disabled={!activeProvider}
-              title={activeProvider ? 'Regenerate AI summary' : 'Configure an AI provider in Settings → AI'}
-              style={{
-                marginTop: '6px',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                color: 'var(--accent-color)',
-                fontSize: '0.8rem',
-                cursor: activeProvider ? 'pointer' : 'not-allowed',
-                opacity: activeProvider ? 0.8 : 0.4,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
-              <Sparkles size={12} />
-              {digest?.text ? 're-summarize' : 'ai summary'}
-            </button>
-          )}
-        </div>
-      )}
+          </>
+        )}
+        <ChevronDown size={12} style={{ transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 150ms' }} />
+      </button>
 
       {error && (
-        <p style={{ margin: '8px 0 0', color: '#ff4444', fontSize: '0.8rem' }}>gmail: {error}</p>
+        <span style={{ marginLeft: '8px', color: '#ff4444', fontSize: '0.78rem' }}>{error}</span>
+      )}
+
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '36px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '520px',
+            maxWidth: '90vw',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            background: 'var(--bg-color, #111)',
+            border: '1px solid rgba(128,128,128,0.35)',
+            borderRadius: '6px',
+            padding: '14px 16px',
+            zIndex: 50,
+            textAlign: 'left',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontWeight: 500, fontSize: '0.85rem' }}>
+              inbox{unreadCount > 0 ? ` — ${unreadCount} unread` : ''}
+            </span>
+            <a
+              href={GMAIL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--accent-color)', textDecoration: 'none', fontSize: '0.78rem', opacity: 0.85 }}
+            >
+              open gmail ↗
+            </a>
+          </div>
+
+          {emails.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {emails.slice(0, 8).map((email) => (
+                <li key={email.id} style={{ lineHeight: 1.7 }}>
+                  <a
+                    href={GMAIL_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: 'flex', gap: '10px', color: 'var(--text-color)', textDecoration: 'none', opacity: 0.8 }}
+                    title={`${email.from}: ${email.subject}`}
+                  >
+                    <span style={{ opacity: 0.65, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px', flexShrink: 0 }}>
+                      {email.from}
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {email.subject}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ margin: 0, opacity: 0.6, fontSize: '0.82rem' }}>inbox zero — nothing unread</p>
+          )}
+
+          {(unreadCount > 0 || digest?.text) && (
+            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed rgba(128,128,128,0.35)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.75rem', opacity: 0.55, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Sparkles size={11} /> ai digest{digest?.date === todayKey() ? ' · today' : ''}
+                </span>
+                {!summarizing && unreadCount > 0 && (
+                  <button
+                    onClick={summarize}
+                    disabled={!activeProvider}
+                    title={activeProvider ? 'Regenerate AI summary' : 'Configure an AI provider in Settings → AI'}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'var(--accent-color)',
+                      fontSize: '0.75rem',
+                      cursor: activeProvider ? 'pointer' : 'not-allowed',
+                      opacity: activeProvider ? 0.8 : 0.4,
+                    }}
+                  >
+                    {digest?.text ? 're-summarize' : 'summarize'}
+                  </button>
+                )}
+              </div>
+              {summarizing && (
+                <span style={{ opacity: 0.7, display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}>
+                  <RefreshCw size={11} /> summarizing…
+                </span>
+              )}
+              {!summarizing && digest?.text && (
+                <p style={{ margin: 0, whiteSpace: 'pre-wrap', opacity: 0.85, fontSize: '0.82rem' }}>{digest.text}</p>
+              )}
+              {!summarizing && !digest?.text && !digestError && activeProvider && unreadCount === 0 && null}
+              {digestError && (
+                <p style={{ margin: '4px 0 0', color: '#ff4444', fontSize: '0.78rem' }}>summary failed: {digestError}</p>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
