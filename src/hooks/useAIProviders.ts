@@ -77,10 +77,7 @@ export function useAIProviders() {
     }
   }, [])
 
-  const executeCommand = useCallback(async (
-    prompt: string,
-    context: { aliases: string; bookmarks: string; tabs: string; history: string; memories: string; browsingHistory?: string }
-  ): Promise<AIAction[]> => {
+  const callModel = useCallback(async (prompt: string): Promise<string> => {
     const currentActive = activeProvider
     if (!currentActive) {
       throw new Error('No active AI provider configured')
@@ -95,6 +92,70 @@ export function useAIProviders() {
     const baseUrl = providerConfig.baseUrl || defaults.baseUrl
     const model = providerConfig.model && providerConfig.model !== 'gemini-1.5-flash' ? providerConfig.model : defaults.model
 
+    let response: Response
+
+    if (currentActive === 'gemini') {
+      response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': providerConfig.apiKey,
+        },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      })
+    } else if (currentActive === 'openai' || currentActive === 'custom') {
+      response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${providerConfig.apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.3,
+        }),
+      })
+    } else if (currentActive === 'anthropic') {
+      response = await fetch(`${baseUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': providerConfig.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1024,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      })
+    } else {
+      throw new Error(`Unknown provider: ${currentActive}`)
+    }
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`AI API error: ${response.status} — ${error}`)
+    }
+
+    const data = await response.json()
+
+    if (currentActive === 'openai' || currentActive === 'custom') {
+      return data.choices?.[0]?.message?.content || ''
+    } else if (currentActive === 'anthropic') {
+      return data.content?.[0]?.text || ''
+    } else if (currentActive === 'gemini') {
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    }
+
+    return ''
+  }, [activeProvider, providers])
+
+  const executeCommand = useCallback(async (
+    prompt: string,
+    context: { aliases: string; bookmarks: string; tabs: string; history: string; memories: string; browsingHistory?: string }
+  ): Promise<AIAction[]> => {
     const safeQuery = sanitize(prompt)
 
     const hasBrowsingHistory = context.browsingHistory && context.browsingHistory.length > 0
@@ -145,63 +206,7 @@ When using "save-to-journal": include a "date" field matching the date being sum
 
 Respond ONLY with a valid JSON array. No markdown, no explanation.`
 
-    let response: Response
-
-    if (currentActive === 'gemini') {
-      response = await fetch(`${baseUrl}/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': providerConfig.apiKey,
-        },
-        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }),
-      })
-    } else if (currentActive === 'openai' || currentActive === 'custom') {
-      response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${providerConfig.apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: systemPrompt }],
-          temperature: 0.3,
-        }),
-      })
-    } else if (currentActive === 'anthropic') {
-      response = await fetch(`${baseUrl}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': providerConfig.apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 1024,
-          messages: [{ role: 'user', content: systemPrompt }],
-        }),
-      })
-    } else {
-      throw new Error(`Unknown provider: ${currentActive}`)
-    }
-
-    if (!response.ok) {
-      const error = await response.text()
-      throw new Error(`AI API error: ${response.status} — ${error}`)
-    }
-
-    const data = await response.json()
-    let content = ''
-
-    if (currentActive === 'openai' || currentActive === 'custom') {
-      content = data.choices?.[0]?.message?.content || ''
-    } else if (currentActive === 'anthropic') {
-      content = data.content?.[0]?.text || ''
-    } else if (currentActive === 'gemini') {
-      content = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-    }
+    const content = await callModel(systemPrompt)
 
     const jsonMatch = content.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
@@ -214,7 +219,11 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
     }
     const actions = parsed as AIAction[]
     return actions
-  }, [activeProvider, providers])
+  }, [activeProvider, providers, callModel])
+
+  const completeText = useCallback(async (prompt: string): Promise<string> => {
+    return callModel(prompt)
+  }, [callModel])
 
   return {
     providers,
@@ -224,6 +233,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation.`
     removeProvider,
     setActive,
     executeCommand,
+    completeText,
     providerDefaults: PROVIDER_DEFAULTS,
   }
 }

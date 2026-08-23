@@ -2,10 +2,12 @@ import type { ComponentType } from 'react'
 import type { Connector } from './types'
 import { updateConnectorConfig } from './types'
 import { googleCalendarConnector } from './google-calendar'
+import { gmailConnector } from './gmail'
 export { updateConnectorConfig }
 
 const connectors: Connector[] = [
   googleCalendarConnector,
+  gmailConnector,
 ]
 
 interface ConnectorWithWidget extends Connector {

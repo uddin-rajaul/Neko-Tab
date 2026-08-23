@@ -80,20 +80,7 @@ function getRedirectUri(): string {
   return 'https://localhost/'
 }
 
-export function getAuthToken(interactive: boolean): Promise<string | null> {
-  if (typeof chrome !== 'undefined' && chrome.identity?.getAuthToken) {
-    return new Promise((resolve) => {
-      chrome.identity.getAuthToken({ interactive }, (result) => {
-        if (chrome?.runtime?.lastError) {
-          resolve(null)
-          return
-        }
-        const token = result as unknown as string | undefined
-        resolve(token ?? null)
-      })
-    })
-  }
-
+function launchWebAuthFlow(interactive: boolean): Promise<string | null> {
   if (typeof browser !== 'undefined' && browser?.identity?.launchWebAuthFlow) {
     const clientId = getGoogleClientId()
     if (!clientId) return Promise.resolve(null)
@@ -126,6 +113,24 @@ export function getAuthToken(interactive: boolean): Promise<string | null> {
   }
 
   return Promise.resolve(null)
+}
+
+export function getAuthToken(interactive: boolean): Promise<string | null> {
+  if (typeof chrome !== 'undefined' && chrome.identity?.getAuthToken) {
+    return new Promise((resolve) => {
+      chrome.identity.getAuthToken({ interactive }, (result) => {
+        if (!chrome?.runtime?.lastError && result) {
+          resolve(result as unknown as string)
+          return
+        }
+        // Some Chromium browsers (e.g. Brave) can fail getAuthToken while
+        // launchWebAuthFlow works — fall back before giving up.
+        launchWebAuthFlow(interactive).then(resolve)
+      })
+    })
+  }
+
+  return launchWebAuthFlow(interactive)
 }
 
 export function removeCachedAuthToken(token: string): Promise<void> {

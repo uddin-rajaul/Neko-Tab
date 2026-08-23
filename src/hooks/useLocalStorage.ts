@@ -8,6 +8,9 @@ export const STORAGE_KEYS = {
   BG_IMAGE: 'neko-bg-image',
   CALENDAR_CONNECTED: 'neko-calendar-connected',
   CALENDAR_LAST_EVENT: 'neko-calendar-last-event',
+  GMAIL_CONNECTED: 'neko-gmail-connected',
+  GMAIL_LAST_EMAILS: 'neko-gmail-last-emails',
+  GMAIL_DIGEST: 'neko-gmail-digest',
 } as const;
 
 const DEFAULT_CATEGORIES: BookmarkCategory[] = [
