@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, X, Check, ChevronDown, ChevronRight } from 'lucid
 import type { BookmarkCategory, Bookmark } from '../types'
 import { recordTabUsage } from '../utils/tabUsage'
 import { isSafeUrl } from '../utils/browser'
+import { SiteIcon } from './SiteIcon'
 
 interface BookmarksProps {
   categories: BookmarkCategory[]
@@ -176,6 +177,7 @@ export function Bookmarks({
               {topSites.map((site, index) => (
                 <div key={index} className="bookmark-item">
                   <a href={isSafeUrl(site.url) ? site.url : '#'} className="bookmark-link" title={site.title} onClick={handleNavigate}>
+                    <SiteIcon url={site.url} title={site.title} />
                     {(() => {
                       try {
                         const url = new URL(site.url);
@@ -274,11 +276,12 @@ export function Bookmarks({
                     </div>
                   ) : (
                     <>
-                      <a 
-                        href={isSafeUrl(bookmark.url) ? bookmark.url : '#'} 
+                      <a
+                        href={isSafeUrl(bookmark.url) ? bookmark.url : '#'}
                         className="bookmark-link"
                         onClick={handleNavigate}
                       >
+                        <SiteIcon url={bookmark.url} title={bookmark.title} />
                         {bookmark.title}
                       </a>
                       {isEditMode && (
