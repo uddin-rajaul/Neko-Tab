@@ -3,6 +3,7 @@ import { Activity } from 'lucide-react'
 import { GitHubStreak } from './GitHubStreak'
 import { FocusStreak } from './FocusStreak'
 import { TabCounter } from './TabCounter'
+import { GmailStatus } from './GmailStatus'
 import { useSettings } from '../hooks/useLocalStorage'
 
 interface HeapInfo {
@@ -115,6 +116,7 @@ export function ActivityWidget() {
         )}
         <FocusStreak />
         {settings.showTabCounter !== false && <TabCounter />}
+        <GmailStatus />
       </div>
     </div>
   )

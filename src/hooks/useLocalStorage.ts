@@ -174,6 +174,28 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T 
 export function useBookmarks() {
   const [categories, setCategories] = useLocalStorage<BookmarkCategory[]>('startpage-bookmarks', DEFAULT_CATEGORIES)
 
+  // One-time migration: stored data may still contain the pre-rebrand "Twitter" entry
+  useEffect(() => {
+    setCategories(prev => {
+      let changed = false
+      const next = prev.map(cat => ({
+        ...cat,
+        bookmarks: cat.bookmarks.map(b => {
+          if (b.title === 'Twitter' || b.url.includes('twitter.com')) {
+            changed = true
+            return {
+              ...b,
+              title: b.title === 'Twitter' ? 'X' : b.title,
+              url: b.url.replace('twitter.com', 'x.com'),
+            }
+          }
+          return b
+        }),
+      }))
+      return changed ? next : prev
+    })
+  }, [setCategories])
+
   const addCategory = useCallback((name: string) => {
     setCategories(prev => [...prev, {
       id: crypto.randomUUID(),

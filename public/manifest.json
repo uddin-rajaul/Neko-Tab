@@ -24,7 +24,8 @@
     "webRequest",
     "notifications",
     "identity",
-    "history"
+    "history",
+    "favicon"
   ],
   "oauth2": {
     "client_id": "__GOOGLE_CLIENT_ID__",

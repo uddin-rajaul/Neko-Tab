@@ -150,6 +150,7 @@ function App() {
                 userName={settings.userName}
                 showGreeting={settings.showGreeting}
                 format={settings.clockFormat}
+                theme={settings.theme}
               />
             )}
             {getConnectorsWithWidget().map(C => <C.Widget key={C.id} />)}
@@ -182,6 +183,10 @@ function App() {
         </div>
 
         {settings.showStatusBar && <ActivityWidget />}
+
+        {settings.theme === 'nothing' && (
+          <div className="nothing-side-text" aria-hidden="true">ネコ・タブ</div>
+        )}
 
         <Suspense fallback={null}>
           <FocusMode />

@@ -1,5 +1,24 @@
 /* ==================== HAS-BG: Glass mode when custom background is active ==================== */
 
+/* Fit everything in one viewport — no page scroll; bookmarks scroll internally if needed */
+.app.has-bg {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app.has-bg .content-section {
+  flex: 1 1 0;
+  min-height: 0;
+  align-items: flex-start;
+  margin-top: var(--spacing-lg);
+}
+
+.app.has-bg .bookmarks-container {
+  flex: 0 1 auto;
+  max-height: 100%;
+  min-height: 0;
+}
+
 /* Search bar becomes a glass pill */
 .has-bg .search-container {
   background: rgba(0, 0, 0, 0.35) !important;
@@ -14,8 +33,29 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 12px;
-  padding: 28px;
+  padding: 16px 20px;
   border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Compact spacing so everything fits one screen */
+.has-bg .bookmarks-header {
+  margin-bottom: 10px;
+}
+
+.has-bg .categories-grid {
+  gap: 10px 12px;
+}
+
+.has-bg .category-column {
+  padding: 10px 14px;
+}
+
+.has-bg .bookmark-item {
+  padding: 0;
+}
+
+.has-bg .bookmark-link {
+  line-height: 1.6;
 }
 
 /* Category names stay readable */
@@ -57,9 +97,27 @@
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.9));
 }
 
-/* Categories stay on one row inside the card */
+/* Categories share one row — columns flex to fit, no line break */
 .has-bg .categories-grid {
   flex-wrap: nowrap;
+}
+
+.has-bg .category-column {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.has-bg .bookmark-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.has-bg .bookmark-link .site-icon-img,
+.has-bg .bookmark-link .site-icon-letter {
+  margin-right: 8px;
+  vertical-align: -3px;
 }
 
 /* Light paper theme + bg: invert the glass tint to white */
