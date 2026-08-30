@@ -36,6 +36,8 @@ const THEMES: ThemeInfo[] = [
   // AI-Inspired Themes
   { id: 'chatgpt', name: 'ChatGPT', bgColor: '#212121', textColor: '#ECECF1', accentColor: '#10A37F', category: 'color' },
   { id: 'claude', name: 'Claude', bgColor: '#1C1C1C', textColor: '#E8E8E8', accentColor: '#C9773A', category: 'color' },
+  // Hardware-Inspired Themes
+  { id: 'nothing', name: 'Nothing', bgColor: '#1C1C1E', textColor: '#F2F2F2', accentColor: '#D71921', category: 'color' },
 ]
 
 const FONTS = [

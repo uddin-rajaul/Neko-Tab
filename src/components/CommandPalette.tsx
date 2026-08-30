@@ -199,6 +199,7 @@ const THEME_LIST: { id: ThemeType; name: string }[] = [
   { id: 'retro-terminal', name: 'Retro CRT' }, { id: 'sunset', name: 'Sunset' },
   { id: 'ocean', name: 'Ocean' }, { id: 'midnight', name: 'Midnight' },
   { id: 'chatgpt', name: 'ChatGPT' }, { id: 'claude', name: 'Claude' },
+  { id: 'nothing', name: 'Nothing' },
 ]
 
 const FONT_LIST = [
