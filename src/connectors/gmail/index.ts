@@ -1,5 +1,4 @@
 import type { Connector } from '../types'
-import { GmailDigest } from './GmailDigest'
 import { GmailSettings } from './settings'
 
 export const gmailConnector: Connector = {
@@ -11,7 +10,6 @@ export const gmailConnector: Connector = {
     enabled: false,
     showAISummary: true,
   },
-  Widget: GmailDigest,
   SettingsWidget: GmailSettings,
   oauth2Scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
   manifestPermissions: ['identity'],
