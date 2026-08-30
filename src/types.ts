@@ -30,6 +30,8 @@ export type ThemeType =
   | 'retro-terminal' | 'sunset' | 'ocean' | 'midnight'
   // AI-Inspired Themes
   | 'chatgpt' | 'claude'
+  // Hardware-Inspired Themes
+  | 'nothing'
 
 export interface ThemeInfo {
   id: ThemeType

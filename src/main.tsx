@@ -25,7 +25,8 @@ declare global {
       'catppuccin': '#1E1E2E', 'one-dark': '#282C34', 'rose-pine': '#191724',
       'everforest': '#2D353B', 'cyberpunk': '#0a0a0f', 'aurora': '#0f0c29',
       'synthwave': '#1a1a2e', 'vaporwave': '#1a0a2e', 'retro-terminal': '#0a0a0a',
-      'sunset': '#1a1423', 'ocean': '#0c1821', 'midnight': '#020617'
+      'sunset': '#1a1423', 'ocean': '#0c1821', 'midnight': '#020617',
+      'nothing': '#1C1C1E'
     };
     
     const bgColor = themes[theme] || '#222526';
