@@ -209,6 +209,20 @@
   color: var(--text-primary);
 }
 
+/* Nothing Theme (dot-matrix clock, Nothing red) */
+.app.nothing {
+  --bg-primary: #1C1C1E;
+  --bg-secondary: #242426;
+  --bg-tertiary: #2C2C2E;
+  --text-primary: #F2F2F2;
+  --text-secondary: #8A8A8A;
+  --accent: #D71921;
+  --accent-hover: #F0443F;
+  --border: #353537;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* Legacy support */
 .app.dark {
   --bg-primary: #222526;

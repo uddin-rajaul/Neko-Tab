@@ -269,6 +269,44 @@
   color: var(--text-primary);
 }
 
+/* Nothing theme dot-matrix clock */
+.clock-matrix {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  line-height: 1;
+}
+
+.matrix-digits {
+  display: flex;
+  gap: clamp(12px, 1.6vw, 22px);
+}
+
+.matrix-char {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(2px, 0.4vw, 4px);
+}
+
+.matrix-dot {
+  width: clamp(4px, 0.7vw, 9px);
+  height: clamp(4px, 0.7vw, 9px);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.matrix-dot.on {
+  background: var(--text-primary);
+}
+
+.matrix-ampm {
+  font-size: clamp(12px, 1.4vw, 18px);
+  color: var(--accent);
+  letter-spacing: 2px;
+  align-self: flex-end;
+  padding-bottom: 4px;
+}
+
 .clock-date {
   font-size: 13px;
   color: var(--text-secondary);
