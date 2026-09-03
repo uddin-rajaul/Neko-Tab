@@ -20,6 +20,8 @@
     "topSites",
     "storage",
     "tabs",
+    "scripting",
+    "activeTab",
     "declarativeNetRequest",
     "webRequest",
     "notifications",
@@ -47,6 +49,13 @@
         "default": "Alt+Shift+S"
       },
       "description": "Open startup sites"
+    },
+    "open-palette": {
+      "suggested_key": {
+        "default": "Alt+K",
+        "mac": "Ctrl+Shift+K"
+      },
+      "description": "Open Neko-Tab command palette"
     }
   },
   "browser_specific_settings": {
@@ -70,6 +79,13 @@
       "matches": [
         "chrome-extension://*/*"
       ]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
     }
   ]
 }
