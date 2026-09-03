@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { WeatherData } from '../types/weather'
-import type { Settings, WeatherLocation } from '../types'
+import type { Settings } from '../types'
 import { getCachedWeather, fetchWeather, isCacheStale, formatAge, resolveLocation } from '../utils/weather'
 
 interface WeatherProps {

@@ -142,7 +142,6 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const { sites: startupSites, setSites: setStartupSites, enabled: startupEnabled, setEnabled: setStartupEnabled } = useStartupSites()
   const [weatherSearch, setWeatherSearch] = useState('')
   const [weatherResults, setWeatherResults] = useState<CitySearchResult[]>([])
-  const [weatherSearching, setWeatherSearching] = useState(false)
   const [weatherDropdownOpen, setWeatherDropdownOpen] = useState(false)
   const [weatherViaIP, setWeatherViaIP] = useState(false)
   const weatherSearchRef = useRef<HTMLDivElement>(null)
@@ -187,7 +186,6 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
       setWeatherDropdownOpen(false)
       return
     }
-    setWeatherSearching(true)
     const timer = setTimeout(() => {
       searchCity(weatherSearch)
         .then(results => {
@@ -195,7 +193,6 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
           setWeatherDropdownOpen(results.length > 0)
         })
         .catch(() => setWeatherResults([]))
-        .finally(() => setWeatherSearching(false))
     }, 300)
     return () => clearTimeout(timer)
   }, [weatherSearch])
