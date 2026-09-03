@@ -6,26 +6,45 @@ let activeFocusBlocking = { isActive: false, blockedDomains: [], sessionId: null
 
 loadFocusBlockingState()
 
-// Startup Sites shortcut handler
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command !== 'open-startup-sites') return
+// Command shortcut handlers
+chrome.commands.onCommand.addListener(async (command, tab) => {
+  if (command === 'open-startup-sites') {
+    // Read fresh from disk each time — service worker may have cached stale state
+    const all = await chrome.storage.local.get(null)
+    const sitesRaw = all.neko_startup_sites
+    const enabled = all.neko_startup_enabled
 
-  // Read fresh from disk each time — service worker may have cached stale state
-  const all = await chrome.storage.local.get(null)
-  const sitesRaw = all.neko_startup_sites
-  const enabled = all.neko_startup_enabled
+    if (!enabled) return
 
-  if (!enabled) return
+    const sites = Array.isArray(sitesRaw) ? sitesRaw : []
+    if (sites.length === 0) return
 
-  const sites = Array.isArray(sitesRaw) ? sitesRaw : []
-  if (sites.length === 0) return
+    // Show the card instead of opening directly — user confirms from the launcher
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (activeTab?.id != null) {
+      void chrome.tabs.sendMessage(activeTab.id, { type: 'neko-show-startup-card' }).catch(() => {
+        // Tab may not have a listener — that's fine
+      })
+    }
+    return
+  }
 
-  // Show the card instead of opening directly — user confirms from the launcher
-  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  if (activeTab?.id != null) {
-    void chrome.tabs.sendMessage(activeTab.id, { type: 'neko-show-startup-card' }).catch(() => {
-      // Tab may not have a listener — that's fine
+  if (command === 'open-palette') {
+    console.log('[Neko BG] open-palette command received', { tabId: tab?.id })
+    let targetTab = tab
+    if (!targetTab?.id) {
+      const [active] = await chrome.tabs.query({ active: true, currentWindow: true })
+      targetTab = active
+    }
+    if (!targetTab?.id) {
+      console.log('[Neko BG] No target tab found, aborting')
+      return
+    }
+    console.log('[Neko BG] Sending neko-open-palette to tab', targetTab.id)
+    void chrome.tabs.sendMessage(targetTab.id, { type: 'neko-open-palette' }).catch((err) => {
+      console.error('[Neko BG] sendMessage failed:', err?.message || err)
     })
+    return
   }
 })
 
@@ -52,6 +71,34 @@ chrome.runtime.onInstalled.addListener(async () => {
 })
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === 'neko-get-tabs') {
+    void (async () => {
+      try {
+        const windows = await chrome.windows.getAll({ populate: true })
+        const tabs = []
+        for (const win of windows) {
+          if (win.tabs) {
+            for (const tab of win.tabs) {
+              if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+                tabs.push({
+                  id: tab.id,
+                  title: tab.title || tab.url,
+                  url: tab.url,
+                  favicon: tab.favIconUrl,
+                  windowId: win.id || 0,
+                })
+              }
+            }
+          }
+        }
+        sendResponse({ tabs })
+      } catch (error) {
+        sendResponse({ tabs: [], error: error instanceof Error ? error.message : String(error) })
+      }
+    })()
+    return true
+  }
+
   if (message?.type === 'neko-sync-focus-blocking') {
     const payload = message.payload || { isActive: false, blockedDomains: [], sessionId: null }
     const nextState = {
