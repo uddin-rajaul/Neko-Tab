@@ -1,0 +1,96 @@
+const COMMON_WORDS = [
+  'the','be','to','of','and','a','in','that','have','i','it','for','not','on','with',
+  'he','as','you','do','at','this','but','his','by','from','they','we','say','her','she',
+  'or','an','will','my','one','all','would','there','their','what','so','up','out','if',
+  'about','who','get','which','go','me','when','make','can','like','time','no','just',
+  'him','know','take','people','into','year','your','good','some','could','them','see',
+  'other','than','then','now','look','only','come','its','over','think','also','back',
+  'after','use','two','how','our','work','first','well','way','even','new','want',
+  'because','any','these','give','day','most','us','great','between','need','large',
+  'under','never','each','right','begin','too','while','keep','old','same','tell',
+  'boy','did','get','let','may','still','own','run','found','still','around','place',
+  'year','live','point','believe','high','hold','real','small','hand','part','place',
+  'year','work','seem','help','make','name','many','over','such','long','tell','play',
+  'try','ask','men','want','run','put','end','set','own','read','move','live','head',
+  'every','close','water','turn','write','call','last','why','away','find','give',
+  'left','side','keep','never','start','city','eye','foot','fact','much','room',
+  'idea','easily','white','children','begin','got','walk','example','ease','paper',
+  'group','always','music','those','both','mark','book','letter','until','mile',
+  'river','car','feet','care','second','enough','plain','girl','usual','young',
+  'ready','above','ever','red','list','though','feel','talk','bird','soon','body',
+  'dog','family','direct','pose','leave','song','measure','door','product','black',
+  'short','numeral','class','wind','question','happen','complete','ship','area',
+  'half','rock','order','fire','south','problem','piece','told','knew','pass',
+  'since','top','whole','king','space','heard','best','hour','better','true',
+  'during','hundred','five','remember','step','early','hold','west','ground',
+  'interest','reach','fast','verb','sing','listen','six','table','travel','less',
+  'morning','ten','simple','several','vowel','toward','war','lay','against',
+  'pattern','slow','center','love','person','money','serve','appear','road',
+  'map','rain','rule','govern','pull','cold','notice','voice','energy','hunt',
+  'probable','bed','brother','egg','ride','cell','believe','perhaps','pick',
+  'sudden','count','square','reason','length','represent','art','subject','region',
+  'size','vary','settle','speak','weight','general','ice','matter','circle',
+  'pair','include','divide','syllable','felt','grand','ball','yet','wave',
+  'drop','heart','present','heavy','dance','engine','position','arm','wide',
+  'sail','material','fraction','forest','sit','race','window','summer','train',
+  'sleep','prove','lone','leg','exercise','wall','catch','mount','wish','sky',
+  'board','joy','winter','sat','written','wild','instrument','kept','glass',
+  'grass','cow','edge','sign','visit','past','soft','fun','bright','gas',
+  'weather','month','million','bear','finish','happy','hope','flower','clothe',
+  'strange','gone','trade','melody','trip','office','receive','row','mouth',
+  'exact','symbol','die','least','trouble','shout','except','wrote','seed',
+  'tone','join','suggest','clean','break','lady','yard','rise','bad',
+  'damage','press','slow','draw','north','field','rest','correct','able',
+  'pound','done','beauty','drive','stood','contain','front','teach','week',
+  'final','gave','green','oh','quick','develop','ocean','warm','free',
+  'minute','strong','special','mind','behind','clear','tail','produce',
+  'fact','street','inch','multiply','nothing','course','stay','wheel','full',
+  'force','blue','object','decide','surface','deep','island','life',
+  'quickly','several','voice','seem','air','family','body','color','pay',
+  'sun','plan','age','catalog','cent','mix','fish','boat','north',
+  'Sing','play','ship','house','quick','brain','music','color','paint',
+]
+
+const PROGRAMMING_TOKENS = [
+  'const','let','var','function','return','if','else','for','while','do',
+  'switch','case','break','continue','class','extends','import','export',
+  'default','from','async','await','try','catch','throw','new','this',
+  'typeof','instanceof','in','of','true','false','null','undefined',
+  'void','delete','yield','static','get','set','constructor',
+  'console','log','error','warn','document','window','Math','Array',
+  'Object','String','Number','Boolean','Promise','Map','Set',
+  'filter','reduce','map','forEach','find','some','every',
+  'length','push','pop','shift','splice','slice','concat',
+  'toString','parseInt','parseFloat','isNaN','isFinite',
+  'setTimeout','setInterval','clearTimeout','clearInterval',
+  'addEventListener','removeEventListener','querySelector',
+  'getElementById','getElementsByClassName','createElement',
+  'appendChild','innerHTML','textContent','style',
+  'className','id','src','href','value','type','name',
+  'true','false','undefined','NaN','Infinity',
+  'prototype','__proto__','constructor',
+  'npm','node','module','require','exports',
+  'fetch','XMLHttpRequest','Response','Request',
+  'JSON','parse','stringify','keys','values','entries',
+  'React','useState','useEffect','useRef','useCallback','useMemo',
+  'props','state','component','render','mount','unmount',
+  'props','children','key','ref','context',
+  'interface','type','enum','implements','abstract',
+  'public','private','protected','readonly','static',
+  'number','string','boolean','any','unknown','never','void',
+  'Promise','Record','Partial','Required','Pick','Omit',
+  'export','import','from','as','type','interface',
+]
+
+export function getWordPool(): string[] {
+  return [...COMMON_WORDS, ...PROGRAMMING_TOKENS]
+}
+
+export function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}

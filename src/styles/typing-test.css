@@ -1,0 +1,468 @@
+/* ── Typing Test Toggle Button ── */
+.typing-test-toggle {
+  position: fixed;
+  top: var(--spacing-md);
+  right: calc(var(--spacing-md) + 144px);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary, var(--ash));
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  z-index: 100;
+}
+
+.typing-test-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary, #fff);
+}
+
+/* ── Typing Test Overlay ── */
+.tt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: tt-fade-in 0.2s ease;
+}
+
+@keyframes tt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tt-container {
+  width: 90%;
+  max-width: 800px;
+  padding: 2rem;
+  position: relative;
+}
+
+.tt-hidden-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ── Mode & Config Selector ── */
+.tt-config {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+}
+
+.tt-mode-selector {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tt-mode-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tt-mode-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.tt-mode-btn.active {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.tt-mode-btn:hover:not(.active) {
+  background: var(--bg-tertiary);
+}
+
+.tt-option-selector {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tt-option-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.6rem;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.tt-option-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.tt-option-btn.active {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.tt-option-btn:hover:not(.active) {
+  background: var(--bg-tertiary);
+}
+
+/* ── Idle State ── */
+.tt-idle {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.tt-idle-prompt {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.tt-idle-hint {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.tt-idle-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+.tt-idle-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tt-idle-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.tt-idle-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ── Word Display ── */
+.tt-word-display {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  line-height: 2;
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  min-height: 6rem;
+  align-items: baseline;
+}
+
+.tt-prompt {
+  color: var(--accent);
+  margin-right: 0.25rem;
+  user-select: none;
+}
+
+.tt-word {
+  transition: color 0.1s ease;
+}
+
+.tt-current {
+  color: var(--text-primary);
+  position: relative;
+}
+
+.tt-correct {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.tt-incorrect {
+  color: var(--error, #ff5555);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.tt-typed {
+  color: var(--text-primary);
+}
+
+.tt-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent);
+  animation: tt-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin: 0 1px;
+}
+
+@keyframes tt-blink {
+  50% { opacity: 0; }
+}
+
+.tt-remaining {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+/* ── Stats View ── */
+.tt-stats {
+  margin-top: 1rem;
+}
+
+.tt-stats-row {
+  display: flex;
+  gap: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.tt-stat {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.tt-stat-label {
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tt-stat-value {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.tt-acc-good { color: #50fa7b; }
+.tt-acc-ok { color: #f1fa8c; }
+.tt-acc-bad { color: var(--error, #ff5555); }
+
+.tt-time-low {
+  color: var(--error, #ff5555);
+  animation: tt-pulse 0.5s ease infinite;
+}
+
+.tt-progress-countdown {
+  background: var(--accent);
+  transition: width 1s linear;
+}
+
+.tt-progress-bar {
+  margin-top: 0.75rem;
+  height: 3px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.tt-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* ── Results Card ── */
+.tt-results {
+  text-align: center;
+  animation: tt-scale-in 0.3s ease;
+}
+
+@keyframes tt-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tt-results-header {
+  margin-bottom: 1.5rem;
+}
+
+.tt-new-best {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.5rem;
+  animation: tt-pulse 1.5s ease infinite;
+}
+
+@keyframes tt-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.tt-results-wpm {
+  font-family: var(--font-mono);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.tt-results-wpm-label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: 0.25rem;
+}
+
+.tt-results-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.tt-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tt-result-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tt-result-value {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tt-results-meta {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.tt-meta-item {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tt-meta-label {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.tt-meta-value {
+  color: var(--text-primary);
+}
+
+.tt-recent {
+  margin-bottom: 1.5rem;
+}
+
+.tt-recent-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.tt-recent-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tt-recent-score {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.tt-results-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.tt-btn {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tt-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.tt-btn-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tt-btn-secondary {
+  opacity: 0.7;
+}
+
+.tt-btn-secondary:hover {
+  opacity: 1;
+}

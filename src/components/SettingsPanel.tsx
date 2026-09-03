@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart, MapPin, Search } from 'lucide-react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart, MapPin, Search, Keyboard } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
 import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
@@ -11,6 +11,7 @@ import { reverseGeocode, searchCity, detectByIP, clearWeatherCache } from '../ut
 import type { CitySearchResult } from '../utils/weather'
 import { fetchFeedForValidation, clearRssCache, RSS_REFRESH_MINUTES } from '../utils/rss'
 import type { RssFeed } from '../types/rss'
+import { resetScores } from '../utils/typing/history'
 
 const THEMES: ThemeInfo[] = [
   // Simple Color Themes
@@ -124,7 +125,7 @@ interface SettingsPanelProps {
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'ascii' | 'preferences' | 'widgets' | 'rss' | 'ai' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'support';
+type TabType = 'appearance' | 'ascii' | 'preferences' | 'widgets' | 'rss' | 'typing-test' | 'ai' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'support';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -149,6 +150,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [rssAdding, setRssAdding] = useState(false)
   const [rssError, setRssError] = useState<string | null>(null)
   const [rssEditId, setRssEditId] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2000)
+  }
 
   // Sync local settings when panel opens or settings change externally
   useEffect(() => {
@@ -377,6 +384,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <Hash size={16} /> RSS
                 </button>
                 <button
+                  className={`saas-nav-item ${activeTab === 'typing-test' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('typing-test')}
+                >
+                  <Keyboard size={16} /> Typing Test
+                </button>
+                <button
                   className={`saas-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
                   onClick={() => setActiveTab('ai')}
                 >
@@ -430,6 +443,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'preferences' && 'System Preferences'}
                   {activeTab === 'widgets' && 'Widgets & Background'}
                   {activeTab === 'rss' && 'RSS Ticker'}
+                  {activeTab === 'typing-test' && 'Typing Test'}
                   {activeTab === 'ai' && 'AI & Command Interpreter'}
                   {activeTab === 'aliases' && 'URL Aliases'}
                   {activeTab === 'startup' && 'Startup Sites'}
@@ -970,6 +984,86 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     </div>
                   </div>
                 )}
+                {/* TYPING TEST TAB */}
+                {activeTab === 'typing-test' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <label className='saas-label'>Word Count</label>
+                      <div className='saas-flex-row' style={{ gap: 8 }}>
+                        {[25, 50, 100].map(count => (
+                          <button
+                            key={count}
+                            className={`saas-btn-secondary`}
+                            style={{
+                              background: (localSettings as any).typingWordCount === count ? 'var(--accent)' : undefined,
+                              color: (localSettings as any).typingWordCount === count ? 'var(--bg-primary)' : undefined,
+                            }}
+                            onClick={() => (handleChange as any)('typingWordCount', count)}
+                          >
+                            {count}
+                          </button>
+                        ))}
+                      </div>
+                      <p className='saas-hint'>Number of words per typing test session (word mode).</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Time Limit</label>
+                      <div className='saas-flex-row' style={{ gap: 8 }}>
+                        {[15, 30, 60, 120].map(limit => (
+                          <button
+                            key={limit}
+                            className={`saas-btn-secondary`}
+                            style={{
+                              background: (localSettings as any).typingTimeLimit === limit ? 'var(--accent)' : undefined,
+                              color: (localSettings as any).typingTimeLimit === limit ? 'var(--bg-primary)' : undefined,
+                            }}
+                            onClick={() => (handleChange as any)('typingTimeLimit', limit)}
+                          >
+                            {limit}s
+                          </button>
+                        ))}
+                      </div>
+                      <p className='saas-hint'>Duration for time mode tests.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Daily Goal</label>
+                      <div className='saas-flex-row' style={{ gap: 8 }}>
+                        {[3, 5, 10, 15].map(target => (
+                          <button
+                            key={target}
+                            className={`saas-btn-secondary`}
+                            style={{
+                              background: (localSettings as any).typingDailyGoal === target ? 'var(--accent)' : undefined,
+                              color: (localSettings as any).typingDailyGoal === target ? 'var(--bg-primary)' : undefined,
+                            }}
+                            onClick={() => (handleChange as any)('typingDailyGoal', target)}
+                          >
+                            {target}
+                          </button>
+                        ))}
+                      </div>
+                      <p className='saas-hint'>Complete this many tests per day to maintain your streak.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Reset Scores</label>
+                      <button className='saas-btn-secondary' onClick={() => {
+                        resetScores()
+                        showToast('Typing test scores reset')
+                      }}>
+                        Reset all scores and history
+                      </button>
+                      <p className='saas-hint'>Clear best scores, history, and streak data.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>How to Use</label>
+                      <p className='saas-hint'>Type <code>/type</code> in the command palette (Ctrl+K) to open the typing test. Words include common English and programming tokens.</p>
+                    </div>
+                  </div>
+                )}
                 {/* ALIASES TAB */}
                 {activeTab === 'aliases' && (
                   <div className='saas-section'>
@@ -1213,6 +1307,9 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <div className="cp-toast">{toast}</div>
       )}
     </>
   )

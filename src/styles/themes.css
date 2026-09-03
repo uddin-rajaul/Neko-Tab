@@ -8,6 +8,7 @@
   --accent: #3dd2cc;
   --accent-hover: #5ae0db;
   --border: #353A3E;
+  --error: #ff5555;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -22,6 +23,7 @@
   --accent: #444444;
   --accent-hover: #333333;
   --border: #CCCCCC;
+  --error: #d32f2f;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -36,6 +38,7 @@
   --accent: #88C0D0;
   --accent-hover: #8FBCBB;
   --border: #4C566A;
+  --error: #bf616a;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -50,6 +53,7 @@
   --accent: #2AA198;
   --accent-hover: #35BDB4;
   --border: #586E75;
+  --error: #dc322f;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -64,6 +68,7 @@
   --accent: #00FF41;
   --accent-hover: #33FF66;
   --border: #003300;
+  --error: #ff0000;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -78,6 +83,7 @@
   --accent: #BD93F9;
   --accent-hover: #CAA9FA;
   --border: #44475A;
+  --error: #ff5555;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -92,6 +98,7 @@
   --accent: #F92672;
   --accent-hover: #FF4088;
   --border: #49483E;
+  --error: #f92672;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -106,6 +113,7 @@
   --accent: #FE8019;
   --accent-hover: #FABD2F;
   --border: #504945;
+  --error: #fb4934;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -120,6 +128,7 @@
   --accent: #7AA2F7;
   --accent-hover: #89B4FA;
   --border: #3B4261;
+  --error: #f7768e;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -134,6 +143,7 @@
   --accent: #F5C2E7;
   --accent-hover: #F5E0DC;
   --border: #45475A;
+  --error: #f38ba8;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -148,6 +158,7 @@
   --accent: #61AFEF;
   --accent-hover: #74B9F0;
   --border: #3E4452;
+  --error: #e06c75;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -162,6 +173,7 @@
   --accent: #EBBCBA;
   --accent-hover: #F6D5D3;
   --border: #403D52;
+  --error: #eb6f92;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -176,6 +188,7 @@
   --accent: #A7C080;
   --accent-hover: #B8D18E;
   --border: #414B50;
+  --error: #e67e80;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -191,6 +204,7 @@
   --accent: #10A37F;
   --accent-hover: #1A7F64;
   --border: #4D4D4F;
+  --error: #ef4444;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -205,6 +219,7 @@
   --accent: #C9773A;
   --accent-hover: #D68B4F;
   --border: #3A3A3A;
+  --error: #ef4444;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -219,6 +234,7 @@
   --accent: #D71921;
   --accent-hover: #F0443F;
   --border: #353537;
+  --error: #D71921;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -233,6 +249,7 @@
   --accent: #3dd2cc;
   --accent-hover: #5ae0db;
   --border: #353A3E;
+  --error: #ff5555;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -246,6 +263,7 @@
   --accent: #444444;
   --accent-hover: #333333;
   --border: #CCCCCC;
+  --error: #d32f2f;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 

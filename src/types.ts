@@ -90,6 +90,10 @@ export interface Settings {
   connectors: Record<string, Record<string, unknown>>
   // Startup Sites
   startupSitesEnabled: boolean
+  // Typing Test
+  typingWordCount: number
+  typingDailyGoal: number
+  typingTimeLimit: number
 }
 
 export interface TabItem {
