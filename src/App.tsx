@@ -10,6 +10,7 @@ import { Clock } from "./components/Clock";
 import { PixelArt } from "./components/PixelArt";
 import { getConnectorsWithWidget, hasActiveCenterWidgets } from "./connectors/registry";
 import { ActivityWidget } from "./components/ActivityWidget";
+import { RssTicker } from "./components/RssTicker";
 import { DailyGoal } from "./components/DailyGoal";
 import { CommandPalette } from "./components/CommandPalette";
 import { ChromeTabButton } from './components/ChromeTabButton'
@@ -182,6 +183,7 @@ function App() {
           </div>
         </div>
 
+        {settings.showRssTicker && <RssTicker settings={settings} />}
         {settings.showStatusBar && <ActivityWidget />}
 
         {settings.theme === 'nothing' && (

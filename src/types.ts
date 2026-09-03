@@ -44,6 +44,18 @@ export interface ThemeInfo {
 
 export type AsciiArtSource = 'os' | 'cat' | 'custom'
 
+export interface WeatherLocation {
+  name: string
+  lat: number
+  lon: number
+  timezone: string
+}
+
+export interface WeatherSettings {
+  enabled: boolean
+  location: WeatherLocation | null
+}
+
 export interface Settings {
   userName: string
   showGreeting: boolean
@@ -63,6 +75,10 @@ export interface Settings {
   showDailyGoal: boolean
   showGitHubStreak: boolean
   githubUsername: string
+  weather: WeatherSettings
+  // RSS
+  showRssTicker: boolean
+  rssFeeds: Array<{ id: string; name: string; url: string; enabled: boolean; maxItems: number }>
   // Font
   font: string
   // Chrome Tab

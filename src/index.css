@@ -17,3 +17,5 @@
 @import './styles/aliases.css';
 @import './styles/chrome-tab.css';
 @import './styles/startup-launcher.css';
+@import './styles/weather.css';
+@import './styles/rss-ticker.css';
