@@ -25,7 +25,8 @@
     "notifications",
     "identity",
     "history",
-    "favicon"
+    "favicon",
+    "geolocation"
   ],
   "oauth2": {
     "client_id": "__GOOGLE_CLIENT_ID__",

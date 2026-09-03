@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   GMAIL_CONNECTED: 'neko-gmail-connected',
   GMAIL_LAST_EMAILS: 'neko-gmail-last-emails',
   GMAIL_DIGEST: 'neko-gmail-digest',
+  WEATHER_CACHE: 'nekotab-weather-cache',
 } as const;
 
 const DEFAULT_CATEGORIES: BookmarkCategory[] = [
@@ -66,6 +67,9 @@ const DEFAULT_SETTINGS: Settings = {
   showDailyGoal: true,
   showGitHubStreak: false,
   githubUsername: '',
+  weather: { enabled: false, location: null },
+  showRssTicker: false,
+  rssFeeds: [],
   font: 'JetBrains Mono',
   asciiArtSource: 'cat',
   customAsciiArt: CAT_ASCII,
