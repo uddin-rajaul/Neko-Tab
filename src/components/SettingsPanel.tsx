@@ -151,11 +151,24 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [rssError, setRssError] = useState<string | null>(null)
   const [rssEditId, setRssEditId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [paletteShortcut, setPaletteShortcut] = useState<string>('')
 
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
   }
+
+  // Fetch current shortcut from chrome.commands
+  useEffect(() => {
+    if (isOpen && typeof chrome !== 'undefined' && chrome.commands?.getAll) {
+      chrome.commands.getAll((commands) => {
+        const palette = commands.find(c => c.name === 'open-palette')
+        if (palette?.shortcut) {
+          setPaletteShortcut(palette.shortcut)
+        }
+      })
+    }
+  }, [isOpen])
 
   // Sync local settings when panel opens or settings change externally
   useEffect(() => {
@@ -657,6 +670,34 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         />
                         <button className='saas-btn-icon' onClick={handleAddCategory}>
                           <Plus size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>
+                        <Keyboard size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                        Keyboard Shortcuts
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                        <div>
+                          <div style={{ fontSize: 13, color: 'var(--text-primary, #E0E0E0)', marginBottom: 4 }}>
+                            Command Palette
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-secondary, #BFBFBF)', opacity: 0.7 }}>
+                            {paletteShortcut || 'Not set'}
+                          </div>
+                        </div>
+                        <button
+                          className='saas-btn-secondary'
+                          onClick={() => {
+                            if (typeof chrome !== 'undefined' && chrome.tabs) {
+                              chrome.tabs.create({ url: 'chrome://extensions/shortcuts' })
+                            }
+                          }}
+                          style={{ fontSize: 12, flexShrink: 0 }}
+                        >
+                          Change
                         </button>
                       </div>
                     </div>
