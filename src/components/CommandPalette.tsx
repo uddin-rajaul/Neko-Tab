@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
-import type { UrlAlias, ThemeType } from '../types'
+import type { UrlAlias, ThemeType, TabItem } from '../types'
 import { Search, Earth, Bookmark, Keyboard } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 import { recordTabUsage } from '../utils/tabUsage'
@@ -221,8 +221,17 @@ const SLASH_COMMANDS = [
   { name: 'clear', desc: 'Clear recent history', icon: '✕' },
 ]
 
-export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => void }) {
-  const [isOpen, setIsOpen] = useState(false)
+interface CommandPaletteProps {
+  onOpenTypingTest?: () => void
+  portalContainer?: HTMLElement
+  context?: 'newtab' | 'content'
+  initialTabs?: TabItem[]
+  initialOpen?: boolean
+  onClose?: () => void
+}
+
+export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'newtab', initialTabs, initialOpen = false, onClose }: CommandPaletteProps) {
+  const [isOpen, setIsOpen] = useState(initialOpen)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
   const [engine, setEngine] = useState('google')
@@ -234,7 +243,8 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
   const [recent, setRecent] = useLocalStorage<RecentItem[]>('neko-recent', [])
   const [, setDailyGoal] = useLocalStorage<{ text: string; date: string } | null>('neko-daily-goal', null)
   const [, setScratchpad] = useLocalStorage<string>('neko-scratchpad', '')
-  const { tabs } = useOpenTabs()
+  const { tabs: openTabs } = useOpenTabs()
+  const tabs = initialTabs ?? openTabs
   const { activeProvider, executeCommand, loadProviders } = useAIProviders()
   const { memories, saveMemory } = useAIMemory()
   const [aiLoading, setAiLoading] = useState(false)
@@ -317,23 +327,31 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
 
   // Open/close
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault()
+    const handler = (e: Event) => {
+      const ke = e as KeyboardEvent
+      const tag = (ke.target as HTMLElement).tagName
+      if ((ke.ctrlKey || ke.metaKey) && ke.key === 'k') {
+        ke.preventDefault()
+        ke.stopPropagation()
         setIsOpen(o => !o)
         if (!isOpen) { setQuery(''); setSelected(0) }
       }
       // '/' key opens if not in input
-      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
-        e.preventDefault()
+      if (ke.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+        ke.preventDefault()
+        ke.stopPropagation()
         setIsOpen(true); setQuery('/'); setSelected(0)
       }
-      if (e.key === 'Escape') { setIsOpen(false) }
+      if (ke.key === 'Escape') {
+        ke.stopPropagation()
+        setIsOpen(false)
+        onClose?.()
+      }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [isOpen])
+    const target = window
+    target.addEventListener('keydown', handler, true)
+    return () => target.removeEventListener('keydown', handler, true)
+  }, [isOpen, portalContainer])
 
   useEffect(() => {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 30)
@@ -382,16 +400,24 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
                 item.action = () => openChromeNewTab()
                 break
               case 'rss':
-                item.action = () => {
-                  document.querySelector<HTMLElement>('.settings-toggle')?.click()
-                  setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('neko-open-settings-tab', { detail: 'rss' }))
-                  }, 100)
+                if (context === 'content') {
+                  item.action = () => showToast('RSS settings unavailable here')
+                } else {
+                  item.action = () => {
+                    document.querySelector<HTMLElement>('.settings-toggle')?.click()
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('neko-open-settings-tab', { detail: 'rss' }))
+                    }, 100)
+                  }
                 }
                 break
               case 'type':
-                item.action = () => {
-                  onOpenTypingTest?.()
+                if (context === 'content') {
+                  item.action = () => showToast('Typing test unavailable here')
+                } else {
+                  item.action = () => {
+                    onOpenTypingTest?.()
+                  }
                 }
                 break
             }
@@ -790,7 +816,11 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
       }
       void recordTabUsage()
       addRecent(r.label, r.url)
-      window.location.href = r.url
+      if (context === 'content' && typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.create({ url: r.url })
+      } else {
+        window.location.href = r.url
+      }
     }
     setIsOpen(false)
     setQuery('')
@@ -820,7 +850,11 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
         void recordTabUsage()
         const fallbackUrl = SEARCH_ENGINES[engine].url + encodeURIComponent(query)
         if (isSafeUrl(fallbackUrl)) {
-          window.location.href = fallbackUrl
+          if (context === 'content' && typeof chrome !== 'undefined' && chrome.tabs) {
+            chrome.tabs.create({ url: fallbackUrl })
+          } else {
+            window.location.href = fallbackUrl
+          }
         }
         setIsOpen(false); setQuery('')
       }
@@ -842,7 +876,7 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
 
       {/* Palette overlay — portaled to body so it escapes any layout constraints */}
       {isOpen && createPortal(
-        <div className="cp-overlay" onClick={() => setIsOpen(false)}>
+        <div className="cp-overlay" onClick={() => { setIsOpen(false); onClose?.() }}>
           <div className={`cp-panel ${themeClass}`} onClick={e => e.stopPropagation()}>
             <div className="cp-input-row">
               <Search size={14} className="cp-search-icon" />
@@ -965,13 +999,13 @@ export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => 
             )}
           </div>
         </div>,
-        document.body
+        portalContainer ?? document.body
       )}
 
       {/* Toast feedback for slash commands */}
       {toast && createPortal(
         <div className="cp-toast">{toast}</div>,
-        document.body
+        portalContainer ?? document.body
       )}
     </>
   )

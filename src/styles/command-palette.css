@@ -9,6 +9,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 20vh;
+  pointer-events: auto;
 }
 
 /* Theme vars scoped to cp-panel so portal doesn't need .app parent */
