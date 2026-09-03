@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType } from '../types'
-import { Search, Earth, Bookmark } from 'lucide-react'
+import { Search, Earth, Bookmark, Keyboard } from 'lucide-react'
 import { openChromeNewTab } from './ChromeTabButton'
 import { recordTabUsage } from '../utils/tabUsage'
 import { useOpenTabs } from '../hooks/useOpenTabs'
@@ -216,11 +216,12 @@ const SLASH_COMMANDS = [
   { name: 'note', desc: 'Append text to scratchpad', icon: '✎', hint: '<text>' },
   { name: 'clock', desc: 'Set clock format', icon: '◷', hint: '12h | 24h' },
   { name: 'rss', desc: 'Open RSS settings', icon: '☰', hint: '' },
+  { name: 'type', desc: 'Open typing test', icon: <Keyboard size={16} />, hint: '' },
   { name: 'export', desc: 'Export settings to JSON', icon: '↓' },
   { name: 'clear', desc: 'Clear recent history', icon: '✕' },
 ]
 
-export function CommandPalette() {
+export function CommandPalette({ onOpenTypingTest }: { onOpenTypingTest?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
@@ -386,6 +387,11 @@ export function CommandPalette() {
                   setTimeout(() => {
                     window.dispatchEvent(new CustomEvent('neko-open-settings-tab', { detail: 'rss' }))
                   }, 100)
+                }
+                break
+              case 'type':
+                item.action = () => {
+                  onOpenTypingTest?.()
                 }
                 break
             }

@@ -15,6 +15,8 @@ import { DailyGoal } from "./components/DailyGoal";
 import { CommandPalette } from "./components/CommandPalette";
 import { ChromeTabButton } from './components/ChromeTabButton'
 import { StartupLauncher } from './components/StartupLauncher'
+import { TypingOverlay } from './components/TypingTest/TypingOverlay'
+import { Keyboard } from 'lucide-react'
 
 // Lazy load overlay components to improve initial mount time
 const SettingsPanel = lazy(() =>
@@ -75,6 +77,7 @@ function App() {
   const [settings, setSettings] = useSettings();
   const [bgImage] = useLocalStorage<string>("neko-bg-image", "");
   const [toast, setToast] = useState<string | null>(null);
+  const [typingTestOpen, setTypingTestOpen] = useState(false);
   const {
     categories,
     addCategory,
@@ -138,6 +141,13 @@ function App() {
             onSettingsChange={setSettings}
             onAddCategory={addCategory}
           />
+          <button
+            className="typing-test-toggle"
+            onClick={() => setTypingTestOpen(true)}
+            title="Typing Test"
+          >
+            <Keyboard size={20} />
+          </button>
           <Scratchpad />
           <ShortcutHelp />
           <ChromeTabButton visible={settings.showChromeTab} />
@@ -158,7 +168,7 @@ function App() {
           </div>
           {settings.showDailyGoal && <DailyGoal />}
           <StartupLauncher />
-          <CommandPalette />
+          <CommandPalette onOpenTypingTest={() => setTypingTestOpen(true)} />
         </div>
 
         {/* Content Section */}
@@ -193,6 +203,8 @@ function App() {
         <Suspense fallback={null}>
           <FocusMode />
         </Suspense>
+
+        <TypingOverlay isOpen={typingTestOpen} onClose={() => setTypingTestOpen(false)} wordCount={settings.typingWordCount} timeLimit={settings.typingTimeLimit} />
       </div>
 
       {toast && (

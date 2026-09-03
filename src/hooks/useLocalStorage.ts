@@ -79,6 +79,9 @@ const DEFAULT_SETTINGS: Settings = {
   showAsciiArt: true,
   connectors: {},
   startupSitesEnabled: false,
+  typingWordCount: 50,
+  typingDailyGoal: 5,
+  typingTimeLimit: 60,
 }
 
 export function useLocalStorage<T>(key: string, defaultValue: T): [T, (value: T | ((prev: T) => T)) => void] {
