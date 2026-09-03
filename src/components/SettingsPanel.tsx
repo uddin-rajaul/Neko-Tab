@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart, MapPin, Search } from 'lucide-react'
 import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
 import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
@@ -7,6 +7,10 @@ import { useLocalStorage } from '../hooks/useLocalStorage'
 import { getConnectorsWithSettings, updateConnectorConfig } from '../connectors/registry'
 import { AIProviders } from './Settings/AIProviders'
 import { AIMemorySettings } from './Settings/AIMemory'
+import { reverseGeocode, searchCity, detectByIP, clearWeatherCache } from '../utils/weather'
+import type { CitySearchResult } from '../utils/weather'
+import { fetchFeedForValidation, clearRssCache, RSS_REFRESH_MINUTES } from '../utils/rss'
+import type { RssFeed } from '../types/rss'
 
 const THEMES: ThemeInfo[] = [
   // Simple Color Themes
@@ -55,13 +59,72 @@ const FONTS = [
   { id: 'hack',            name: 'Hack',             family: 'Hack' },
 ]
 
+function WeatherDetectButton({ onDetected }: { onDetected: (loc: { name: string; lat: number; lon: number; timezone: string }, viaIP?: boolean) => void }) {
+  const [detecting, setDetecting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleDetect = () => {
+    setDetecting(true)
+    setError(null)
+
+    const tryIP = async () => {
+      try {
+        const loc = await detectByIP()
+        onDetected(loc, true)
+      } catch {
+        setError('Unable to detect location. Please search manually.')
+      } finally {
+        setDetecting(false)
+      }
+    }
+
+    if (!navigator.geolocation) {
+      tryIP()
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const loc = await reverseGeocode(pos.coords.latitude, pos.coords.longitude)
+          onDetected(loc, false)
+          setError(null)
+        } catch {
+          await tryIP()
+        } finally {
+          setDetecting(false)
+        }
+      },
+      () => {
+        tryIP()
+      },
+      { timeout: 10000 }
+    )
+  }
+
+  return (
+    <div>
+      <button
+        className='saas-btn-secondary'
+        onClick={handleDetect}
+        disabled={detecting}
+        style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}
+      >
+        <MapPin size={13} />
+        {detecting ? 'Detecting...' : 'Detect Location'}
+      </button>
+      {error && <p className='saas-hint' style={{ color: 'var(--status-danger)', marginTop: 4 }}>{error}</p>}
+    </div>
+  )
+}
+
 interface SettingsPanelProps {
   settings: SettingsType
   onSettingsChange: (settings: SettingsType) => void
   onAddCategory: (name: string) => void
 }
 
-type TabType = 'appearance' | 'ascii' | 'preferences' | 'widgets' | 'ai' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'support';
+type TabType = 'appearance' | 'ascii' | 'preferences' | 'widgets' | 'rss' | 'ai' | 'aliases' | 'startup' | 'integrations' | 'backup' | 'advanced' | 'support';
 
 export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -77,6 +140,16 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [newSiteUrl, setNewSiteUrl] = useState('')
   const [siteError, setSiteError] = useState<'invalid' | 'limit' | null>(null)
   const { sites: startupSites, setSites: setStartupSites, enabled: startupEnabled, setEnabled: setStartupEnabled } = useStartupSites()
+  const [weatherSearch, setWeatherSearch] = useState('')
+  const [weatherResults, setWeatherResults] = useState<CitySearchResult[]>([])
+  const [weatherSearching, setWeatherSearching] = useState(false)
+  const [weatherDropdownOpen, setWeatherDropdownOpen] = useState(false)
+  const [weatherViaIP, setWeatherViaIP] = useState(false)
+  const weatherSearchRef = useRef<HTMLDivElement>(null)
+  const [rssNewUrl, setRssNewUrl] = useState('')
+  const [rssAdding, setRssAdding] = useState(false)
+  const [rssError, setRssError] = useState<string | null>(null)
+  const [rssEditId, setRssEditId] = useState<string | null>(null)
 
   // Sync local settings when panel opens or settings change externally
   useEffect(() => {
@@ -84,6 +157,17 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
       setLocalSettings(settings)
     }
   }, [isOpen, settings])
+
+  // Listen for /rss command to open settings on RSS tab
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      if (e.detail === 'rss') {
+        setActiveTab('rss')
+      }
+    }
+    window.addEventListener('neko-open-settings-tab', handler as EventListener)
+    return () => window.removeEventListener('neko-open-settings-tab', handler as EventListener)
+  }, [])
 
   // Re-convert when inverted state changes or new file uploaded
   useEffect(() => {
@@ -95,6 +179,38 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
         .catch(err => console.error('Failed to convert image', err))
     }
   }, [isInverted, uploadedFile])
+
+  // Debounced weather search
+  useEffect(() => {
+    if (!weatherSearch.trim()) {
+      setWeatherResults([])
+      setWeatherDropdownOpen(false)
+      return
+    }
+    setWeatherSearching(true)
+    const timer = setTimeout(() => {
+      searchCity(weatherSearch)
+        .then(results => {
+          setWeatherResults(results)
+          setWeatherDropdownOpen(results.length > 0)
+        })
+        .catch(() => setWeatherResults([]))
+        .finally(() => setWeatherSearching(false))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [weatherSearch])
+
+  // Close weather dropdown on click outside
+  useEffect(() => {
+    if (!weatherDropdownOpen) return
+    const handler = (e: MouseEvent) => {
+      if (weatherSearchRef.current && !weatherSearchRef.current.contains(e.target as Node)) {
+        setWeatherDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [weatherDropdownOpen])
 
   // Background settings write-through immediately so preview is live
   const BG_LIVE_KEYS = new Set<keyof SettingsType>(['bgDim', 'bgBlur'])
@@ -112,6 +228,30 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const handleSave = () => {
     onSettingsChange(localSettings)
     setIsOpen(false)
+  }
+
+  const addRssFeed = async () => {
+    const url = rssNewUrl.trim()
+    if (!url) return
+    setRssAdding(true)
+    setRssError(null)
+    try {
+      const { title } = await fetchFeedForValidation(url)
+      const feed: RssFeed = {
+        id: crypto.randomUUID(),
+        name: title || new URL(url).hostname.replace('www.', ''),
+        url,
+        enabled: true,
+        maxItems: 5,
+      }
+      handleChange('rssFeeds', [...(localSettings.rssFeeds ?? []), feed])
+      setRssNewUrl('')
+      clearRssCache()
+    } catch (e: any) {
+      setRssError(e.message ?? 'Unable to fetch feed')
+    } finally {
+      setRssAdding(false)
+    }
   }
 
   const handleAddCategory = () => {
@@ -234,6 +374,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   <LayoutGrid size={16} /> Widgets
                 </button>
                 <button
+                  className={`saas-nav-item ${activeTab === 'rss' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('rss')}
+                >
+                  <Hash size={16} /> RSS
+                </button>
+                <button
                   className={`saas-nav-item ${activeTab === 'ai' ? 'active' : ''}`}
                   onClick={() => setActiveTab('ai')}
                 >
@@ -286,6 +432,7 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                   {activeTab === 'ascii' && 'Custom ASCII Art'}
                   {activeTab === 'preferences' && 'System Preferences'}
                   {activeTab === 'widgets' && 'Widgets & Background'}
+                  {activeTab === 'rss' && 'RSS Ticker'}
                   {activeTab === 'ai' && 'AI & Command Interpreter'}
                   {activeTab === 'aliases' && 'URL Aliases'}
                   {activeTab === 'startup' && 'Startup Sites'}
@@ -646,6 +793,183 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         onChange={e => handleChange('githubUsername', e.target.value)}
                         placeholder='GitHub username' className='saas-input' style={{ marginTop: 12 }} />
                       <p className='saas-hint'>Uses the public contributions API. No auth needed.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Weather</label>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Show in status bar', localSettings.weather?.enabled ?? false, val =>
+                          handleChange('weather', { enabled: val, location: localSettings.weather?.location ?? null })
+                        )}
+                      </div>
+                      {localSettings.weather?.enabled && (
+                        <div style={{ marginTop: 12 }}>
+                          <label className='saas-label' style={{ fontSize: 11, opacity: 0.6, marginBottom: 6, display: 'block' }}>City Search</label>
+                          <div className='weather-search-wrapper' ref={weatherSearchRef}>
+                            <div className='weather-search-input-row'>
+                              <Search size={13} className='weather-search-icon' />
+                              <input
+                                type='text'
+                                value={weatherSearch}
+                                onChange={e => setWeatherSearch(e.target.value)}
+                                onFocus={() => { if (weatherResults.length) setWeatherDropdownOpen(true) }}
+                                placeholder='Search city...'
+                                className='saas-input weather-search-input'
+                              />
+                              {localSettings.weather?.location && localSettings.weather.location.lat !== 0 && (
+                                <Check size={14} className='weather-verified-icon' />
+                              )}
+                            </div>
+                            {weatherDropdownOpen && weatherResults.length > 0 && (
+                              <div className='weather-dropdown'>
+                                {weatherResults.map((r, i) => (
+                                  <button
+                                    key={`${r.name}-${r.lat}-${i}`}
+                                    className='weather-dropdown-item'
+                                    onClick={() => {
+                                      handleChange('weather', { enabled: true, location: r })
+                                      clearWeatherCache()
+                                      setWeatherSearch('')
+                                      setWeatherDropdownOpen(false)
+                                      setWeatherViaIP(false)
+                                    }}
+                                  >
+                                    <span className='weather-dropdown-name'>{r.name}{r.admin1 ? `, ${r.admin1}` : ''}</span>
+                                    <span className='weather-dropdown-country'>{r.country}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {localSettings.weather?.location && localSettings.weather.location.lat !== 0 && (
+                            <div className='weather-coords'>
+                              {localSettings.weather.location.lat.toFixed(4)}, {localSettings.weather.location.lon.toFixed(4)}
+                            </div>
+                          )}
+                          {weatherViaIP && localSettings.weather?.location && (
+                            <p className='saas-hint' style={{ marginTop: 4 }}>Location detected via IP (approximate)</p>
+                          )}
+                          <div style={{ marginTop: 10 }}>
+                            <WeatherDetectButton
+                              onDetected={(loc, viaIP) => {
+                                handleChange('weather', { enabled: true, location: loc })
+                                clearWeatherCache()
+                                setWeatherViaIP(!!viaIP)
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* RSS TAB */}
+                {activeTab === 'rss' && (
+                  <div className='saas-section'>
+                    <div className='saas-card'>
+                      <label className='saas-label'>RSS Ticker</label>
+                      <div className='saas-toggle-list'>
+                        {renderToggle('Show ticker above status bar', localSettings.showRssTicker ?? false, val => handleChange('showRssTicker', val))}
+                      </div>
+                      <p className='saas-hint'>Rotating headlines from your feeds. Press T to pause/resume.</p>
+                    </div>
+
+                    <div className='saas-card'>
+                      <label className='saas-label'>Feeds</label>
+                      {(localSettings.rssFeeds ?? []).length === 0 && (
+                        <p className='saas-hint' style={{ marginBottom: 12 }}>No feeds configured. Add one below.</p>
+                      )}
+                      {(localSettings.rssFeeds ?? []).map((feed: RssFeed) => (
+                        <div key={feed.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--border, rgba(255,255,255,0.06))' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            {rssEditId === feed.id ? (
+                              <input type='text' className='saas-input' style={{ fontSize: 12, padding: '4px 8px' }}
+                                defaultValue={feed.name}
+                                onBlur={e => {
+                                  const updated = (localSettings.rssFeeds ?? []).map(f =>
+                                    f.id === feed.id ? { ...f, name: e.target.value || f.name } : f
+                                  )
+                                  handleChange('rssFeeds', updated)
+                                  setRssEditId(null)
+                                }}
+                                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                                autoFocus
+                              />
+                            ) : (
+                              <>
+                                <span style={{ fontWeight: 500, fontSize: 13 }}>{feed.name}</span>
+                                <span style={{ opacity: 0.4, fontSize: 11, marginLeft: 8 }}>{feed.url}</span>
+                              </>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                            <label style={{ fontSize: 11, opacity: 0.5 }}>Max:</label>
+                            <input type='number' min={1} max={10} value={feed.maxItems}
+                              onChange={e => {
+                                const val = Math.min(10, Math.max(1, Number(e.target.value) || 5))
+                                const updated = (localSettings.rssFeeds ?? []).map(f =>
+                                  f.id === feed.id ? { ...f, maxItems: val } : f
+                                )
+                                handleChange('rssFeeds', updated)
+                              }}
+                              style={{ width: 36, fontSize: 11, padding: '2px 4px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 3, color: 'var(--text-primary)', textAlign: 'center' }}
+                            />
+                            {renderToggle('', feed.enabled, val => {
+                              const updated = (localSettings.rssFeeds ?? []).map(f =>
+                                f.id === feed.id ? { ...f, enabled: val } : f
+                              )
+                              handleChange('rssFeeds', updated)
+                            })}
+                            <button className='saas-btn-secondary' style={{ padding: '2px 6px', fontSize: 11 }}
+                              onClick={() => setRssEditId(rssEditId === feed.id ? null : feed.id)}>
+                              {rssEditId === feed.id ? 'Done' : 'Edit'}
+                            </button>
+                            <button className='saas-btn-secondary' style={{ padding: '2px 6px', fontSize: 11, color: 'var(--status-danger)' }}
+                              onClick={() => {
+                                const updated = (localSettings.rssFeeds ?? []).filter(f => f.id !== feed.id)
+                                handleChange('rssFeeds', updated)
+                                clearRssCache()
+                              }}>
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div style={{ marginTop: 12 }}>
+                        <label className='saas-label' style={{ fontSize: 11, opacity: 0.6, marginBottom: 4, display: 'block' }}>Add Feed</label>
+                        <div className='saas-flex-row' style={{ gap: 8 }}>
+                          <input type='url' className='saas-input' style={{ flex: 1 }}
+                            value={rssNewUrl} onChange={e => { setRssNewUrl(e.target.value); setRssError(null) }}
+                            placeholder='https://news.ycombinator.com/rss'
+                            onKeyDown={e => { if (e.key === 'Enter') addRssFeed() }}
+                          />
+                          <button className='saas-btn-secondary' onClick={addRssFeed} disabled={rssAdding}>
+                            {rssAdding ? '...' : 'Add'}
+                          </button>
+                        </div>
+                        {rssError && <p className='saas-hint' style={{ color: 'var(--status-danger)', marginTop: 4 }}>{rssError}</p>}
+                      </div>
+
+                      <div style={{ marginTop: 10 }}>
+                        <button className='saas-btn-secondary' style={{ fontSize: 12 }}
+                          onClick={() => {
+                            const defaults: RssFeed[] = [
+                              { id: crypto.randomUUID(), name: 'Hacker News', url: 'https://news.ycombinator.com/rss', enabled: true, maxItems: 5 },
+                              { id: crypto.randomUUID(), name: 'Dev.to', url: 'https://dev.to/feed', enabled: true, maxItems: 5 },
+                            ]
+                            const existing = localSettings.rssFeeds ?? []
+                            const existingUrls = new Set(existing.map(f => f.url))
+                            const toAdd = defaults.filter(d => !existingUrls.has(d.url))
+                            if (toAdd.length) {
+                              handleChange('rssFeeds', [...existing, ...toAdd])
+                            }
+                          }}>
+                          + Add popular feeds (HN + Dev.to)
+                        </button>
+                      </div>
+
+                      <p className='saas-hint' style={{ marginTop: 8 }}>Refreshes every {RSS_REFRESH_MINUTES} minutes. Direct fetch with rss2json fallback.</p>
                     </div>
                   </div>
                 )}

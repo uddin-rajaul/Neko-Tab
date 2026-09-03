@@ -4,6 +4,7 @@ import { GitHubStreak } from './GitHubStreak'
 import { FocusStreak } from './FocusStreak'
 import { TabCounter } from './TabCounter'
 import { GmailStatus } from './GmailStatus'
+import { Weather } from './Weather'
 import { useSettings } from '../hooks/useLocalStorage'
 
 interface HeapInfo {
@@ -116,6 +117,7 @@ export function ActivityWidget() {
         )}
         <FocusStreak />
         {settings.showTabCounter !== false && <TabCounter />}
+        <Weather settings={settings} />
         <GmailStatus />
       </div>
     </div>

@@ -215,6 +215,7 @@ const SLASH_COMMANDS = [
   { name: 'goal', desc: "Set today's daily goal", icon: '▸', hint: '<text>' },
   { name: 'note', desc: 'Append text to scratchpad', icon: '✎', hint: '<text>' },
   { name: 'clock', desc: 'Set clock format', icon: '◷', hint: '12h | 24h' },
+  { name: 'rss', desc: 'Open RSS settings', icon: '☰', hint: '' },
   { name: 'export', desc: 'Export settings to JSON', icon: '↓' },
   { name: 'clear', desc: 'Clear recent history', icon: '✕' },
 ]
@@ -378,6 +379,14 @@ export function CommandPalette() {
                 break
               case 'chrome-tab':
                 item.action = () => openChromeNewTab()
+                break
+              case 'rss':
+                item.action = () => {
+                  document.querySelector<HTMLElement>('.settings-toggle')?.click()
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('neko-open-settings-tab', { detail: 'rss' }))
+                  }, 100)
+                }
                 break
             }
             out.push(item)
