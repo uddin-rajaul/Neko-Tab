@@ -112,13 +112,17 @@ Press `?` anywhere for the full cheatsheet.
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+K` | Command palette |
+| `Alt+K` | Command palette (anywhere in Chrome) |
+| `Ctrl+K` | Command palette (Neko-Tab page only) |
+| `Alt+Shift+S` | Open startup sites |
 | `Ctrl+\`` | Scratchpad |
 | `Ctrl+F` | Focus Mode |
 | `Ctrl+Shift+T` | Work timer |
 | `Ctrl+Shift+R` | New Chrome tab |
 | `c` | New Chrome tab (when not in input) |
 | `Escape` | Close any panel |
+
+`Alt+K` works globally — even when Neko-Tab isn't open. Use it to quickly launch the command palette from any tab.
 
 ## Installation
 
