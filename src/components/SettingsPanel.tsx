@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart, MapPin, Search, Keyboard } from 'lucide-react'
-import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite } from '../types'
+import { Settings, X, Plus, Check, Upload, Palette, Save, Monitor, Terminal, LayoutGrid, Hash, Trash2, Download, Cpu, AlertTriangle, Plug, ExternalLink, Key, Heart, MapPin, Search, Keyboard, Pencil } from 'lucide-react'
+import type { Settings as SettingsType, ThemeInfo, UrlAlias, StartupSite, CustomTheme } from '../types'
 import { useStartupSites } from '../hooks/useStartupSites'
 import { convertImageToAscii } from '../utils/imageToAscii'
 import { useLocalStorage } from '../hooks/useLocalStorage'
@@ -12,6 +12,8 @@ import type { CitySearchResult } from '../utils/weather'
 import { fetchFeedForValidation, clearRssCache, RSS_REFRESH_MINUTES } from '../utils/rss'
 import type { RssFeed } from '../types/rss'
 import { resetScores } from '../utils/typing/history'
+import { CustomThemeEditor } from './Settings/CustomThemeEditor'
+import { DEFAULT_CUSTOM_COLORS, sanitizeFontName } from '../utils/customTheme'
 
 const THEMES: ThemeInfo[] = [
   // Simple Color Themes
@@ -28,6 +30,15 @@ const THEMES: ThemeInfo[] = [
   { id: 'one-dark', name: 'One Dark', bgColor: '#282C34', textColor: '#ABB2BF', accentColor: '#61AFEF', category: 'color' },
   { id: 'rose-pine', name: 'Rosé Pine', bgColor: '#191724', textColor: '#E0DEF4', accentColor: '#EBBCBA', category: 'color' },
   { id: 'everforest', name: 'Everforest', bgColor: '#2D353B', textColor: '#D3C6AA', accentColor: '#A7C080', category: 'color' },
+  // Light Themes
+  { id: 'solarized-light', name: 'Solarized Light', bgColor: '#FDF6E3', textColor: '#586E75', accentColor: '#2AA198', category: 'light' },
+  { id: 'catppuccin-latte', name: 'Catppuccin Latte', bgColor: '#EFF1F5', textColor: '#4C4F69', accentColor: '#8839EF', category: 'light' },
+  { id: 'gruvbox-light', name: 'Gruvbox Light', bgColor: '#FBF1C7', textColor: '#3C3836', accentColor: '#AF3A03', category: 'light' },
+  { id: 'rose-pine-dawn', name: 'Rosé Pine Dawn', bgColor: '#FAF4ED', textColor: '#575279', accentColor: '#D7827E', category: 'light' },
+  { id: 'everforest-light', name: 'Everforest Light', bgColor: '#FDF6E3', textColor: '#5C6A72', accentColor: '#8DA101', category: 'light' },
+  { id: 'github-light', name: 'GitHub Light', bgColor: '#FFFFFF', textColor: '#1F2328', accentColor: '#0969DA', category: 'light' },
+  { id: 'tokyo-night-day', name: 'Tokyo Night Day', bgColor: '#E1E2E7', textColor: '#3760BF', accentColor: '#2E7DE9', category: 'light' },
+  { id: 'one-light', name: 'One Light', bgColor: '#FAFAFA', textColor: '#383A42', accentColor: '#4078F2', category: 'light' },
   // Animated Themes
   { id: 'cyberpunk', name: 'Cyberpunk', bgColor: '#0a0a0f', textColor: '#00f0ff', accentColor: '#ff00ff', category: 'animated' },
   { id: 'aurora', name: 'Aurora', bgColor: '#0f0c29', textColor: '#ffffff', accentColor: '#a855f7', category: 'animated' },
@@ -131,6 +142,9 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('appearance')
   const [localSettings, setLocalSettings] = useState<SettingsType>(settings)
+  const [editingTheme, setEditingTheme] = useState<{ theme: CustomTheme; isNew: boolean } | null>(null)
+  const isCustomFont = !FONTS.some(f => f.family === localSettings.font)
+  const [customFontInput, setCustomFontInput] = useState(isCustomFont ? localSettings.font : '')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isInverted, setIsInverted] = useState(false)
@@ -240,6 +254,33 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
       }
       return updated
     })
+  }
+
+  const saveCustomTheme = (theme: CustomTheme) => {
+    setLocalSettings(prev => {
+      const existing = prev.customThemes ?? []
+      const customThemes = existing.some(t => t.id === theme.id)
+        ? existing.map(t => (t.id === theme.id ? theme : t))
+        : [...existing, theme]
+      return { ...prev, customThemes, theme: theme.id }
+    })
+    setEditingTheme(null)
+  }
+
+  const deleteCustomTheme = (theme: CustomTheme) => {
+    setLocalSettings(prev => ({
+      ...prev,
+      customThemes: (prev.customThemes ?? []).filter(t => t.id !== theme.id),
+      theme: prev.theme === theme.id ? (theme.isLight ? 'paper' : 'carbon') : prev.theme,
+    }))
+    setEditingTheme(null)
+  }
+
+  const applyCustomFont = () => {
+    const font = sanitizeFontName(customFontInput)
+    if (!font) return
+    setCustomFontInput(font)
+    handleChange('font', font)
   }
 
   const handleSave = () => {
@@ -505,6 +546,39 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     </div>
 
                     <div className='saas-section-group'>
+                      <label className='saas-section-label'>LIGHT THEMES</label>
+                      <div className='saas-theme-grid'>
+                        {THEMES.filter(t => t.category === 'light').map(theme => (
+                          <div
+                            key={theme.id}
+                            className={`saas-theme-card ${localSettings.theme === theme.id ? 'active' : ''}`}
+                            onClick={() => handleChange('theme', theme.id)}
+                          >
+                            <div
+                              className='theme-preview'
+                              style={{
+                                backgroundColor: theme.bgColor,
+                                borderColor: localSettings.theme === theme.id ? theme.accentColor : 'rgba(0,0,0,0.08)'
+                              }}
+                            >
+                              <div className='theme-preview-lines'>
+                                <div className='preview-line' style={{ backgroundColor: theme.accentColor, width: '60%' }}></div>
+                                <div className='preview-line' style={{ backgroundColor: theme.textColor, width: '80%', opacity: 0.3 }}></div>
+                              </div>
+                              <div className='theme-preview-dot' style={{ backgroundColor: theme.accentColor }}></div>
+                              {localSettings.theme === theme.id && (
+                                <div className='theme-check' style={{ backgroundColor: theme.accentColor }}>
+                                  <Check size={12} strokeWidth={3} />
+                                </div>
+                              )}
+                            </div>
+                            <span className='theme-name'>{theme.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className='saas-section-group'>
                       <label className='saas-section-label'>ANIMATED THEMES</label>
                       <div className='saas-theme-grid'>
                         {THEMES.filter(t => t.category === 'animated').map(theme => (
@@ -571,11 +645,82 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                     </div>
 
                     <div className='saas-section-group'>
+                      <label className='saas-section-label'>CUSTOM THEMES</label>
+                      <div className='saas-theme-grid'>
+                        {(localSettings.customThemes ?? []).map(theme => (
+                          <div
+                            key={theme.id}
+                            className={`saas-theme-card ${localSettings.theme === theme.id ? 'active' : ''}`}
+                            onClick={() => handleChange('theme', theme.id)}
+                          >
+                            <div
+                              className='theme-preview'
+                              style={{
+                                backgroundColor: theme.colors.bgPrimary,
+                                borderColor: localSettings.theme === theme.id ? theme.colors.accent : 'rgba(255,255,255,0.05)'
+                              }}
+                            >
+                              <div className='theme-preview-lines'>
+                                <div className='preview-line' style={{ backgroundColor: theme.colors.accent, width: '60%' }}></div>
+                                <div className='preview-line' style={{ backgroundColor: theme.colors.textPrimary, width: '80%', opacity: 0.3 }}></div>
+                              </div>
+                              <div className='theme-preview-dot' style={{ backgroundColor: theme.colors.accent }}></div>
+                              {localSettings.theme === theme.id && (
+                                <div className='theme-check' style={{ backgroundColor: theme.colors.accent }}>
+                                  <Check size={12} strokeWidth={3} />
+                                </div>
+                              )}
+                              <button
+                                className='custom-theme-edit-btn'
+                                title='Edit theme'
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  setEditingTheme({ theme, isNew: false })
+                                }}
+                              >
+                                <Pencil size={12} />
+                              </button>
+                            </div>
+                            <span className='theme-name'>{theme.name}</span>
+                          </div>
+                        ))}
+                        <div
+                          className='saas-theme-card'
+                          onClick={() => setEditingTheme({
+                            theme: { id: `custom-${crypto.randomUUID()}`, name: '', isLight: true, colors: DEFAULT_CUSTOM_COLORS.light },
+                            isNew: true,
+                          })}
+                        >
+                          <div className='theme-preview custom-theme-new-card'>
+                            <Plus size={20} />
+                          </div>
+                          <span className='theme-name'>New theme</span>
+                        </div>
+                      </div>
+                      {editingTheme && (
+                        <CustomThemeEditor
+                          key={editingTheme.theme.id}
+                          initialTheme={editingTheme.theme}
+                          isNew={editingTheme.isNew}
+                          onSave={saveCustomTheme}
+                          onDelete={() => deleteCustomTheme(editingTheme.theme)}
+                          onCancel={() => setEditingTheme(null)}
+                        />
+                      )}
+                    </div>
+
+                    <div className='saas-section-group'>
                       <label className='saas-section-label'>FONT FAMILY</label>
                       <div className='saas-theme-grid'>
                         {(() => {
-                          const currentTheme = THEMES.find(t => t.id === localSettings.theme) || THEMES[0];
-                          return FONTS.map(font => {
+                          const activeCustomTheme = (localSettings.customThemes ?? []).find(t => t.id === localSettings.theme);
+                          const currentTheme = activeCustomTheme
+                            ? { bgColor: activeCustomTheme.colors.bgPrimary, textColor: activeCustomTheme.colors.textPrimary, accentColor: activeCustomTheme.colors.accent }
+                            : THEMES.find(t => t.id === localSettings.theme) || THEMES[0];
+                          const fontCards = isCustomFont
+                            ? [...FONTS, { id: 'custom-font', name: `Custom: ${localSettings.font}`, family: localSettings.font }]
+                            : FONTS;
+                          return fontCards.map(font => {
                             const isFontActive = localSettings.font === font.family;
                             
                             return (
@@ -610,6 +755,23 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                             );
                           });
                         })()}
+                      </div>
+                      <div className='saas-card' style={{ marginTop: 16 }}>
+                        <label className='saas-label'>Custom Font</label>
+                        <div className='saas-flex-row'>
+                          <input
+                            type='text'
+                            className='saas-input'
+                            placeholder='e.g., Victor Mono'
+                            value={customFontInput}
+                            onChange={e => setCustomFontInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') applyCustomFont() }}
+                          />
+                          <button className='saas-btn-secondary' onClick={applyCustomFont} disabled={!sanitizeFontName(customFontInput)}>
+                            Use font
+                          </button>
+                        </div>
+                        <p className='saas-hint'>Type the name of any Google Font, or a font installed on your computer, exactly as it's spelled.</p>
                       </div>
                     </div>
                   </div>

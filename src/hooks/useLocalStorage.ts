@@ -61,6 +61,7 @@ const DEFAULT_SETTINGS: Settings = {
   showStatusBar: true,
   showTabCounter: true,
   theme: 'carbon',
+  customThemes: [],
   clockFormat: '24h',
   bgDim: 40,
   bgBlur: 0,
@@ -285,9 +286,13 @@ const FONT_URLS: Record<string, string> = {
   'Hack':           'https://cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css',
 }
 
+// Custom fonts: try Google Fonts; if the family isn't there, a font installed on the computer is used instead
+function googleFontUrl(family: string): string {
+  return `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;700&display=swap`
+}
+
 function loadFont(family: string) {
-  const url = FONT_URLS[family]
-  if (!url) return
+  const url = FONT_URLS[family] ?? googleFontUrl(family)
   const id = `font-${family.replace(/\s/g, '-')}`
   if (document.getElementById(id)) return // already loaded
   const link = document.createElement('link')

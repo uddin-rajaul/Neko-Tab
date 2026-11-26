@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
+import { findCustomTheme, sanitizeFontName, LIGHT_THEME_IDS } from './utils/customTheme'
 
 // Type for our pre-warmed state
 declare global {
@@ -26,23 +27,20 @@ declare global {
       'everforest': '#2D353B', 'cyberpunk': '#0a0a0f', 'aurora': '#0f0c29',
       'synthwave': '#1a1a2e', 'vaporwave': '#1a0a2e', 'retro-terminal': '#0a0a0a',
       'sunset': '#1a1423', 'ocean': '#0c1821', 'midnight': '#020617',
-      'nothing': '#1C1C1E'
+      'nothing': '#1C1C1E',
+      'solarized-light': '#FDF6E3', 'catppuccin-latte': '#EFF1F5', 'gruvbox-light': '#FBF1C7', 'rose-pine-dawn': '#FAF4ED', 'everforest-light': '#FDF6E3', 'github-light': '#FFFFFF', 'tokyo-night-day': '#E1E2E7', 'one-light': '#FAFAFA'
     };
     
-    const bgColor = themes[theme] || '#222526';
+    const customTheme = findCustomTheme(theme, settings.customThemes);
+    const bgColor = customTheme?.colors.bgPrimary || themes[theme] || '#222526';
     document.documentElement.style.backgroundColor = bgColor;
     
-    if (theme === 'paper' || theme === 'light') {
+    if (theme === 'paper' || theme === 'light' || LIGHT_THEME_IDS.has(theme) || customTheme?.isLight) {
       document.documentElement.style.colorScheme = 'light';
     }
 
     // Apply font variable immediately to prevent FOUT
-    const ALLOWED_FONTS = [
-      'JetBrains Mono', 'Geist Mono', 'Space Mono', 'Fira Code',
-      'Cascadia Code', 'IBM Plex Mono', 'Intel One Mono', 'Iosevka',
-      'Commit Mono', 'Source Code Pro', 'Inconsolata', 'Hack',
-    ]
-    const font = ALLOWED_FONTS.includes(settings.font) ? settings.font : 'JetBrains Mono';
+    const font = (typeof settings.font === 'string' && sanitizeFontName(settings.font)) || 'JetBrains Mono';
     const fontValue = font.includes(' ') ? `'${font}'` : font;
     document.documentElement.style.setProperty('--font-mono', fontValue);
     

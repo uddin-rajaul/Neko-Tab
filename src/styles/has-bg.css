@@ -122,12 +122,15 @@
 
 /* Light paper theme + bg: invert the glass tint to white */
 .has-bg.paper .search-container,
-.has-bg.paper .bookmarks-container {
+.has-bg.paper .bookmarks-container,
+.has-bg.theme-light .search-container,
+.has-bg.theme-light .bookmarks-container {
   background: rgba(255, 255, 255, 0.35) !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-.has-bg.paper .activity-widget-container {
+.has-bg.paper .activity-widget-container,
+.has-bg.theme-light .activity-widget-container {
   background: rgba(255, 255, 255, 0.4) !important;
 }
 

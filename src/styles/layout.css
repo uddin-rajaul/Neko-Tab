@@ -111,7 +111,8 @@
 }
 
 .app.light .ascii-display,
-.app.paper .ascii-display {
+.app.paper .ascii-display,
+.app.theme-light .ascii-display {
   color: var(--text-primary);
 }
 
@@ -175,7 +176,8 @@
 }
 
 .app.light .search-input,
-.app.paper .search-input {
+.app.paper .search-input,
+.app.theme-light .search-input {
   background: transparent;
   color: var(--text-primary);
   border: none;
@@ -413,7 +415,8 @@
 }
 
 .app.light .category-name,
-.app.paper .category-name {
+.app.paper .category-name,
+.app.theme-light .category-name {
   color: var(--text-primary);
 }
 
@@ -494,7 +497,8 @@
 }
 
 .app.light .bookmark-link,
-.app.paper .bookmark-link {
+.app.paper .bookmark-link,
+.app.theme-light .bookmark-link {
   color: var(--text-secondary);
 }
 

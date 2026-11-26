@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { findCustomTheme, themeClassName, customThemeStyle } from '../utils/customTheme'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType, TabItem } from '../types'
 import { Search, Earth, Bookmark, Keyboard } from 'lucide-react'
@@ -194,6 +195,14 @@ const THEME_LIST: { id: ThemeType; name: string }[] = [
   { id: 'tokyo-night', name: 'Tokyo Night' }, { id: 'catppuccin', name: 'Catppuccin' },
   { id: 'one-dark', name: 'One Dark' }, { id: 'rose-pine', name: 'Rosé Pine' },
   { id: 'everforest', name: 'Everforest' },
+  { id: 'solarized-light', name: 'Solarized Light' },
+  { id: 'catppuccin-latte', name: 'Catppuccin Latte' },
+  { id: 'gruvbox-light', name: 'Gruvbox Light' },
+  { id: 'rose-pine-dawn', name: 'Rosé Pine Dawn' },
+  { id: 'everforest-light', name: 'Everforest Light' },
+  { id: 'github-light', name: 'GitHub Light' },
+  { id: 'tokyo-night-day', name: 'Tokyo Night Day' },
+  { id: 'one-light', name: 'One Light' },
   { id: 'cyberpunk', name: 'Cyberpunk' }, { id: 'aurora', name: 'Aurora' },
   { id: 'synthwave', name: 'Synthwave' }, { id: 'vaporwave', name: 'Vaporwave' },
   { id: 'retro-terminal', name: 'Retro CRT' }, { id: 'sunset', name: 'Sunset' },
@@ -323,7 +332,8 @@ export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'n
   }, [query])
 
   // Mirror theme class onto the portaled panel so CSS vars resolve correctly
-  const themeClass = settings.theme || 'carbon'
+  const customTheme = findCustomTheme(settings.theme, settings.customThemes)
+  const themeClass = themeClassName(settings.theme || 'carbon', customTheme)
 
   // Open/close
   useEffect(() => {
@@ -430,7 +440,7 @@ export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'n
       // Command with arguments
       switch (cmdName) {
         case 'theme':
-          for (const t of THEME_LIST) {
+          for (const t of [...THEME_LIST, ...(settings.customThemes ?? [])]) {
             if (!args || fuzzy(t.name, args) || fuzzy(t.id, args)) {
               out.push({
                 id: `cmd-theme-${t.id}`,
@@ -769,7 +779,7 @@ export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'n
     }
 
     return out
-  }, [query, categories, aliases, engine, settings.theme, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad, tabs, activeProvider, aiLoading, executeCommand])
+  }, [query, categories, aliases, engine, settings.theme, settings.customThemes, settings.font, settings.clockFormat, recent, historyResults, showToast, setSettings, setRecent, setDailyGoal, setScratchpad, tabs, activeProvider, aiLoading, executeCommand])
 
   useEffect(() => { setSelected(0) }, [query])
 
@@ -877,7 +887,7 @@ export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'n
       {/* Palette overlay — portaled to body so it escapes any layout constraints */}
       {isOpen && createPortal(
         <div className="cp-overlay" onClick={() => { setIsOpen(false); onClose?.() }}>
-          <div className={`cp-panel ${themeClass}`} onClick={e => e.stopPropagation()}>
+          <div className={`cp-panel ${themeClass}`} style={customThemeStyle(customTheme)} onClick={e => e.stopPropagation()}>
             <div className="cp-input-row">
               <Search size={14} className="cp-search-icon" />
               <input
