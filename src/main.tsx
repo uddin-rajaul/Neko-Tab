@@ -43,6 +43,9 @@ declare global {
     const font = (typeof settings.font === 'string' && sanitizeFontName(settings.font)) || 'JetBrains Mono';
     const fontValue = font.includes(' ') ? `'${font}'` : font;
     document.documentElement.style.setProperty('--font-mono', fontValue);
+    if (typeof settings.fontWeight === 'number') {
+      document.documentElement.style.setProperty('--font-weight-shift', String(settings.fontWeight - 400));
+    }
     
   } catch (e) {
     console.error('Failed to apply early theme', e);

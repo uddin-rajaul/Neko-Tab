@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { findCustomTheme, themeClassName, customThemeStyle } from '../utils/customTheme'
+import { findCustomTheme, themeClassName, customThemeStyle, textColorStyle } from '../utils/customTheme'
 import { useBookmarks, useLocalStorage, useSettings } from '../hooks/useLocalStorage'
 import type { UrlAlias, ThemeType, TabItem } from '../types'
 import { Search, Earth, Bookmark, Keyboard } from 'lucide-react'
@@ -887,7 +887,7 @@ export function CommandPalette({ onOpenTypingTest, portalContainer, context = 'n
       {/* Palette overlay — portaled to body so it escapes any layout constraints */}
       {isOpen && createPortal(
         <div className="cp-overlay" onClick={() => { setIsOpen(false); onClose?.() }}>
-          <div className={`cp-panel ${themeClass}`} style={customThemeStyle(customTheme)} onClick={e => e.stopPropagation()}>
+          <div className={`cp-panel ${themeClass}`} style={{ ...customThemeStyle(customTheme), ...textColorStyle(settings.textColors) }} onClick={e => e.stopPropagation()}>
             <div className="cp-input-row">
               <Search size={14} className="cp-search-icon" />
               <input

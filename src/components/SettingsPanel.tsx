@@ -13,6 +13,7 @@ import { fetchFeedForValidation, clearRssCache, RSS_REFRESH_MINUTES } from '../u
 import type { RssFeed } from '../types/rss'
 import { resetScores } from '../utils/typing/history'
 import { CustomThemeEditor } from './Settings/CustomThemeEditor'
+import { TextStyleSettings } from './Settings/TextStyleSettings'
 import { DEFAULT_CUSTOM_COLORS, sanitizeFontName } from '../utils/customTheme'
 
 const THEMES: ThemeInfo[] = [
@@ -243,13 +244,13 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
     return () => document.removeEventListener('mousedown', handler)
   }, [weatherDropdownOpen])
 
-  // Background settings write-through immediately so preview is live
-  const BG_LIVE_KEYS = new Set<keyof SettingsType>(['bgDim', 'bgBlur'])
+  // These settings write through immediately so the preview is live
+  const LIVE_PREVIEW_KEYS = new Set<keyof SettingsType>(['bgDim', 'bgBlur', 'fontWeight', 'textColors'])
 
   const handleChange = <K extends keyof SettingsType>(key: K, value: SettingsType[K]) => {
     setLocalSettings(prev => {
       const updated = { ...prev, [key]: value }
-      if (BG_LIVE_KEYS.has(key)) {
+      if (LIVE_PREVIEW_KEYS.has(key)) {
         onSettingsChange(updated)
       }
       return updated
@@ -773,6 +774,12 @@ export function SettingsPanel({ settings, onSettingsChange, onAddCategory }: Set
                         </div>
                         <p className='saas-hint'>Type the name of any Google Font, or a font installed on your computer, exactly as it's spelled.</p>
                       </div>
+                      <TextStyleSettings
+                        fontWeight={localSettings.fontWeight ?? 400}
+                        textColors={localSettings.textColors ?? { primary: null, secondary: null }}
+                        onFontWeightChange={w => handleChange('fontWeight', w)}
+                        onTextColorsChange={c => handleChange('textColors', c)}
+                      />
                     </div>
                   </div>
                 )}

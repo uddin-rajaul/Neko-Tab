@@ -130,3 +130,34 @@
 .custom-theme-delete {
   color: var(--error, #ff5555);
 }
+
+/* Text color overrides in Settings → Appearance */
+.text-color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.text-color-row input[type='color'] {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.text-color-row-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: var(--text-primary, #E0E0E0);
+}
+
+.text-color-row-hint {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+}

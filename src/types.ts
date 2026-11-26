@@ -105,6 +105,9 @@ export interface Settings {
   rssFeeds: Array<{ id: string; name: string; url: string; enabled: boolean; maxItems: number }>
   // Font
   font: string
+  fontWeight: number  // 300–700; other text weights shift by the same amount
+  // Text color overrides on top of the theme (null = theme default)
+  textColors: { primary: string | null; secondary: string | null }
   // Chrome Tab
   showChromeTab: boolean
   // Bookmarks

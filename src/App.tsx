@@ -17,7 +17,7 @@ import { ChromeTabButton } from './components/ChromeTabButton'
 import { StartupLauncher } from './components/StartupLauncher'
 import { TypingOverlay } from './components/TypingTest/TypingOverlay'
 import { Keyboard } from 'lucide-react'
-import { findCustomTheme, themeClassName, customThemeStyle } from './utils/customTheme'
+import { findCustomTheme, themeClassName, customThemeStyle, textColorStyle } from './utils/customTheme'
 
 // Lazy load overlay components to improve initial mount time
 const SettingsPanel = lazy(() =>
@@ -133,6 +133,7 @@ function App() {
           {
             outline: "none",
             ...customThemeStyle(customTheme),
+            ...textColorStyle(settings.textColors),
             ...(bgImage
               ? { backgroundColor: "transparent", background: "none" }
               : {}),

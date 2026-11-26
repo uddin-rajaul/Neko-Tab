@@ -49,6 +49,14 @@ export function customThemeStyle(theme: CustomTheme | undefined): CSSProperties 
   return vars as CSSProperties
 }
 
+/** Text color overrides from settings; spread after customThemeStyle so they win */
+export function textColorStyle(textColors: { primary: string | null; secondary: string | null } | undefined): CSSProperties {
+  const vars: Record<string, string> = {}
+  if (textColors?.primary) vars['--text-primary'] = textColors.primary
+  if (textColors?.secondary) vars['--text-secondary'] = textColors.secondary
+  return vars as CSSProperties
+}
+
 /** Class names for the .app root / command palette; theme-light turns on the light-mode CSS rules */
 export function themeClassName(themeId: string, customTheme: CustomTheme | undefined): string {
   if (customTheme) return customTheme.isLight ? 'custom-theme theme-light' : 'custom-theme'
