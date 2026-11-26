@@ -111,7 +111,8 @@
 }
 
 .app.light .ascii-display,
-.app.paper .ascii-display {
+.app.paper .ascii-display,
+.app.theme-light .ascii-display {
   color: var(--text-primary);
 }
 
@@ -175,7 +176,8 @@
 }
 
 .app.light .search-input,
-.app.paper .search-input {
+.app.paper .search-input,
+.app.theme-light .search-input {
   background: transparent;
   color: var(--text-primary);
   border: none;
@@ -263,7 +265,7 @@
 
 .clock-time {
   font-size: 64px;
-  font-weight: 300;
+  font-weight: calc(300 + var(--font-weight-shift, 0));
   letter-spacing: 4px;
   line-height: 1;
   color: var(--text-primary);
@@ -364,7 +366,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-secondary, var(--ash));
-  font-weight: 500;
+  font-weight: calc(500 + var(--font-weight-shift, 0));
   margin: 0;
 }
 
@@ -406,14 +408,15 @@
 }
 
 .category-name {
-  font-weight: 600;
+  font-weight: calc(600 + var(--font-weight-shift, 0));
   font-size: 14px;
   color: var(--text-primary, var(--platinum));
   text-decoration: none;
 }
 
 .app.light .category-name,
-.app.paper .category-name {
+.app.paper .category-name,
+.app.theme-light .category-name {
   color: var(--text-primary);
 }
 
@@ -494,7 +497,8 @@
 }
 
 .app.light .bookmark-link,
-.app.paper .bookmark-link {
+.app.paper .bookmark-link,
+.app.theme-light .bookmark-link {
   color: var(--text-secondary);
 }
 

@@ -239,6 +239,134 @@
   color: var(--text-primary);
 }
 
+/* Built-in light themes */
+
+/* Solarized Light */
+.app.solarized-light {
+  --bg-primary: #FDF6E3;
+  --bg-secondary: #EEE8D5;
+  --bg-tertiary: #E4DDC8;
+  --text-primary: #586E75;
+  --text-secondary: #93A1A1;
+  --accent: #2AA198;
+  --accent-hover: #268BD2;
+  --border: #D3CBB7;
+  --error: #DC322F;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Catppuccin Latte */
+.app.catppuccin-latte {
+  --bg-primary: #EFF1F5;
+  --bg-secondary: #E6E9EF;
+  --bg-tertiary: #CCD0DA;
+  --text-primary: #4C4F69;
+  --text-secondary: #6C6F85;
+  --accent: #8839EF;
+  --accent-hover: #9D5BF0;
+  --border: #BCC0CC;
+  --error: #D20F39;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Gruvbox Light */
+.app.gruvbox-light {
+  --bg-primary: #FBF1C7;
+  --bg-secondary: #F9F5D7;
+  --bg-tertiary: #EBDBB2;
+  --text-primary: #3C3836;
+  --text-secondary: #7C6F64;
+  --accent: #AF3A03;
+  --accent-hover: #D65D0E;
+  --border: #D5C4A1;
+  --error: #9D0006;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Rosé Pine Dawn */
+.app.rose-pine-dawn {
+  --bg-primary: #FAF4ED;
+  --bg-secondary: #FFFAF3;
+  --bg-tertiary: #F2E9E1;
+  --text-primary: #575279;
+  --text-secondary: #797593;
+  --accent: #D7827E;
+  --accent-hover: #B4637A;
+  --border: #DFDAD9;
+  --error: #B4637A;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Everforest Light */
+.app.everforest-light {
+  --bg-primary: #FDF6E3;
+  --bg-secondary: #EFEBD4;
+  --bg-tertiary: #F4F0D9;
+  --text-primary: #5C6A72;
+  --text-secondary: #829181;
+  --accent: #8DA101;
+  --accent-hover: #93B259;
+  --border: #E0DCC7;
+  --error: #F85552;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* GitHub Light */
+.app.github-light {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F6F8FA;
+  --bg-tertiary: #EAEEF2;
+  --text-primary: #1F2328;
+  --text-secondary: #656D76;
+  --accent: #0969DA;
+  --accent-hover: #0550AE;
+  --border: #D0D7DE;
+  --error: #CF222E;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Tokyo Night Day */
+.app.tokyo-night-day {
+  --bg-primary: #E1E2E7;
+  --bg-secondary: #D0D5E3;
+  --bg-tertiary: #C4C8DA;
+  --text-primary: #3760BF;
+  --text-secondary: #6172B0;
+  --accent: #2E7DE9;
+  --accent-hover: #007197;
+  --border: #A8AECB;
+  --error: #F52A65;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* One Light */
+.app.one-light {
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F0F0F0;
+  --bg-tertiary: #E5E5E6;
+  --text-primary: #383A42;
+  --text-secondary: #696C77;
+  --accent: #4078F2;
+  --accent-hover: #0184BC;
+  --border: #D3D3D4;
+  --error: #E45649;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* User-created themes: colors are set inline as CSS variables from settings.customThemes */
+.app.custom-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 /* Legacy support */
 .app.dark {
   --bg-primary: #222526;

@@ -61,6 +61,7 @@ const DEFAULT_SETTINGS: Settings = {
   showStatusBar: true,
   showTabCounter: true,
   theme: 'carbon',
+  customThemes: [],
   clockFormat: '24h',
   bgDim: 40,
   bgBlur: 0,
@@ -71,6 +72,8 @@ const DEFAULT_SETTINGS: Settings = {
   showRssTicker: false,
   rssFeeds: [],
   font: 'JetBrains Mono',
+  fontWeight: 400,
+  textColors: { primary: null, secondary: null },
   asciiArtSource: 'cat',
   customAsciiArt: CAT_ASCII,
   asciiArt: CAT_ASCII,
@@ -285,16 +288,35 @@ const FONT_URLS: Record<string, string> = {
   'Hack':           'https://cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css',
 }
 
-function loadFont(family: string) {
-  const url = FONT_URLS[family]
-  if (!url) return
-  const id = `font-${family.replace(/\s/g, '-')}`
+// Custom fonts: try Google Fonts; if the family isn't there, a font installed on the computer is used instead
+function googleFontUrl(family: string): string {
+  return `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;700&display=swap`
+}
+
+function addStylesheet(id: string, href: string) {
   if (document.getElementById(id)) return // already loaded
   const link = document.createElement('link')
   link.id = id
   link.rel = 'stylesheet'
-  link.href = url
+  link.href = href
   document.head.appendChild(link)
+}
+
+// The base stylesheets only include 400 and 700. Weights are requested one per stylesheet because
+// Google Fonts rejects the whole request when a family lacks one of the listed weights.
+function loadExtraWeights(family: string, fontWeight: number) {
+  if (FONT_URLS[family] && !FONT_URLS[family].includes('fonts.googleapis.com')) return
+  const shift = fontWeight - 400
+  const needed = [300, 400, 500, 600].map(w => w + shift).filter(w => w >= 100 && w <= 900 && w !== 400 && w !== 700)
+  for (const weight of needed) {
+    const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@${weight}&display=swap`
+    addStylesheet(`font-${family.replace(/\s/g, '-')}-${weight}`, href)
+  }
+}
+
+function loadFont(family: string) {
+  const url = FONT_URLS[family] ?? googleFontUrl(family)
+  addStylesheet(`font-${family.replace(/\s/g, '-')}`, url)
 }
 
 export function useSettings() {
@@ -306,6 +328,12 @@ export function useSettings() {
     localStorage.setItem('neko-font', font)
     document.documentElement.style.setProperty('--font-mono', `'${font}'`)
   }, [settings.font])
+
+  useEffect(() => {
+    const fontWeight = settings.fontWeight ?? 400
+    loadExtraWeights(settings.font || 'JetBrains Mono', fontWeight)
+    document.documentElement.style.setProperty('--font-weight-shift', String(fontWeight - 400))
+  }, [settings.font, settings.fontWeight])
 
   return [settings, setSettings] as const
 }

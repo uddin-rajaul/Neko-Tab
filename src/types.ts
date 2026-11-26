@@ -32,6 +32,29 @@ export type ThemeType =
   | 'chatgpt' | 'claude'
   // Hardware-Inspired Themes
   | 'nothing'
+  // Light Themes
+  | 'solarized-light' | 'catppuccin-latte' | 'gruvbox-light' | 'rose-pine-dawn' | 'everforest-light' | 'github-light' | 'tokyo-night-day' | 'one-light'
+  // User-created themes (see CustomTheme)
+  | `custom-${string}`
+
+export interface CustomThemeColors {
+  bgPrimary: string
+  bgSecondary: string
+  bgTertiary: string
+  textPrimary: string
+  textSecondary: string
+  accent: string
+  accentHover: string
+  border: string
+  error: string
+}
+
+export interface CustomTheme {
+  id: `custom-${string}`
+  name: string
+  isLight: boolean
+  colors: CustomThemeColors
+}
 
 export interface ThemeInfo {
   id: ThemeType
@@ -39,7 +62,7 @@ export interface ThemeInfo {
   bgColor: string
   textColor: string
   accentColor: string
-  category?: 'color' | 'animated' | 'special'
+  category?: 'color' | 'light' | 'animated' | 'special'
 }
 
 export type AsciiArtSource = 'os' | 'cat' | 'custom'
@@ -64,6 +87,7 @@ export interface Settings {
   showStatusBar: boolean
   showTabCounter: boolean
   theme: ThemeType
+  customThemes: CustomTheme[]
   clockFormat: '12h' | '24h'
   asciiArtSource: AsciiArtSource
   asciiArt?: string // Deprecated, but keep for migration if needed
@@ -81,6 +105,9 @@ export interface Settings {
   rssFeeds: Array<{ id: string; name: string; url: string; enabled: boolean; maxItems: number }>
   // Font
   font: string
+  fontWeight: number  // 300–700; other text weights shift by the same amount
+  // Text color overrides on top of the theme (null = theme default)
+  textColors: { primary: string | null; secondary: string | null }
   // Chrome Tab
   showChromeTab: boolean
   // Bookmarks
